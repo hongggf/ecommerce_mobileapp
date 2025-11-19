@@ -1,9 +1,23 @@
 class AppRoutes {
-  static const home = '/home';
+
+  ///Auth
   static const login = '/login';
   static const splash = '/splash';
   static const register = '/register';
+
   static const profile = '/profile';
   static const cart = '/cart';
   static const bottomNav = '/bottom-nav';
+
+  /// Dashboard
+  static const admin = '/admin';
+  static const customer = '/customer';
+  static const staff = '/satff';
+
+  ///Product
+  static const product = '/product';
+  static const productDetail = '/product_detail';
+
+  ///Category
+  static const category = '/category';
 }
