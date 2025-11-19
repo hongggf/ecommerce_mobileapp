@@ -6,7 +6,6 @@ import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:ecommerce_urban/modules/bottom_nav/bottom_controller.dart';
 import 'package:ecommerce_urban/modules/auth/auth_controller.dart';
 import 'package:ecommerce_urban/modules/dashboard/customer/customer_controller.dart';
-import 'package:ecommerce_urban/modules/dashboard/customer/widgets/slider_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -37,7 +36,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
           children: [
             SearchCardNavigation(),
             SizedBox(height: AppSpacing.paddingS),
-            SliderWidget(),
+            // SliderWidget(),
             SizedBox(height: AppSpacing.paddingL),
             _categorySection(),
             SizedBox(height: AppSpacing.paddingL),
