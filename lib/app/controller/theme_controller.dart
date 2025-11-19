@@ -1,9 +1,8 @@
-import 'package:ecommerce_urban/core/theme/dark_theme.dart';
-import 'package:ecommerce_urban/core/theme/light_theme.dart';
-import 'package:ecommerce_urban/services/theme_services.dart';
+import 'package:ecommerce_urban/app/services/theme_services.dart';
 import 'package:get/get.dart';
-
 import 'package:flutter/material.dart';
+import '../theme/dark_theme.dart';
+import '../theme/light_theme.dart';
 
 class ThemeController extends GetxController {
   final ThemeService _service = ThemeService();

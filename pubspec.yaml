@@ -19,7 +19,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
 
   line_icons: ^2.0.1
-  google_fonts: ^5.0.0
+#  google_fonts: ^5.0.0
 
 dev_dependencies:
   flutter_test:
