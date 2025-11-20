@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          initialRoute: AppRoutes.bottomNav,
+          initialRoute: AppRoutes.splash,
           getPages: AppPages.pages,
           theme: Get.find<ThemeController>().theme,
           darkTheme: AppTheme.darkTheme,

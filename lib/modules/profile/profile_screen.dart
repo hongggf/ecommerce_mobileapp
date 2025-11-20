@@ -47,25 +47,25 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _profileSection(){
-    return UserHeaderCardWidget(
-      name: userName,
-      rightIcons: [
-        UserHeaderRightIcon(
-          icon: themeController.isDarkMode.value
-              ? Icons.dark_mode
-              : Icons.light_mode,
-          onTap: themeController.toggleTheme,
-        ),
-        UserHeaderRightIcon(
-          icon: Icons.settings,
-          onTap: () => print("Settings clicked"),
-        ),
-      ],
-    );
+  Widget _profileSection() {
+    return Obx(() => UserHeaderCardWidget(
+          name: userName,
+          rightIcons: [
+            UserHeaderRightIcon(
+              icon: themeController.isDarkMode.value
+                  ? Icons.dark_mode
+                  : Icons.light_mode,
+              onTap: themeController.toggleTheme,
+            ),
+            UserHeaderRightIcon(
+              icon: Icons.settings,
+              onTap: () => print("Settings clicked"),
+            ),
+          ],
+        ));
   }
 
-  Widget _userInfoSection(){
+  Widget _userInfoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -104,7 +104,7 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _orderHistorySection(){
+  Widget _orderHistorySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -121,7 +121,7 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _logoutSection(){
+  Widget _logoutSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
