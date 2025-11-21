@@ -9,7 +9,7 @@ class ProductListScreen extends StatelessWidget {
 
   ProductListScreen({super.key, required this.categoryName});
 
-  final ProductController controller = Get.put(ProductController());
+  final ProductController controller = Get.find<ProductController>();
 
   // -------------------------
   // FILTER / SORT DIALOG

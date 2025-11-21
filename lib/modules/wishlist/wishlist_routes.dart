@@ -5,11 +5,8 @@ import 'package:ecommerce_urban/route/app_routes.dart';
 
 final wishlistRoutes = [
   GetPage(
-    name: AppRoutes.cart,
+    name: AppRoutes.wishlist,
     page: () => WishlistScreen(),
   ),
-  GetPage(
-    name: AppRoutes.productDetail,
-    page: () => ProductDetailScreen(),
-  )
+  
 ];

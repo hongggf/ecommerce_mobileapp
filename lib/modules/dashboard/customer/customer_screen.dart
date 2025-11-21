@@ -8,7 +8,7 @@ import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:ecommerce_urban/modules/bottom_nav/bottom_controller.dart';
 import 'package:ecommerce_urban/modules/auth/auth_controller.dart';
 import 'package:ecommerce_urban/modules/dashboard/customer/customer_controller.dart';
-import 'package:ecommerce_urban/modules/product/product/productList_screen.dart';
+import 'package:ecommerce_urban/route/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -37,6 +37,15 @@ class _CustomerScreenState extends State<CustomerScreen> {
       appBar: AppBar(
         title: const Text('E-Mart'),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: GestureDetector(
+              onTap: () => Get.toNamed('/cart'),
+              child: const Icon(Icons.shopping_cart, size: 28),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(AppSpacing.paddingS),
@@ -96,9 +105,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
             Spacer(),
             GestureDetector(
               onTap: () => {
-                Get.to(() => ProductListScreen(
-                      categoryName: "All Products",
-                    )),
+                Get.toNamed('/product', arguments: {
+                  'categoryName': 'Popular Products',
+                })
               },
               child: Text("see all",
                   style: TextStyle(
