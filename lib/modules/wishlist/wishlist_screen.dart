@@ -10,24 +10,23 @@ class WishlistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("My Wishlist"),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(AppSpacing.paddingS),
-        child: Column(
-          children: [
-            SearchCardNavigation(),
-            SizedBox(height: AppSpacing.paddingL),
-            _wishlistProduct(),
-          ],
+        appBar: AppBar(
+          title: Text("My Wishlist"),
+          centerTitle: true,
         ),
-      )
-    );
+        body: Padding(
+          padding: EdgeInsets.all(AppSpacing.paddingS),
+          child: Column(
+            children: [
+              SearchCardNavigation(),
+              SizedBox(height: AppSpacing.paddingL),
+              _wishlistProduct(),
+            ],
+          ),
+        ));
   }
 
-  Widget _wishlistProduct(){
+  Widget _wishlistProduct() {
     return Expanded(
       child: GridView.builder(
         itemCount: 10,
@@ -44,8 +43,8 @@ class WishlistScreen extends StatelessWidget {
             description: "Comfortable running shoes for everyday use.",
             showWishlist: true,
             isWishlisted: index.isEven,
-            onTap: () => print("Product tapped $index"),
-            onWishlistTap: () => print("Wishlist clicked $index"),
+            onTap: () => Get.toNamed('/product_detail'),
+            onWishlistTap: () => Get.toNamed('/product_detail'),
           );
         },
       ),

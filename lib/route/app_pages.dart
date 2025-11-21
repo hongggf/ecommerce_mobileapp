@@ -15,5 +15,6 @@ class AppPages {
     ...bottomNavRoute,
     ...dashboardRoutes,
     ...categoryRoute,
+    ...wishlistRoutes,
   ];
 }

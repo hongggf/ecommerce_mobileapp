@@ -1,14 +1,14 @@
 import 'package:ecommerce_urban/modules/product/product/product_binding.dart';
 import 'package:ecommerce_urban/modules/product/product_detail/product_detail_binding.dart';
 import 'package:ecommerce_urban/modules/product/product_detail/product_detail_screen.dart';
-import 'package:ecommerce_urban/modules/product/product/product_screen.dart';
+import 'package:ecommerce_urban/modules/product/product/productList_screen.dart';
 import 'package:ecommerce_urban/route/app_routes.dart';
 import 'package:get/get.dart';
 
 final productRoutes = [
   GetPage(
     name: AppRoutes.product,
-    page: () => ProductScreen(),
+    page: () => ProductListScreen(categoryName: "All products"),
     binding: ProductBinding(),
     transition: Transition.fadeIn,
   ),

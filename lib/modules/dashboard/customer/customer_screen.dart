@@ -8,6 +8,7 @@ import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:ecommerce_urban/modules/bottom_nav/bottom_controller.dart';
 import 'package:ecommerce_urban/modules/auth/auth_controller.dart';
 import 'package:ecommerce_urban/modules/dashboard/customer/customer_controller.dart';
+import 'package:ecommerce_urban/modules/product/product/productList_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -95,7 +96,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
             Spacer(),
             GestureDetector(
               onTap: () => {
-                
+                Get.to(() => ProductListScreen(
+                      categoryName: "All Products",
+                    )),
               },
               child: Text("see all",
                   style: TextStyle(

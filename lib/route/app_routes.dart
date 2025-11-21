@@ -20,4 +20,7 @@ class AppRoutes {
 
   ///Category
   static const category = '/category';
+
+  ///Wishlist
+  static const wishlist = '/wishlist';
 }
