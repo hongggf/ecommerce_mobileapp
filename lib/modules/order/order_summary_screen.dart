@@ -1,3 +1,5 @@
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
+import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
 import 'package:ecommerce_urban/modules/cart/cart_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -58,7 +60,7 @@ class OrderSummaryScreen extends GetView<CartController> {
         final selectedItems = controller.getSelectedItems();
         return Container(
           decoration: BoxDecoration(
-            color: Colors.grey[50],
+            // color: IsDarkmode.value ? Colors.grey[800] : Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey[300]!),
           ),
@@ -104,7 +106,7 @@ class OrderSummaryScreen extends GetView<CartController> {
                         Text(
                           'Qty: ${item.quantity.value}',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: AppFontSize.labelLarge,
                             color: Colors.grey[600],
                           ),
                         ),
@@ -116,7 +118,7 @@ class OrderSummaryScreen extends GetView<CartController> {
                     '\$${(item.price * item.quantity.value).toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: Colors.blue,
+                      color: AppColors.accent,
                     ),
                   ),
                 ],
@@ -133,7 +135,7 @@ class OrderSummaryScreen extends GetView<CartController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        //color: Colors.blue[50],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.blue[300]!),
       ),
@@ -190,7 +192,7 @@ class OrderSummaryScreen extends GetView<CartController> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.grey[50],
+            // color: Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey[300]!),
           ),
@@ -252,7 +254,7 @@ class OrderSummaryScreen extends GetView<CartController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        // color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[300]!),
       ),
@@ -337,7 +339,7 @@ class OrderSummaryScreen extends GetView<CartController> {
                     },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.blue,
+                backgroundColor: AppColors.primary,
                 disabledBackgroundColor: Colors.grey[400],
               ),
               child: controller.isLoading.value
@@ -346,8 +348,7 @@ class OrderSummaryScreen extends GetView<CartController> {
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
                   : const Text(

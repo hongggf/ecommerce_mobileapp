@@ -114,7 +114,7 @@ class ProfileView extends GetView<ProfileController> {
             icon: Icons.delivery_dining,
             title: "Your Order",
             rightIcon: Icons.arrow_forward_rounded,
-            onTapCard: () => print("Account tapped"),
+            onTapCard: () => Get.toNamed('/order_history'),
           ),
         ),
       ],

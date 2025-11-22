@@ -1,3 +1,5 @@
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
+import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
 import 'package:ecommerce_urban/modules/cart/cart_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,7 +45,10 @@ class CartScreen extends GetView<CartController> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.shopping_cart_outlined, size: 90, color: Colors.grey[400]),
+          Icon(
+            Icons.shopping_cart_outlined,
+            size: 90,
+          ),
           const SizedBox(height: 20),
           Text('Your cart is empty',
               style: Theme.of(context).textTheme.titleLarge),
@@ -59,8 +64,7 @@ class CartScreen extends GetView<CartController> {
   Widget _buildSelectAllBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF7F7F7),
+      decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xFFE5E5E5))),
       ),
       child: Row(
@@ -71,7 +75,7 @@ class CartScreen extends GetView<CartController> {
               )),
           const Text(
             "Select All",
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            style: TextStyle(),
           ),
           const Spacer(),
           Obx(() => Text(
@@ -90,11 +94,10 @@ class CartScreen extends GetView<CartController> {
     return Obx(() => Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: item.isSelected.value
-                  ? Colors.blueAccent
+                  ? AppColors.primary
                   : Colors.grey.shade300,
               width: item.isSelected.value ? 2 : 1,
             ),
@@ -111,8 +114,7 @@ class CartScreen extends GetView<CartController> {
             children: [
               Obx(() => Checkbox(
                     value: item.isSelected.value,
-                    onChanged: (_) =>
-                        controller.toggleItemSelection(item.id),
+                    onChanged: (_) => controller.toggleItemSelection(item.id),
                   )),
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
@@ -131,8 +133,8 @@ class CartScreen extends GetView<CartController> {
                     Text(
                       item.name,
                       maxLines: 2,
-                      style: const TextStyle(
-                        fontSize: 15,
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodyLarge,
                         fontWeight: FontWeight.w600,
                         height: 1.2,
                       ),
@@ -205,7 +207,6 @@ class CartScreen extends GetView<CartController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
-        color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE5E5E5))),
       ),
       child: Column(
@@ -213,15 +214,17 @@ class CartScreen extends GetView<CartController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 "Total:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                    fontSize: AppFontSize.titleLarge,
+                    fontWeight: FontWeight.w500),
               ),
               Obx(() => Text(
                     "\$${controller.getSelectedItemsTotal().toStringAsFixed(2)}",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
-                      color: Colors.blueAccent,
+                      color: AppColors.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   )),
@@ -234,6 +237,7 @@ class CartScreen extends GetView<CartController> {
                     : null,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
+                  backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
