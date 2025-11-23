@@ -19,6 +19,12 @@ class AdminController extends GetxController {
     QuickAction(title: 'Add Stock', icon: '📥'),
     QuickAction(title: 'Add User', icon: '👤➕'),
   ].obs;
+   var categories = <String>[].obs;
+
+  void addCategory(String name) {
+    categories.add(name);
+    print('Category Added: $name');
+  }
 }
 
 class DashboardSummary {

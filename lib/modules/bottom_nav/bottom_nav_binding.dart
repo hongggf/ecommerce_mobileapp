@@ -9,8 +9,8 @@ import 'package:get/get.dart';
 class BottomNavBinding extends Bindings {
   @override
   void dependencies() {
-   // Get.lazyPut<AdminController>(() => AdminController());
-    Get.lazyPut<CustomerController>(() => CustomerController());
+    Get.lazyPut<AdminController>(() => AdminController());
+    //Get.lazyPut<CustomerController>(() => CustomerController());
     Get.lazyPut<ProfileController>(() => ProfileController());
     Get.lazyPut<AuthController>(() => AuthController());
     Get.lazyPut(()=> BottomNavController());

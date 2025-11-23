@@ -21,13 +21,17 @@ class AppRoutes {
   ///order
   static const orderSummary = '/order_summary';
   static const orderHistory = '/order_history';
+  static const orderDetail = '/order_detail';
+  static const manageOrders = '/manage_orders';
 
   ///Product
   static const product = '/product';
   static const productDetail = '/product_detail';
+  static const addProduct = '/add_product';
 
   ///Category
   static const category = '/category';
+  
 
   ///Wishlist
   static const wishlist = '/wishlist';
