@@ -1,4 +1,3 @@
-import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
 import 'package:flutter/material.dart';
 

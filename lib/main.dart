@@ -1,6 +1,7 @@
 import 'package:ecommerce_urban/app/controller/ratio_controller.dart';
 import 'package:ecommerce_urban/app/controller/theme_controller.dart';
 import 'package:ecommerce_urban/modules/bottom_nav/bottom_nav_binding.dart';
+import 'package:ecommerce_urban/modules/dashboard/admin/admin_binding.dart';
 import 'package:ecommerce_urban/route/app_pages.dart';
 import 'package:ecommerce_urban/route/app_routes.dart';
 import 'package:flutter/material.dart';
