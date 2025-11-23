@@ -35,6 +35,10 @@ class ProfileView extends GetView<ProfileController> {
                     _userInfoSection(),
                     SizedBox(height: AppSpacing.paddingXL),
                     _orderHistorySection(),
+                    SizedBox(
+                      height: AppSpacing.paddingXL,
+                    ),
+                    _addressSection(),
                     SizedBox(height: AppSpacing.paddingXL),
                     _logoutSection(),
                   ],
@@ -98,6 +102,33 @@ class ProfileView extends GetView<ProfileController> {
             rightIcon: Icons.edit,
             onTapCard: () => print("Account tapped"),
             onTapRightIcon: () => print("Right icon tapped"),
+          ),
+        ),
+        ItemWidget(
+          item: CardItem(
+            icon: Icons.account_circle,
+            title: "Profile Management",
+            description: "Edit your profile information",
+            rightIcon: Icons.arrow_forward_rounded,
+            onTapCard: () => Get.toNamed('/profile_management'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _addressSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TitleWidget(title: "Address"),
+        ItemWidget(
+          item: CardItem(
+            icon: Icons.location_on,
+            title: "My Addresses",
+            description: "Manage your delivery addresses",
+            rightIcon: Icons.arrow_forward_rounded,
+            onTapCard: () => Get.toNamed('/address'),
           ),
         ),
       ],

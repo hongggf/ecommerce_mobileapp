@@ -6,6 +6,7 @@ class AppRoutes {
   static const register = '/register';
 
   static const profile = '/profile';
+  static const profileManagement = '/profile_management';
   static const cart = '/cart';
   static const bottomNav = '/bottom-nav';
 
@@ -13,6 +14,9 @@ class AppRoutes {
   static const admin = '/admin';
   static const customer = '/customer';
   static const staff = '/satff';
+  ///Address
+  static const address = '/address';
+  static const addressForm = '/address_form';
 
   ///order
   static const orderSummary = '/order_summary';
