@@ -275,11 +275,7 @@ class AdminScreen extends StatelessWidget {
           iconBgColor: Colors.green,
           title: 'Stock Management',
           onTap: () {
-            Get.snackbar(
-              'Coming Soon',
-              'Stock management feature',
-              snackPosition: SnackPosition.BOTTOM,
-            );
+          
           },
         ),
         AdminQuickActionCard(
@@ -297,11 +293,7 @@ class AdminScreen extends StatelessWidget {
           iconBgColor: Colors.teal,
           title: 'Analytics',
           onTap: () {
-            Get.snackbar(
-              'Coming Soon',
-              'Analytics feature',
-              snackPosition: SnackPosition.BOTTOM,
-            );
+          Get.toNamed('/analytics');
           },
         ),
         AdminQuickActionCard(

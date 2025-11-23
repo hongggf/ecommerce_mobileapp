@@ -23,7 +23,8 @@ class AppRoutes {
   static const orderHistory = '/order_history';
   static const orderDetail = '/order_detail';
   static const manageOrders = '/manage_orders';
-
+  ///
+  static const analytics = '/analytics';
   ///Product
   static const product = '/product';
   static const productDetail = '/product_detail';

@@ -1,5 +1,6 @@
 import 'package:ecommerce_urban/modules/add_product/add_product_route.dart';
 import 'package:ecommerce_urban/modules/address/address_route.dart';
+import 'package:ecommerce_urban/modules/analytics/analytics_route.dart';
 import 'package:ecommerce_urban/modules/auth/auth_route.dart';
 import 'package:ecommerce_urban/modules/bottom_nav/bottom_nav_route.dart';
 import 'package:ecommerce_urban/modules/cart/cart_route.dart';
@@ -22,6 +23,7 @@ class AppPages {
     ...wishlistRoutes,
     ...addProductRoute,
     ...orderMangementRoute,
+    ...analyticsRoute,
     ...cartRoute,
     ...productRoutes,
     ...addressRoute,
