@@ -12,7 +12,6 @@ class AnalyticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('Analytics'),
         centerTitle: true,
@@ -674,7 +673,7 @@ class AnalyticsScreen extends StatelessWidget {
   //     ),
   //   );
   // }
- Widget _buildInventoryChart() {
+  Widget _buildInventoryChart() {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -753,7 +752,7 @@ class AnalyticsScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                 '\$${_formatNumber(data.value)}',
+                                  '\$${_formatNumber(data.value)}',
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,

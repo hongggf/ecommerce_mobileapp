@@ -18,16 +18,17 @@ class SearchTextFieldWithFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
+            color: Colors.black.withOpacity(0.05),
+            spreadRadius: 1,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          )
         ],
       ),
       child: Row(
@@ -38,21 +39,24 @@ class SearchTextFieldWithFilter extends StatelessWidget {
               onChanged: onChanged,
               decoration: InputDecoration(
                 hintText: hint,
+                hintStyle: TextStyle(color: Colors.grey.shade500),
                 border: InputBorder.none,
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
+
+          // Filter Button
           GestureDetector(
             onTap: onFilterTap,
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.75),
+                color: Colors.black,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.filter_alt, color: Colors.white),
+              child: const Icon(Icons.filter_alt_rounded, color: Colors.white),
             ),
           )
         ],
@@ -89,8 +93,8 @@ class SearchCardNavigation extends StatelessWidget {
                 child: Text(
                   hint,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Colors.grey.shade600,
-                  ),
+                        color: Colors.grey.shade600,
+                      ),
                 ),
               ),
             ],

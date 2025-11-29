@@ -1,8 +1,8 @@
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/modules/address/address_controller.dart';
 import 'package:ecommerce_urban/modules/address/address_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 
 class AddressListView extends GetView<AddressController> {
   const AddressListView({Key? key}) : super(key: key);
@@ -10,10 +10,8 @@ class AddressListView extends GetView<AddressController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
         title: const Text(
           'My Addresses',
           style: TextStyle(
@@ -49,7 +47,7 @@ class AddressListView extends GetView<AddressController> {
       }),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: controller.openAddAddressForm,
-        backgroundColor: const Color(0xFF6C63FF),
+        backgroundColor: AppColors.accent,
         icon: const Icon(Icons.add),
         label: const Text('Add Address'),
       ),
@@ -164,7 +162,8 @@ class AddressListView extends GetView<AddressController> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.location_on, size: 16, color: Color(0xFF666666)),
+                const Icon(Icons.location_on,
+                    size: 16, color: Color(0xFF666666)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

@@ -4,6 +4,7 @@ import 'package:ecommerce_urban/modules/dashboard/customer/customer_screen.dart'
 import 'package:ecommerce_urban/modules/wishlist/wishlist_screen.dart';
 import 'package:ecommerce_urban/modules/profile/profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class BottomNav extends StatelessWidget {
@@ -32,7 +33,7 @@ class BottomNav extends StatelessWidget {
               onTap: controller.onItemTapped,
               items: const [
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.home), label: "Home"),
+                    icon: Icon(Icons.home_outlined), label: "Home"),
                 BottomNavigationBarItem(
                     icon: Icon(Icons.category_outlined), label: "Category"),
                 BottomNavigationBarItem(

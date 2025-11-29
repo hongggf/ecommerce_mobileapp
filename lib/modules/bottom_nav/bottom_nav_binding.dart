@@ -10,7 +10,7 @@ class BottomNavBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<AdminController>(() => AdminController());
-    //Get.lazyPut<CustomerController>(() => CustomerController());
+    Get.lazyPut<CustomerController>(() => CustomerController());
     Get.lazyPut<ProfileController>(() => ProfileController());
     Get.lazyPut<AuthController>(() => AuthController());
     Get.lazyPut(()=> BottomNavController());

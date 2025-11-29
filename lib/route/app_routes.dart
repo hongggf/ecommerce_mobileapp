@@ -33,7 +33,8 @@ class AppRoutes {
   ///Category
   static const category = '/category';
   
-
+  ///search
+  static const search = '/search';
   ///Wishlist
   static const wishlist = '/wishlist';
 }

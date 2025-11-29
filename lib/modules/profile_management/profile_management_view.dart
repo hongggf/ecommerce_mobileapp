@@ -3,17 +3,14 @@ import 'package:ecommerce_urban/modules/profile_management/user_profile_model.da
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 class ProfileManagementView extends GetView<ProfileManagementController> {
   const ProfileManagementView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
         title: const Text(
           'Profile Management',
           style: TextStyle(
@@ -37,7 +34,8 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading.value && controller.userProfile.value == null) {
+        if (controller.isLoading.value &&
+            controller.userProfile.value == null) {
           return const Center(
             child: CircularProgressIndicator(color: Color(0xFF6C63FF)),
           );
@@ -66,7 +64,7 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
   Widget _buildProfileHeader(UserProfileModel profile) {
     return Container(
       width: double.infinity,
-      color: Colors.white,
+      //  color: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
         children: [
@@ -122,7 +120,7 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
+              //   color: Color(0xFF1A1A1A),
             ),
           ),
           const SizedBox(height: 4),
@@ -238,7 +236,6 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -276,7 +273,7 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+                    // color: Color(0xFF1A1A1A),
                   ),
                 ),
               ],

@@ -2,7 +2,6 @@ import 'package:ecommerce_urban/modules/address/address_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 class AddressFormView extends GetView<AddressController> {
   const AddressFormView({Key? key}) : super(key: key);
 

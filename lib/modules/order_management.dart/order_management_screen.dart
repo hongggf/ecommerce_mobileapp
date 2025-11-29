@@ -1,3 +1,4 @@
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/modules/order_management.dart/manage_order_controller.dart';
 import 'package:ecommerce_urban/modules/order_management.dart/order_detail_screen.dart';
 import 'package:ecommerce_urban/modules/order_management.dart/order_management_model.dart';
@@ -13,7 +14,7 @@ class ManageOrdersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      //backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('Manage Orders'),
         centerTitle: true,
@@ -38,19 +39,20 @@ class ManageOrdersScreen extends StatelessWidget {
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Colors.white,
+      // color: Colors.white,
       child: TextField(
         onChanged: controller.searchOrders,
         decoration: InputDecoration(
           hintText: 'Search by order number or customer name...',
           prefixIcon: const Icon(Icons.search),
           filled: true,
-          fillColor: Colors.grey[100],
+          // fillColor: Colors.grey[100],
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
     );
@@ -59,7 +61,7 @@ class ManageOrdersScreen extends StatelessWidget {
   Widget _buildStatusChips() {
     return Container(
       height: 60,
-      color: Colors.white,
+      // color: Colors.white,
       child: Obx(() => ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -99,7 +101,9 @@ class ManageOrdersScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Get.theme.colorScheme.primary : Colors.black87,
+                  color: isSelected
+                      ? Get.theme.colorScheme.primary
+                      : Colors.black87,
                 ),
               ),
             ),
@@ -219,7 +223,8 @@ class ManageOrdersScreen extends StatelessWidget {
                   Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 8),
                   Text(
-                    DateFormat('MMM dd, yyyy • hh:mm a').format(order.orderDate),
+                    DateFormat('MMM dd, yyyy • hh:mm a')
+                        .format(order.orderDate),
                     style: TextStyle(color: Colors.grey[600], fontSize: 13),
                   ),
                 ],
@@ -239,7 +244,7 @@ class ManageOrdersScreen extends StatelessWidget {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      color: Colors.green,
+                      color: AppColors.accent,
                     ),
                   ),
                 ],
@@ -298,6 +303,7 @@ class ManageOrdersScreen extends StatelessWidget {
 
   void _showFilterBottomSheet(BuildContext context) {
     Get.bottomSheet(
+      enableDrag: true,
       Container(
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
@@ -310,7 +316,10 @@ class ManageOrdersScreen extends StatelessWidget {
           children: [
             const Text(
               'Filter Orders',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.lightTextPrimary),
             ),
             const SizedBox(height: 20),
             Wrap(
@@ -342,6 +351,7 @@ class ManageOrdersScreen extends StatelessWidget {
       return ChoiceChip(
         label: Text(label),
         selected: isSelected,
+        selectedColor: Get.theme.colorScheme.primary.withOpacity(0.9),
         onSelected: (selected) {
           controller.filterByStatus(selected ? status : null);
         },
@@ -361,7 +371,9 @@ class ManageOrdersScreen extends StatelessWidget {
                     leading: Icon(_getStatusConfig(status)['icon']),
                     title: Text(_getStatusLabel(status)),
                     trailing: order.status == status
-                        ? const Icon(Icons.check, color: Colors.green)
+                        ? const Icon(
+                            Icons.check,
+                          )
                         : null,
                     onTap: () {
                       Get.back();

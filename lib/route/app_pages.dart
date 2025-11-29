@@ -13,6 +13,7 @@ import 'package:ecommerce_urban/modules/order_management.dart/order_management_r
 import 'package:ecommerce_urban/modules/product/product_route.dart';
 import 'package:ecommerce_urban/modules/profile/profile_routes.dart';
 import 'package:ecommerce_urban/modules/profile_management/profile_management_route.dart';
+import 'package:ecommerce_urban/modules/search/search_route.dart';
 import 'package:ecommerce_urban/modules/wishlist/wishlist_routes.dart';
 
 class AppPages {
@@ -25,6 +26,7 @@ class AppPages {
     ...orderMangementRoute,
     ...analyticsRoute,
     ...cartRoute,
+    ...searchRoute,
     ...productRoutes,
     ...addressRoute,
     ...profileManagementRoute,

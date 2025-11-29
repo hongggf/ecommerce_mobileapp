@@ -1,8 +1,9 @@
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
+import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
 import 'package:ecommerce_urban/modules/order_history/order_history_controller.dart';
 import 'package:ecommerce_urban/modules/order_history/order_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 
 class OrderHistoryView extends GetView<OrderHistoryController> {
   const OrderHistoryView({Key? key}) : super(key: key);
@@ -10,16 +11,12 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        title: const Text(
+        title: Text(
           'Order History',
           style: TextStyle(
-            color: Color(0xFF1A1A1A),
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: AppFontSize.headlineSmall,
           ),
         ),
         leading: IconButton(
@@ -62,22 +59,21 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
 
   Widget _buildFilterChips() {
     return Container(
-      color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Obx(() => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildChip('All', 'all'),
-            const SizedBox(width: 8),
-            _buildChip('Delivered', 'delivered'),
-            const SizedBox(width: 8),
-            _buildChip('Processing', 'processing'),
-            const SizedBox(width: 8),
-            _buildChip('Cancelled', 'cancelled'),
-          ],
-        ),
-      )),
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildChip('All', 'all'),
+                const SizedBox(width: 8),
+                _buildChip('Delivered', 'delivered'),
+                const SizedBox(width: 8),
+                _buildChip('Processing', 'processing'),
+                const SizedBox(width: 8),
+                _buildChip('Cancelled', 'cancelled'),
+              ],
+            ),
+          )),
     );
   }
 
@@ -88,7 +84,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C63FF) : const Color(0xFFF0F0F0),
+          color: isSelected ? AppColors.accent : const Color(0xFFF0F0F0),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -96,7 +92,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
           style: TextStyle(
             color: isSelected ? Colors.white : const Color(0xFF666666),
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            fontSize: 14,
+            fontSize: AppFontSize.bodyLarge,
           ),
         ),
       ),
@@ -128,7 +124,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        // color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -206,8 +202,8 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                       const SizedBox(height: 6),
                       Text(
                         order.productName,
-                        style: const TextStyle(
-                          color: Color(0xFF1A1A1A),
+                        style: TextStyle(
+                          //color: Color(0xFF1A1A1A),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -228,9 +224,9 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                         children: [
                           Text(
                             '\$${order.price.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: Color(0xFF6C63FF),
-                              fontSize: 18,
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              fontSize: AppFontSize.titleLarge,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -271,7 +267,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                     child: const Text(
                       'Track Order',
                       style: TextStyle(
-                        color: Color(0xFF6C63FF),
+                        color: AppColors.accent,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -297,7 +293,6 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                     child: const Text(
                       'Reorder',
                       style: TextStyle(
-                        color: Color(0xFF1A1A1A),
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),

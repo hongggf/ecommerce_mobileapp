@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
   MyApp({super.key});
 
   final ThemeController themeController = Get.find<ThemeController>();
+  
 
   @override
   Widget build(BuildContext context) {

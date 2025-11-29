@@ -8,8 +8,8 @@ import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:ecommerce_urban/modules/bottom_nav/bottom_controller.dart';
 import 'package:ecommerce_urban/modules/auth/auth_controller.dart';
 import 'package:ecommerce_urban/modules/dashboard/customer/customer_controller.dart';
-import 'package:ecommerce_urban/route/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -42,17 +42,20 @@ class _CustomerScreenState extends State<CustomerScreen> {
             padding: const EdgeInsets.only(right: 16),
             child: GestureDetector(
               onTap: () => Get.toNamed('/cart'),
-              child: const Icon(Icons.shopping_cart, size: 28),
+              child: Icon(Icons.shopping_cart_outlined),
             ),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(AppSpacing.paddingS),
+        padding: EdgeInsets.only(
+            left: AppSpacing.paddingS, right: AppSpacing.paddingS),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SearchCardNavigation(),
+            SearchCardNavigation(
+              onTap: () => Get.toNamed('/search'),
+            ),
             SizedBox(height: AppSpacing.paddingS),
             _SliderWidget(),
             SizedBox(height: AppSpacing.paddingL),

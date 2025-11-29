@@ -3,6 +3,8 @@ import 'package:ecommerce_urban/app/widgets/category_list_widget.dart';
 import 'package:ecommerce_urban/app/widgets/search_widget.dart';
 import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:get/instance_manager.dart';
+import 'package:get/get.dart  ';
 
 class CategoryScreen extends StatelessWidget {
   const CategoryScreen({super.key});
@@ -18,7 +20,9 @@ class CategoryScreen extends StatelessWidget {
         padding: EdgeInsets.all(AppSpacing.paddingS),
         child: Column(
           children: [
-            SearchCardNavigation(),
+            SearchCardNavigation(
+              onTap: () => Get.toNamed('/search'),
+            ),
             SizedBox(height: AppSpacing.paddingL),
             Expanded(
               child: SingleChildScrollView(
@@ -82,15 +86,11 @@ class CategoryScreen extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             return InkWell(
-              onTap: () {
-
-              },
+              onTap: () {},
               child: Card(
                 child: Center(
-                  child: Text(
-                      "Category Name",
-                      style: Theme.of(context).textTheme.titleMedium
-                  ),
+                  child: Text("Category Name",
+                      style: Theme.of(context).textTheme.titleMedium),
                 ),
               ),
             );
