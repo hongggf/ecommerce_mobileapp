@@ -6,7 +6,7 @@ import 'package:get/get_navigation/src/routes/get_route.dart';
 final addProductRoute = [
   GetPage(
     name: AppRoutes.addProduct,
-    page: () => AddProductScreen(),
+    page: () => AdminAddProductView(),
     binding: AddProductBinding(),
   ),
 ];

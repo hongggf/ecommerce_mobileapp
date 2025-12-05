@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:ecommerce_urban/app/constants/constants.dart';
 import 'package:ecommerce_urban/modules/auth/auth_model.dart';
 import 'package:ecommerce_urban/modules/auth/login/login_request.dart';
 import 'package:ecommerce_urban/modules/auth/register/register_request.dart';
@@ -7,7 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:ecommerce_urban/app/services/storage_services.dart';
 
 class AuthService {
-  final String _baseUrl = 'http://10.0.2.2:8000/api';
+  // final String _baseUrl = 'http://10.0.2.2:8000/api';
+  final String _baseUrl = ApiConstants.baseUrl;
   final StorageService _storage = StorageService();
 
   Future<AuthModel> register(
