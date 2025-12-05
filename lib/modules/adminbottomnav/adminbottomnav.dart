@@ -23,7 +23,7 @@ class Adminbottomnav extends StatelessWidget {
   ];
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<BottomNavController>(
+    return GetBuilder<AdminbottomController>(
       builder: (_) {
         return Scaffold(
           body: pages[controller.selectedIndex.value],
