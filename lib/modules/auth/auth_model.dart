@@ -1,22 +1,33 @@
 class AuthModel {
-  final int id;
-  final String username;
-  final String email;
-  final String token;
+  String? email;
+  String? password;
+  String? fullName;
+  String? phone;
+  String? token;
 
   AuthModel({
-    required this.id,
-    required this.username,
-    required this.email,
-    required this.token,
+    this.email,
+    this.password,
+    this.fullName,
+    this.phone,
+    this.token,
   });
 
-  factory AuthModel.fromJson(Map<String, dynamic> json) {
-    return AuthModel(
-      id: json['id'] ?? 0,
-      username: json['username'] ?? '',
-      email: json['email'] ?? '',
-      token: json['token'] ?? '',
-    );
+  AuthModel.fromJson(Map<String, dynamic> json) {
+    email = json['email'];
+    password = json['password'];
+    fullName = json['full_name'];
+    phone = json['phone'];
+    token = json['token'] ?? json['access_token'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['email'] = email;
+    data['password'] = password;
+    data['full_name'] = fullName;
+    data['phone'] = phone;
+    data['token'] = token;
+    return data;
   }
 }

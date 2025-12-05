@@ -12,7 +12,7 @@ class ProfileController extends GetxController {
   }
 
   Future<void> loadUserInfo() async {
-    name.value = await _storage.getUsername() ?? '';
+    name.value = (await _storage.getUserData() as String?) ?? '';
   }
 
   Future<void> logout() async {

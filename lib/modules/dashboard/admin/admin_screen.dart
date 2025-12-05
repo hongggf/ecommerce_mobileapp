@@ -109,7 +109,6 @@
 //   }
 // }
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
-import 'package:ecommerce_urban/modules/add_product/add_product_screen.dart';
 import 'package:ecommerce_urban/modules/dashboard/admin/admin_controller.dart';
 import 'package:ecommerce_urban/modules/dashboard/admin/widgets/admin_kpi_card_widget.dart';
 import 'package:ecommerce_urban/modules/dashboard/admin/widgets/admin_quick_action_card_widget.dart';
@@ -161,8 +160,8 @@ class AdminScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
-            Color.fromARGB(255, 13, 17, 229),
-            Color.fromARGB(255, 186, 167, 230)
+            Color.fromARGB(255, 7, 11, 239),
+            Color.fromARGB(255, 204, 189, 240)
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -216,10 +215,10 @@ class AdminScreen extends StatelessWidget {
             ),
             TextButton.icon(
               onPressed: () {
-                // Navigate to detailed analytics
+                
               },
               icon: const Icon(Icons.analytics_outlined, size: 18),
-              label: const Text('View All'),
+              label: const Text(''),
             ),
           ],
         ),
@@ -277,14 +276,18 @@ class AdminScreen extends StatelessWidget {
           iconColor: Colors.white,
           iconBgColor: Colors.green,
           title: 'Stock Management',
-          onTap: () {},
+          onTap: () {
+            Get.toNamed('/stock_management');
+          },
         ),
         AdminQuickActionCard(
           icon: Icons.people,
           iconColor: Colors.white,
           iconBgColor: Colors.purple,
           title: 'User Management',
-          onTap: () {},
+          onTap: () {
+            Get.toNamed('/user_management');
+          },
         ),
         AdminQuickActionCard(
           icon: Icons.bar_chart,
@@ -301,11 +304,7 @@ class AdminScreen extends StatelessWidget {
           iconBgColor: Colors.blueGrey,
           title: 'Settings',
           onTap: () {
-            Get.snackbar(
-              'Coming Soon',
-              'Settings feature',
-              snackPosition: SnackPosition.BOTTOM,
-            );
+           Get.toNamed('/profile');
           },
         ),
       ],

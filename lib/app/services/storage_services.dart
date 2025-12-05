@@ -1,20 +1,60 @@
+// import 'package:shared_preferences/shared_preferences.dart';
+
+// class StorageService {
+//   static const _keyUsername = 'username';
+
+//   Future<void> saveUsername(String username) async {
+//     final prefs = await SharedPreferences.getInstance();
+//     await prefs.setString(_keyUsername, username);
+//   }
+
+//   Future<String?> getUsername() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     return prefs.getString(_keyUsername);
+//   }
+
+//   Future<void> clear() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     await prefs.clear();
+//   }
+// }
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class StorageService {
-  static const _keyUsername = 'username';
+  static const String _tokenKey = 'auth_token';
+  static const String _userDataKey = 'user_data';
 
-  Future<void> saveUsername(String username) async {
+  // Token management
+  Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyUsername, username);
+    await prefs.setString(_tokenKey, token);
   }
 
-  Future<String?> getUsername() async {
+  Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyUsername);
+    return prefs.getString(_tokenKey);
   }
 
+  // User data management
+  Future<void> saveUserData(Map<String, dynamic> userData) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userDataKey, jsonEncode(userData));
+  }
+
+  Future<Map<String, dynamic>?> getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString(_userDataKey);
+    if (data != null) {
+      return jsonDecode(data);
+    }
+    return null;
+  }
+
+  // Clear all
   Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_userDataKey);
   }
 }

@@ -9,7 +9,6 @@ import 'package:ecommerce_urban/modules/bottom_nav/bottom_controller.dart';
 import 'package:ecommerce_urban/modules/auth/auth_controller.dart';
 import 'package:ecommerce_urban/modules/dashboard/customer/customer_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -26,9 +25,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
     Image.asset("assets/images/slider2.jpg", fit: BoxFit.cover),
   ];
 
-  final CustomerController customerController = Get.find<CustomerController>();
-  final BottomNavController bottomController = Get.find<BottomNavController>();
-  final AuthController auth = Get.find<AuthController>();
+  late final CustomerController customerController = Get.find<CustomerController>();
+  late final BottomNavController bottomController = Get.find<BottomNavController>();
+ late final AuthController auth = Get.find<AuthController>();
 
   var currentIndex = 0.obs;
   @override

@@ -14,6 +14,8 @@ class ProfileView extends GetView<ProfileController> {
   final RxBool isDarkMode = false.obs;
 
   final themeController = Get.find<ThemeController>();
+  late final ProfileController profileController =
+      Get.find<ProfileController>();
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +163,7 @@ class ProfileView extends GetView<ProfileController> {
           item: CardItem(
             icon: Icons.login,
             title: "Logout",
-            onTapCard: () => print("Account tapped"),
+            onTapCard: () => Get.offAllNamed('/login'),
           ),
         ),
       ],
