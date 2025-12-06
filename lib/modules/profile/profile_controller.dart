@@ -16,7 +16,7 @@ class ProfileController extends GetxController {
   }
 
   Future<void> logout() async {
-    await _storage.clear(); // clear all stored data (username, etc.)
+    await _storage.clearAuthData(); // clear all stored data (username, etc.)
     Get.offAllNamed('/login');
   }
 }

@@ -5,5 +5,6 @@ class AdminBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<AdminController>(() => AdminController());
+    
   }
 }
