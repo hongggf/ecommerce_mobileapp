@@ -1,5 +1,7 @@
 
 
+
+
 class AppRoutes {
 
   ///Auth
@@ -34,9 +36,12 @@ class AppRoutes {
   ///Product
   static const product = '/product';
   static const productDetail = '/product_detail';
-  static const addProduct = '/add_product';
+  static const adminAddProduct = '/admin_add_product';
   static const adminProductsView = '/admin_products_view';
-
+  ///admi product
+  static const adminProducts = '/admin_products';
+  static const productManagement = '/product_management';
+  
   ///
   static const stockManagement = '/stock_management';
   ///Category

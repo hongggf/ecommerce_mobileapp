@@ -31,7 +31,7 @@ class AppPages {
     ...wishlistRoutes,
     ...stockRoute,
     ...adminBottomNavRoute,
-    ...addProductRoute,
+    ...adminAddProductRoute,
     ...orderMangementRoute,
     ...adminProductsViewRoute,
     ...analyticsRoute,

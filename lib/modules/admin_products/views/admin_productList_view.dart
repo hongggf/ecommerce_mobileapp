@@ -1,13 +1,12 @@
 import 'package:ecommerce_urban/modules/admin_products/admin_products_controller.dart';
+import 'package:ecommerce_urban/modules/admin_products/model/product_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'model/product_model.dart';
+class AdminProductsListView extends StatelessWidget {
+  final controller = Get.find<AdminProductsController>();
 
-class AdminProductsView extends StatelessWidget {
-  final AdminProductsController controller = Get.put(AdminProductsController());
-
-  AdminProductsView({super.key});
+  AdminProductsListView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -54,63 +53,62 @@ class AdminProductsView extends StatelessWidget {
 
         return Column(
           children: [
-            // Category Tabs
+            // Category Filter Tabs
             Obx(() => SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        // "All Products" button
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: FilterChip(
-                            label: const Text('All Products'),
-                            selected:
-                                controller.selectedCategoryId.value == null,
-                            onSelected: (selected) {
-                              if (selected) {
-                                controller.selectCategory(null);
-                              }
-                            },
-                            backgroundColor: Colors.grey.shade200,
-                            selectedColor: Colors.blue.shade700,
-                            labelStyle: TextStyle(
-                              color: controller.selectedCategoryId.value == null
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
+              scrollDirection: Axis.horizontal,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    // All Products button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: FilterChip(
+                        label: const Text('All Products'),
+                        selected: controller.selectedCategoryId.value == null,
+                        onSelected: (selected) {
+                          if (selected) {
+                            controller.selectCategory(null);
+                          }
+                        },
+                        backgroundColor: Colors.grey.shade200,
+                        selectedColor: Colors.blue.shade700,
+                        labelStyle: TextStyle(
+                          color: controller.selectedCategoryId.value == null
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ),
+                    // Category chips
+                    ...controller.categories.map((category) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: FilterChip(
+                          label: Text(category.name),
+                          selected: controller.selectedCategoryId.value ==
+                              category.id,
+                          onSelected: (selected) {
+                            if (selected) {
+                              controller.selectCategory(category.id);
+                            }
+                          },
+                          backgroundColor: Colors.grey.shade200,
+                          selectedColor: Colors.blue.shade700,
+                          labelStyle: TextStyle(
+                            color: controller.selectedCategoryId.value ==
+                                    category.id
+                                ? Colors.white
+                                : Colors.black,
                           ),
                         ),
-                        // Category chips
-                        ...controller.categories.map((category) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: FilterChip(
-                              label: Text(category.name),
-                              selected: controller.selectedCategoryId.value ==
-                                  category.id,
-                              onSelected: (selected) {
-                                if (selected) {
-                                  controller.selectCategory(category.id);
-                                }
-                              },
-                              backgroundColor: Colors.grey.shade200,
-                              selectedColor: Colors.blue.shade700,
-                              labelStyle: TextStyle(
-                                color: controller.selectedCategoryId.value ==
-                                        category.id
-                                    ? Colors.white
-                                    : Colors.black,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ],
-                    ),
-                  ),
-                )),
-            // Product List
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+            )),
+            // Products List
             Expanded(
               child: Obx(() {
                 final filteredProducts = controller.getFilteredProducts();
@@ -127,7 +125,7 @@ class AdminProductsView extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No products found in this category',
+                          'No products found',
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 16,
@@ -143,19 +141,7 @@ class AdminProductsView extends StatelessWidget {
                   itemCount: filteredProducts.length,
                   itemBuilder: (context, index) {
                     final product = filteredProducts[index];
-                    return ProductCard(
-                      product: product,
-                      onEdit: () {
-                        Get.toNamed('/product_management', arguments: product);
-                      },
-                      onDelete: () {
-                        _showDeleteDialog(context, product.id!);
-                      },
-                      onViewVariants: () {
-                        Get.toNamed('/admin_product_variants',
-                            arguments: product.id);
-                      },
-                    );
+                    return _buildProductCard(product);
                   },
                 );
               }),
@@ -164,7 +150,9 @@ class AdminProductsView extends StatelessWidget {
         );
       }),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.toNamed('/admin_add_product'),
+        onPressed: () {
+          Get.toNamed('/product_management');
+        },
         backgroundColor: Colors.blue.shade700,
         child: const Icon(Icons.add),
       ),
@@ -217,12 +205,8 @@ class AdminProductsView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Expanded(
-                      child: _buildShimmerBox(width: 80, height: 36),
-                    ),
-                    const SizedBox(width: 8),
                     Expanded(
                       child: _buildShimmerBox(width: 80, height: 36),
                     ),
@@ -240,76 +224,7 @@ class AdminProductsView extends StatelessWidget {
     );
   }
 
-  /// Individual shimmer box
-  Widget _buildShimmerBox({required double width, required double height}) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: ShaderMask(
-        shaderCallback: (bounds) {
-          return LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              Colors.grey.shade300,
-              Colors.grey.shade100,
-              Colors.grey.shade300,
-            ],
-            stops: const [0.0, 0.5, 1.0],
-          ).createShader(bounds);
-        },
-        child: Container(
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  void _showDeleteDialog(BuildContext context, int productId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Product'),
-        content: const Text(
-            'Are you sure you want to delete this product? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              controller.deleteProduct(productId);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class ProductCard extends StatelessWidget {
-  final Product product;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-  final VoidCallback onViewVariants;
-
-  const ProductCard({
-    required this.product,
-    required this.onEdit,
-    required this.onDelete,
-    required this.onViewVariants,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildProductCard(Product product) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -377,7 +292,7 @@ class ProductCard extends StatelessWidget {
             ),
           ),
           // Variants count
-          if (product.variants != null)
+          if (product.variants != null && product.variants!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
@@ -393,19 +308,13 @@ class ProductCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: onViewVariants,
-                    icon: const Icon(Icons.layers),
-                    label: const Text('Variants'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: onEdit,
+                    onPressed: () {
+                      Get.toNamed('/product_management', arguments: product);
+                    },
                     icon: const Icon(Icons.edit),
                     label: const Text('Edit'),
                   ),
@@ -413,7 +322,7 @@ class ProductCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: onDelete,
+                    onPressed: () => _showDeleteDialog(product.id!),
                     icon: const Icon(Icons.delete),
                     label: const Text('Delete'),
                     style: OutlinedButton.styleFrom(
@@ -423,6 +332,58 @@ class ProductCard extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Individual shimmer box
+  Widget _buildShimmerBox({required double width, required double height}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: ShaderMask(
+        shaderCallback: (bounds) {
+          return LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Colors.grey.shade300,
+              Colors.grey.shade100,
+              Colors.grey.shade300,
+            ],
+            stops: const [0.0, 0.5, 1.0],
+          ).createShader(bounds);
+        },
+        child: Container(
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteDialog(int productId) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Delete Product'),
+        content: const Text(
+            'Are you sure you want to delete this product? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              controller.deleteProduct(productId);
+              Get.back();
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

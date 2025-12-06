@@ -260,7 +260,7 @@ class AdminScreen extends StatelessWidget {
           iconColor: Colors.white,
           iconBgColor: Colors.blue,
           title: 'Add New Product',
-          onTap: () => Get.toNamed('/add_product'),
+          onTap: () => Get.toNamed('/admin_add_product'),
         ),
         AdminQuickActionCard(
           icon: Icons.shopping_cart,

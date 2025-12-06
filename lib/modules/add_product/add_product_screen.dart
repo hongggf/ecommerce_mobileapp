@@ -1,10 +1,9 @@
-
+import 'dart:convert';
 import 'package:ecommerce_urban/modules/add_product/add_product_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../admin_products/model/product_asset.dart';
-
 
 class AdminAddProductView extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -21,6 +20,7 @@ class AdminAddProductView extends StatelessWidget {
             ? "Add Product"
             : "Edit Product"),
         centerTitle: true,
+        backgroundColor: Colors.blue.shade700,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -36,9 +36,17 @@ class AdminAddProductView extends StatelessWidget {
               // NAME
               TextFormField(
                 controller: controller.nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Product Name",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.production_quantity_limits),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: Colors.blue.shade700, width: 2),
+                  ),
                 ),
                 validator: (v) =>
                     v!.isEmpty ? "Product name is required" : null,
@@ -49,20 +57,68 @@ class AdminAddProductView extends StatelessWidget {
               TextFormField(
                 controller: controller.descriptionController,
                 maxLines: 3,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Description",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.description),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: Colors.blue.shade700, width: 2),
+                  ),
                 ),
                 validator: (v) =>
                     v!.isEmpty ? "Description is required" : null,
               ),
               const SizedBox(height: 16),
 
+              // CATEGORY
+              Obx(() {
+                return DropdownButtonFormField<int>(
+                  value: controller.selectedCategoryId,
+                  decoration: InputDecoration(
+                    labelText: "Category",
+                    prefixIcon: const Icon(Icons.category),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          BorderSide(color: Colors.blue.shade700, width: 2),
+                    ),
+                  ),
+                  items: controller.categories.map((category) {
+                    return DropdownMenuItem<int>(
+                      value: category.id,
+                      child: Text(category.name),
+                    );
+                  }).toList(),
+                  onChanged: (v) {
+                    controller.selectedCategoryId = v;
+                  },
+                  validator: (v) => v == null ? "Category is required" : null,
+                );
+              }),
+              const SizedBox(height: 16),
+
               // STATUS
               DropdownButtonFormField<String>(
                 value: controller.selectedStatus,
-                decoration: const InputDecoration(
-                    labelText: "Status", border: OutlineInputBorder()),
+                decoration: InputDecoration(
+                  labelText: "Status",
+                  prefixIcon: const Icon(Icons.info),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: Colors.blue.shade700, width: 2),
+                  ),
+                ),
                 items: ["active", "inactive", "draft"]
                     .map((x) => DropdownMenuItem(
                           value: x,
@@ -71,7 +127,7 @@ class AdminAddProductView extends StatelessWidget {
                     .toList(),
                 onChanged: (v) => controller.selectedStatus = v!,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
               const Divider(height: 32),
               const Text("Images",
@@ -79,23 +135,28 @@ class AdminAddProductView extends StatelessWidget {
               const SizedBox(height: 16),
 
               /// SELECTED IMAGES
+              const Text("Selected Images",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 8),
               Obx(() {
                 return controller.selectedImages.isEmpty
                     ? _emptyImageBox("No Selected Images")
                     : _imageGridSelected(controller);
               }),
-
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
 
               ElevatedButton.icon(
                 onPressed: controller.pickImages,
                 icon: const Icon(Icons.add_photo_alternate),
                 label: const Text("Pick Images"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade700,
+                ),
               ),
 
               const SizedBox(height: 24),
               const Text("Uploaded Images",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
 
               /// UPLOADED IMAGES
@@ -120,15 +181,34 @@ class AdminAddProductView extends StatelessWidget {
                                   controller.submit();
                                 }
                               },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade700,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                         child: controller.isLoading.value
-                            ? const CircularProgressIndicator()
-                            : Text(controller.editingProductId == null
-                                ? "Create Product"
-                                : "Update Product"),
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                controller.editingProductId == null
+                                    ? "Create Product"
+                                    : "Update Product",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       );
                     }),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Obx(() {
                       return ElevatedButton(
@@ -137,17 +217,33 @@ class AdminAddProductView extends StatelessWidget {
                             ? null
                             : controller.uploadImages,
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green),
+                          backgroundColor: Colors.green.shade700,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                         child: controller.isUploading.value
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
                               )
-                            : const Text("Upload Images"),
+                            : const Text(
+                                "Upload Images",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       );
                     }),
                   ),
                 ],
-              )
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -155,14 +251,28 @@ class AdminAddProductView extends StatelessWidget {
     );
   }
 
-  Widget _emptyImageBox(text) {
+  Widget _emptyImageBox(String text) {
     return Container(
       alignment: Alignment.center,
-      height: 100,
+      height: 120,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
+        border: Border.all(color: Colors.grey.shade300, width: 2),
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.grey.shade50,
       ),
-      child: Text(text),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.image_not_supported,
+              color: Colors.grey.shade400, size: 48),
+          const SizedBox(height: 8),
+          Text(text,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 14,
+              )),
+        ],
+      ),
     );
   }
 
@@ -170,19 +280,46 @@ class AdminAddProductView extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate:
-          const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
       itemCount: c.selectedImages.length,
       itemBuilder: (_, i) {
         return Stack(
           children: [
-            Image.file(c.selectedImages[i], fit: BoxFit.cover),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.file(
+                c.selectedImages[i],
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey.shade200,
+                    child: Icon(Icons.image_not_supported,
+                        color: Colors.grey.shade400),
+                  );
+                },
+              ),
+            ),
             Positioned(
-              right: 0,
-              top: 0,
+              right: 4,
+              top: 4,
               child: GestureDetector(
                 onTap: () => c.selectedImages.removeAt(i),
-                child: const Icon(Icons.close, color: Colors.red),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade600,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
               ),
             )
           ],
@@ -195,23 +332,60 @@ class AdminAddProductView extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate:
-          const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
       itemCount: c.uploadedAssets.length,
       itemBuilder: (_, i) {
         final asset = c.uploadedAssets[i];
         return Stack(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(8),
               child: _loadImage(asset, c),
             ),
+            if (asset.isPrimary)
+              Positioned(
+                top: 4,
+                left: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade700,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'Primary',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
             Positioned(
-              right: 0,
-              bottom: 0,
+              right: 4,
+              bottom: 4,
               child: GestureDetector(
                 onTap: () => c.deleteImage(asset.id!),
-                child: const Icon(Icons.delete, color: Colors.red),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade600,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: const Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
               ),
             )
           ],
@@ -221,12 +395,85 @@ class AdminAddProductView extends StatelessWidget {
   }
 
   Widget _loadImage(ProductAsset asset, AdminAddProductController c) {
-    if (asset.base64File.startsWith("data:")) {
-      return Image.memory(
-        c.decodeBase64(asset.base64File),
-        fit: BoxFit.cover,
-      );  
+    try {
+      // Try URL first
+      if (asset.url != null && asset.url!.isNotEmpty) {
+        print('🖼️ Loading uploaded image from URL: ${asset.url}');
+        return Image.network(
+          'http://10.0.2.2:8000${asset.url}',
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) {
+              return child;
+            }
+            return Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            print('❌ URL load failed: $error, trying base64...');
+            return _loadBase64Image(asset, c);
+          },
+        );
+      }
+
+      // Fallback to base64
+      return _loadBase64Image(asset, c);
+    } catch (e) {
+      print('❌ Image load error: $e');
+      return Container(
+        color: Colors.grey.shade200,
+        child: Icon(Icons.image_not_supported, color: Colors.grey.shade400),
+      );
     }
-    return Image.network(asset.base64File, fit: BoxFit.cover);
+  }
+
+  Widget _loadBase64Image(ProductAsset asset, AdminAddProductController c) {
+    try {
+      if (asset.base64File == null || asset.base64File!.isEmpty) {
+        return Container(
+          color: Colors.grey.shade200,
+          child: Icon(Icons.image_not_supported, color: Colors.grey.shade400),
+        );
+      }
+
+      String base64String = asset.base64File!;
+
+      // Remove data URL prefix if present
+      if (base64String.startsWith('data:')) {
+        base64String = base64String.split(',').last;
+      }
+
+      // Clean whitespace
+      base64String = base64String.replaceAll('\n', '').replaceAll('\r', '');
+
+      print('🖼️ Loading base64 image (${base64String.length} chars)');
+
+      final bytes = base64Decode(base64String);
+      print('✅ Base64 decoded: ${bytes.length} bytes');
+
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('❌ Base64 decode error: $error');
+          return Container(
+            color: Colors.grey.shade200,
+            child: Icon(Icons.image_not_supported, color: Colors.grey.shade400),
+          );
+        },
+      );
+    } catch (e) {
+      print('❌ Base64 error: $e');
+      return Container(
+        color: Colors.grey.shade200,
+        child: Icon(Icons.image_not_supported, color: Colors.grey.shade400),
+      );
+    }
   }
 }
