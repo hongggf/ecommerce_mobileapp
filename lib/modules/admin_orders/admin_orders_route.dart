@@ -6,7 +6,7 @@ import 'package:get/get_navigation/src/routes/get_route.dart';
 final adminOrderRoute = [
   GetPage(
     name: AppRoutes.adminOrders,
-    page: () => AdminOrdersView(),
-    binding: AdminOrdersBinding(),
+    page: () => AdminOrderView(),
+    binding: AdminOrderBinding(),
   )
 ];

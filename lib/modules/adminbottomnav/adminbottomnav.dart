@@ -17,7 +17,7 @@ class Adminbottomnav extends StatelessWidget {
   final List<Widget> pages = [
     AdminScreen(),
     AdminProductsView(),
-    AdminOrdersView(),
+    AdminOrderView(),
     AdminUsersView(),
     AdminAnalyticsView(),
   ];
