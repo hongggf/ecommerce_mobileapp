@@ -6,7 +6,7 @@ import 'package:get/get_navigation/src/routes/get_route.dart';
 final adminUsersRoute = [
   GetPage(
     name: AppRoutes.adminUsers,
-    page: () => AdminUsersView(),
+    page: () =>AdminUsersView(),
     binding: AdminUsersBinding(),
   )
 ];

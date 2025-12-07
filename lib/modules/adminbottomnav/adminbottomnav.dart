@@ -1,10 +1,8 @@
 import 'package:ecommerce_urban/modules/admin_analystics/admin_analystics_view.dart';
 import 'package:ecommerce_urban/modules/admin_orders/admin_order_list_screen.dart';
-import 'package:ecommerce_urban/modules/admin_orders/admin_orders_view.dart';
 import 'package:ecommerce_urban/modules/admin_products/admin_products_view.dart';
 import 'package:ecommerce_urban/modules/admin_users.dart/admin_users_view.dart';
 import 'package:ecommerce_urban/modules/adminbottomnav/adminbottom_controller.dart';
-import 'package:ecommerce_urban/modules/bottom_nav/bottom_controller.dart';
 
 import 'package:ecommerce_urban/modules/dashboard/admin/admin_screen.dart';
 
