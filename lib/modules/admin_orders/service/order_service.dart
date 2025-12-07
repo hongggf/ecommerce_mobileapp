@@ -1,206 +1,5 @@
-// import 'dart:convert';
-// import 'package:ecommerce_urban/modules/admin_orders/model/order_items_model.dart';
-// import 'package:ecommerce_urban/modules/admin_orders/model/order_model.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:ecommerce_urban/app/constants/constants.dart';
-// import 'package:ecommerce_urban/app/services/storage_services.dart';
-
-// class OrderService {
-//   final StorageService storage = StorageService();
-
-//   Future<String?> getToken() async {
-//     return await storage.getToken();
-//   }
-
-//   Future<Map<String, String>> getHeaders() async {
-//     final token = await getToken();
-//     return {
-//       'Content-Type': 'application/json',
-//       'Accept': 'application/json',
-//       'Authorization': 'Bearer ${token ?? ''}',
-//     };
-//   }
-
-//   // Get all orders
-//   Future<List<Order>> getAllOrders() async {
-//     try {
-//       final headers = await getHeaders();
-//       final response = await http.get(
-//         Uri.parse('${ApiConstants.baseUrl}/orders'),
-//         headers: headers,
-//       ).timeout(const Duration(seconds: 10));
-
-//       print('📥 Response Status: ${response.statusCode}');
-//       print('📥 Response Body: ${response.body}');
-
-//       if (response.statusCode == 200) {
-//         final dynamic data = jsonDecode(response.body);
-        
-//         // Handle different response formats
-//         if (data is List) {
-//           // If response is directly a list
-//           return data.map((o) => Order.fromJson(o as Map<String, dynamic>)).toList();
-//         } else if (data is Map<String, dynamic> && data['data'] != null) {
-//           // If response has a 'data' key with list
-//           final List orders = data['data'] as List;
-//           return orders.map((o) => Order.fromJson(o as Map<String, dynamic>)).toList();
-//         } else if (data is Map<String, dynamic> && data['orders'] != null) {
-//           // If response has 'orders' key
-//           final List orders = data['orders'] as List;
-//           return orders.map((o) => Order.fromJson(o as Map<String, dynamic>)).toList();
-//         } else {
-//           print('❌ Unknown response format: $data');
-//           return [];
-//         }
-//       } else {
-//         print('❌ Status Code: ${response.statusCode}');
-//         throw Exception('Failed to load orders: ${response.statusCode}');
-//       }
-//     } catch (e) {
-//       print('❌ Error: $e');
-//       throw Exception('Error: $e');
-//     }
-//   }
-
-//   // Get single order
-//   Future<Order> getOrder(int orderId) async {
-//     try {
-//       final headers = await getHeaders();
-//       final response = await http.get(
-//         Uri.parse('${ApiConstants.baseUrl}/orders/$orderId'),
-//         headers: headers,
-//       ).timeout(const Duration(seconds: 10));
-
-//       print('📥 Response Status: ${response.statusCode}');
-//       print('📥 Response Body: ${response.body}');
-
-//       if (response.statusCode == 200) {
-//         final dynamic data = jsonDecode(response.body);
-        
-//         if (data is Map<String, dynamic> && data['data'] != null) {
-//           return Order.fromJson(data['data'] as Map<String, dynamic>);
-//         } else if (data is Map<String, dynamic>) {
-//           return Order.fromJson(data);
-//         } else {
-//           throw Exception('Invalid response format');
-//         }
-//       } else {
-//         throw Exception('Failed to load order');
-//       }
-//     } catch (e) {
-//       print('❌ Error: $e');
-//       throw Exception('Error: $e');
-//     }
-//   }
-
-//   // Get order items
-//   Future<List<OrderItem>> getOrderItems(int orderId) async {
-//     try {
-//       final headers = await getHeaders();
-//       final response = await http.get(
-//         Uri.parse('${ApiConstants.baseUrl}/orders/$orderId/items'),
-//         headers: headers,
-//       ).timeout(const Duration(seconds: 10));
-
-//       print('📥 Response Status: ${response.statusCode}');
-//       print('📥 Response Body: ${response.body}');
-
-//       if (response.statusCode == 200) {
-//         final dynamic data = jsonDecode(response.body);
-        
-//         if (data is List) {
-//           return data.map((i) => OrderItem.fromJson(i as Map<String, dynamic>)).toList();
-//         } else if (data is Map<String, dynamic> && data['data'] != null) {
-//           final List items = data['data'] as List;
-//           return items.map((i) => OrderItem.fromJson(i as Map<String, dynamic>)).toList();
-//         } else if (data is Map<String, dynamic> && data['items'] != null) {
-//           final List items = data['items'] as List;
-//           return items.map((i) => OrderItem.fromJson(i as Map<String, dynamic>)).toList();
-//         } else {
-//           return [];
-//         }
-//       } else {
-//         throw Exception('Failed to load items');
-//       }
-//     } catch (e) {
-//       print('❌ Error: $e');
-//       throw Exception('Error: $e');
-//     }
-//   }
-
-//   // Update order item quantity
-//   Future<OrderItem> updateItemQuantity(int itemId, int quantity) async {
-//     try {
-//       final headers = await getHeaders();
-//       final response = await http.put(
-//         Uri.parse('${ApiConstants.baseUrl}/order-items/$itemId'),
-//         headers: headers,
-//         body: jsonEncode({'quantity': quantity}),
-//       ).timeout(const Duration(seconds: 10));
-
-//       if (response.statusCode == 200) {
-//         final data = jsonDecode(response.body);
-//         return OrderItem.fromJson(data);
-//       } else {
-//         throw Exception('Failed to update quantity');
-//       }
-//     } catch (e) {
-//       throw Exception('Error: $e');
-//     }
-//   }
-
-//   // Delete order item
-//   Future<void> deleteItem(int itemId) async {
-//     try {
-//       final headers = await getHeaders();
-//       final response = await http.delete(
-//         Uri.parse('${ApiConstants.baseUrl}/order-items/$itemId'),
-//         headers: headers,
-//       ).timeout(const Duration(seconds: 10));
-
-//       if (response.statusCode != 200) {
-//         throw Exception('Failed to delete item');
-//       }
-//     } catch (e) {
-//       throw Exception('Error: $e');
-//     }
-//   }
-
-//   // Create order item
-//   Future<OrderItem> createItem({
-//     required int orderId,
-//     required int productId,
-//     required int variantId,
-//     required int quantity,
-//     required double unitPrice,
-//   }) async {
-//     try {
-//       final headers = await getHeaders();
-//       final response = await http.post(
-//         Uri.parse('${ApiConstants.baseUrl}/order-items'),
-//         headers: headers,
-//         body: jsonEncode({
-//           'order_id': orderId,
-//           'product_id': productId,
-//           'variant_id': variantId,
-//           'quantity': quantity,
-//           'unit_price': unitPrice,
-//         }),
-//       ).timeout(const Duration(seconds: 10));
-
-//       if (response.statusCode == 201 || response.statusCode == 200) {
-//         final data = jsonDecode(response.body);
-//         return OrderItem.fromJson(data);
-//       } else {
-//         throw Exception('Failed to create item');
-//       }
-//     } catch (e) {
-//       throw Exception('Error: $e');
-//     }
-//   }
-// }import 'dart:convert';
 import 'dart:convert';
-
+import 'package:ecommerce_urban/modules/admin_orders/model/create_order_request_model.dart';
 import 'package:ecommerce_urban/modules/admin_orders/model/order_items_model.dart';
 import 'package:ecommerce_urban/modules/admin_orders/model/order_model.dart';
 import 'package:http/http.dart' as http;
@@ -208,14 +7,11 @@ import 'package:ecommerce_urban/app/constants/constants.dart';
 import 'package:ecommerce_urban/app/services/storage_services.dart';
 
 class OrderService {
-  final StorageService storage = StorageService();
+  final String _baseUrl = ApiConstants.baseUrl;
+  final StorageService _storage = StorageService();
 
-  Future<String?> getToken() async {
-    return await storage.getToken();
-  }
-
-  Future<Map<String, String>> getHeaders() async {
-    final token = await getToken();
+  Future<Map<String, String>> get _headers async {
+    final token = await _storage.getToken();
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -223,181 +19,260 @@ class OrderService {
     };
   }
 
-  // Get all orders
-  Future<List<Order>> getAllOrders() async {
+  // Fetch all orders
+  Future<List<OrderModel>> fetchOrders() async {
     try {
-      final headers = await getHeaders();
+      final headers = await _headers;
+      print('📡 Fetching orders from: $_baseUrl/orders');
+      print('🔑 Headers: $headers');
+      
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/orders'),
+        Uri.parse('$_baseUrl/orders'),
         headers: headers,
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
       print('📥 Response Status: ${response.statusCode}');
       print('📥 Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final dynamic data = jsonDecode(response.body);
-        
-        if (data is List) {
-          return data.map((o) => Order.fromJson(o as Map<String, dynamic>)).toList();
-        } else if (data is Map<String, dynamic> && data['data'] != null) {
-          final List orders = data['data'] as List;
-          return orders.map((o) => Order.fromJson(o as Map<String, dynamic>)).toList();
-        } else if (data is Map<String, dynamic> && data['orders'] != null) {
-          final List orders = data['orders'] as List;
-          return orders.map((o) => Order.fromJson(o as Map<String, dynamic>)).toList();
-        } else {
-          print('❌ Unknown response format: $data');
-          return [];
-        }
+        final List<dynamic> jsonData = json.decode(response.body);
+        print('✅ Orders loaded: ${jsonData.length}');
+        return jsonData.map((json) => OrderModel.fromJson(json)).toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized. Please login again.');
       } else {
-        print('❌ Status Code: ${response.statusCode}');
         throw Exception('Failed to load orders: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error: $e');
-      throw Exception('Error: $e');
+      print('❌ Error fetching orders: $e');
+      throw Exception('Network error: $e');
     }
   }
 
-  // Get single order
-  Future<Order> getOrder(int orderId) async {
+  // Fetch single order details
+  Future<OrderModel?> fetchOrderDetails(int orderId) async {
     try {
-      final headers = await getHeaders();
+      final headers = await _headers;
+      print('📡 Fetching order details: $_baseUrl/orders/$orderId');
+      
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/orders/$orderId'),
+        Uri.parse('$_baseUrl/orders/$orderId'),
         headers: headers,
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
       print('📥 Response Status: ${response.statusCode}');
       print('📥 Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final dynamic data = jsonDecode(response.body);
-        
-        if (data is Map<String, dynamic> && data['data'] != null) {
-          return Order.fromJson(data['data'] as Map<String, dynamic>);
-        } else if (data is Map<String, dynamic>) {
-          return Order.fromJson(data);
-        } else {
-          throw Exception('Invalid response format');
-        }
+        final jsonData = json.decode(response.body);
+        print('✅ Order details loaded');
+        return OrderModel.fromJson(jsonData);
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized. Please login again.');
       } else {
-        throw Exception('Failed to load order');
+        throw Exception('Failed to load order details: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error: $e');
-      throw Exception('Error: $e');
+      print('❌ Error fetching order details: $e');
+      throw Exception('Network error: $e');
     }
   }
 
-  // Get order items
-  Future<List<OrderItem>> getOrderItems(int orderId) async {
+  // Create new order
+  Future<OrderModel?> createOrder(CreateOrderRequest request) async {
     try {
-      final headers = await getHeaders();
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/orders/$orderId/items'),
+      final headers = await _headers;
+      final body = json.encode(request.toJson());
+      
+      print('📡 Creating order: $_baseUrl/orders');
+      print('📦 Request Body: $body');
+      
+      final response = await http.post(
+        Uri.parse('$_baseUrl/orders'),
         headers: headers,
-      ).timeout(const Duration(seconds: 10));
+        body: body,
+      ).timeout(const Duration(seconds: 15));
 
       print('📥 Response Status: ${response.statusCode}');
       print('📥 Response Body: ${response.body}');
 
-      if (response.statusCode == 200) {
-        final dynamic data = jsonDecode(response.body);
-        
-        if (data is List) {
-          return data.map((i) => OrderItem.fromJson(i as Map<String, dynamic>)).toList();
-        } else if (data is Map<String, dynamic> && data['data'] != null) {
-          final List items = data['data'] as List;
-          return items.map((i) => OrderItem.fromJson(i as Map<String, dynamic>)).toList();
-        } else if (data is Map<String, dynamic> && data['items'] != null) {
-          final List items = data['items'] as List;
-          return items.map((i) => OrderItem.fromJson(i as Map<String, dynamic>)).toList();
-        } else {
-          return [];
-        }
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonData = json.decode(response.body);
+        print('✅ Order created');
+        return OrderModel.fromJson(jsonData);
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized. Please login again.');
       } else {
-        throw Exception('Failed to load items');
+        throw Exception('Failed to create order: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error: $e');
-      throw Exception('Error: $e');
+      print('❌ Error creating order: $e');
+      throw Exception('Network error: $e');
     }
   }
 
-  // Update order item quantity
-  Future<OrderItem> updateItemQuantity(int itemId, int quantity) async {
+  // Update order status - FIXED (Using POST instead of PUT)
+  Future<bool> updateOrderStatus(int orderId, String newStatus) async {
     try {
-      final headers = await getHeaders();
-      final response = await http.put(
-        Uri.parse('${ApiConstants.baseUrl}/order-items/$itemId'),
+      final headers = await _headers;
+      final body = json.encode({'status': newStatus});
+      final url = '$_baseUrl/orders/$orderId/status';
+      
+      print('═' * 60);
+      print('🔄 UPDATING ORDER STATUS');
+      print('📡 URL: $url');
+      print('📦 Payload: $body');
+      print('🔑 Token: ${headers['Authorization']}');
+      print('═' * 60);
+      
+      // Try POST first (more common in Laravel)
+      var response = await http.post(
+        Uri.parse(url),
         headers: headers,
-        body: jsonEncode({'quantity': quantity}),
-      ).timeout(const Duration(seconds: 10));
+        body: body,
+      ).timeout(const Duration(seconds: 15));
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return OrderItem.fromJson(data);
+      print('📥 Response Status: ${response.statusCode}');
+      print('📥 Response Headers: ${response.headers}');
+      print('📥 Response Body: ${response.body}');
+
+      if (response.statusCode == 401) {
+        print('❌ Unauthorized - token invalid or expired');
+        throw Exception('Unauthorized. Please login again.');
+      }
+
+      // If POST doesn't work, try PATCH
+      if (response.statusCode == 405) {
+        print('⚠️ POST not supported, trying PATCH...');
+        response = await http.patch(
+          Uri.parse('$_baseUrl/orders/$orderId'),
+          headers: headers,
+          body: body,
+        ).timeout(const Duration(seconds: 15));
+        
+        print('📥 PATCH Response Status: ${response.statusCode}');
+        print('📥 PATCH Response Body: ${response.body}');
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Order status updated successfully to: $newStatus');
+        return true;
       } else {
-        throw Exception('Failed to update quantity');
+        print('❌ Server error: ${response.statusCode}');
+        print('❌ Response: ${response.body}');
+        throw Exception('Failed to update status: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      throw Exception('Error: $e');
+      print('❌ Exception during status update: $e');
+      throw Exception('Network error: $e');
     }
   }
 
-  // Delete order item
-  Future<void> deleteItem(int itemId) async {
+  // Delete order
+  Future<bool> deleteOrder(int orderId) async {
     try {
-      final headers = await getHeaders();
+      final headers = await _headers;
+      print('📡 Deleting order: $_baseUrl/orders/$orderId');
+      
       final response = await http.delete(
-        Uri.parse('${ApiConstants.baseUrl}/order-items/$itemId'),
+        Uri.parse('$_baseUrl/orders/$orderId'),
         headers: headers,
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
-      if (response.statusCode != 200) {
-        throw Exception('Failed to delete item');
+      print('📥 Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 401) {
+        throw Exception('Unauthorized. Please login again.');
       }
+
+      return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
-      throw Exception('Error: $e');
+      print('❌ Error deleting order: $e');
+      throw Exception('Network error: $e');
     }
   }
 
   // Create order item
-  Future<OrderItem> createItem({
-    required int orderId,
-    required int productId,
-    required int variantId,
-    required int quantity,
-    required double unitPrice,
-    Map<String, dynamic>? taxes,
-    Map<String, dynamic>? discounts,
-  }) async {
+  Future<OrderItem?> createOrderItem(OrderItem item) async {
     try {
-      final headers = await getHeaders();
+      final headers = await _headers;
+      final body = json.encode(item.toJson());
+      
+      print('📡 Creating order item: $_baseUrl/order-items');
+      print('📦 Request Body: $body');
+      
       final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/order-items'),
+        Uri.parse('$_baseUrl/order-items'),
         headers: headers,
-        body: jsonEncode({
-          'order_id': orderId,
-          'product_id': productId,
-          'variant_id': variantId,
-          'quantity': quantity,
-          'unit_price': unitPrice,
-          if (taxes != null) 'taxes': taxes,
-          if (discounts != null) 'discounts': discounts,
-        }),
-      ).timeout(const Duration(seconds: 10));
+        body: body,
+      ).timeout(const Duration(seconds: 15));
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return OrderItem.fromJson(data);
+      print('📥 Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonData = json.decode(response.body);
+        print('✅ Order item created');
+        return OrderItem.fromJson(jsonData);
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized. Please login again.');
       } else {
-        throw Exception('Failed to create item');
+        throw Exception('Failed to create order item: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error: $e');
+      print('❌ Error creating order item: $e');
+      throw Exception('Network error: $e');
+    }
+  }
+
+  // Update order item
+  Future<bool> updateOrderItem(OrderItem item) async {
+    try {
+      final headers = await _headers;
+      final body = json.encode(item.toJson());
+      
+      print('📡 Updating order item: $_baseUrl/order-items/${item.id}');
+      print('📦 Request Body: $body');
+      
+      final response = await http.put(
+        Uri.parse('$_baseUrl/order-items/${item.id}'),
+        headers: headers,
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+
+      print('📥 Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 401) {
+        throw Exception('Unauthorized. Please login again.');
+      }
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('❌ Error updating order item: $e');
+      throw Exception('Network error: $e');
+    }
+  }
+
+  // Delete order item
+  Future<bool> deleteOrderItem(int itemId) async {
+    try {
+      final headers = await _headers;
+      print('📡 Deleting order item: $_baseUrl/order-items/$itemId');
+      
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/order-items/$itemId'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 15));
+
+      print('📥 Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 401) {
+        throw Exception('Unauthorized. Please login again.');
+      }
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('❌ Error deleting order item: $e');
+      throw Exception('Network error: $e');
     }
   }
 }

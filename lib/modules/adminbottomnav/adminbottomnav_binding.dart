@@ -16,7 +16,7 @@ class AdminbottomnavBinding extends Bindings {
     Get.lazyPut<AdminProductsController>(() => AdminProductsController());
 
     Get.lazyPut<AdminAnalyticsController>(() => AdminAnalyticsController());
-    Get.lazyPut<AdminOrderController>(() => AdminOrderController());
+    Get.lazyPut<AdminOrdersController>(() =>AdminOrdersController());
     Get.lazyPut<AdminUsersController>(() => AdminUsersController());
 
     //Get.lazyPut(()=> BottomNavController());

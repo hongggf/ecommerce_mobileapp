@@ -1,107 +1,32 @@
-// import 'package:ecommerce_urban/modules/admin_orders/model/user_model.dart';
+import 'package:ecommerce_urban/modules/admin_orders/model/address_snapshot_model.dart';
+import 'package:ecommerce_urban/modules/admin_orders/model/order_items_model.dart';
 
-// class Order {
-//   final int id;
-//   final String orderNumber;
-//   final int userId;
-//   final String status;
-//   final String financialStatus;
-//   final Map<String, dynamic>? shippingAddressSnapshot;
-//   final Map<String, dynamic>? billingAddressSnapshot;
-//   final double subtotal;
-//   final double discountTotal;
-//   final double taxTotal;
-//   final double shippingTotal;
-//   final double grandTotal;
-//   final String? notes;
-//   final String createdAt;
-//   final String updatedAt;
-//   final User? user;
-
-//   Order({
-//     required this.id,
-//     required this.orderNumber,
-//     required this.userId,
-//     required this.status,
-//     required this.financialStatus,
-//     this.shippingAddressSnapshot,
-//     this.billingAddressSnapshot,
-//     required this.subtotal,
-//     required this.discountTotal,
-//     required this.taxTotal,
-//     required this.shippingTotal,
-//     required this.grandTotal,
-//     this.notes,
-//     required this.createdAt,
-//     required this.updatedAt,
-//     this.user,
-//   });
-
-//   factory Order.fromJson(Map<String, dynamic> json) {
-//     return Order(
-//       id: _toInt(json['id']),
-//       orderNumber: json['order_number']?.toString() ?? '',
-//       userId: _toInt(json['user_id']),
-//       status: json['status']?.toString() ?? 'pending',
-//       financialStatus: json['financial_status']?.toString() ?? 'pending',
-//       shippingAddressSnapshot: json['shipping_address_snapshot'],
-//       billingAddressSnapshot: json['billing_address_snapshot'],
-//       subtotal: _toDouble(json['subtotal']),
-//       discountTotal: _toDouble(json['discount_total']),
-//       taxTotal: _toDouble(json['tax_total']),
-//       shippingTotal: _toDouble(json['shipping_total']),
-//       grandTotal: _toDouble(json['grand_total']),
-//       notes: json['notes']?.toString(),
-//       createdAt: json['created_at']?.toString() ?? '',
-//       updatedAt: json['updated_at']?.toString() ?? '',
-//       user: json['user'] != null ? User.fromJson(json['user']) : null,
-//     );
-//   }
-
-//   static int _toInt(dynamic value) {
-//     if (value == null) return 0;
-//     if (value is int) return value;
-//     if (value is String) return int.tryParse(value) ?? 0;
-//     if (value is double) return value.toInt();
-//     return 0;
-//   }
-
-//   static double _toDouble(dynamic value) {
-//     if (value == null) return 0.0;
-//     if (value is double) return value;
-//     if (value is int) return value.toDouble();
-//     if (value is String) return double.tryParse(value) ?? 0.0;
-//     return 0.0;
-//   }
-// }
-import 'package:ecommerce_urban/modules/admin_orders/model/user_model.dart';
-
-class Order {
-  final int id;
+class OrderModel {
+  final int? id;
   final String orderNumber;
   final String userId;
   final String status;
   final String financialStatus;
-  final Map<String, dynamic>? shippingAddressSnapshot;
-  final Map<String, dynamic>? billingAddressSnapshot;
-  final double subtotal;
-  final double discountTotal;
-  final double taxTotal;
-  final double shippingTotal;
-  final double grandTotal;
+  final AddressSnapshot shippingAddressSnapshot;
+  final AddressSnapshot billingAddressSnapshot;
+  final String subtotal;
+  final String discountTotal;
+  final String taxTotal;
+  final String shippingTotal;
+  final String grandTotal;
   final String? notes;
-  final String createdAt;
-  final String updatedAt;
-  final User? user;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final List<OrderItem> items;
 
-  Order({
-    required this.id,
+  OrderModel({
+    this.id,
     required this.orderNumber,
     required this.userId,
     required this.status,
     required this.financialStatus,
-    this.shippingAddressSnapshot,
-    this.billingAddressSnapshot,
+    required this.shippingAddressSnapshot,
+    required this.billingAddressSnapshot,
     required this.subtotal,
     required this.discountTotal,
     required this.taxTotal,
@@ -110,43 +35,102 @@ class Order {
     this.notes,
     required this.createdAt,
     required this.updatedAt,
-    this.user,
+    required this.items,
   });
 
-  factory Order.fromJson(Map<String, dynamic> json) {
-    return Order(
-      id: _toInt(json['id']),
+  /// SAFELY PARSE DATE
+  static DateTime _parseDate(dynamic value) {
+    if (value == null) return DateTime.now();
+    try {
+      return DateTime.parse(value.toString());
+    } catch (_) {
+      return DateTime.now();
+    }
+  }
+
+  factory OrderModel.fromJson(Map<String, dynamic> json) {
+    return OrderModel(
+      id: json['id'],
       orderNumber: json['order_number']?.toString() ?? '',
       userId: json['user_id']?.toString() ?? '',
       status: json['status']?.toString() ?? 'pending',
       financialStatus: json['financial_status']?.toString() ?? 'pending',
-      shippingAddressSnapshot: json['shipping_address_snapshot'],
-      billingAddressSnapshot: json['billing_address_snapshot'],
-      subtotal: _toDouble(json['subtotal']),
-      discountTotal: _toDouble(json['discount_total']),
-      taxTotal: _toDouble(json['tax_total']),
-      shippingTotal: _toDouble(json['shipping_total']),
-      grandTotal: _toDouble(json['grand_total']),
+
+      shippingAddressSnapshot:
+          AddressSnapshot.fromJson(json['shipping_address_snapshot'] ?? {}),
+
+      billingAddressSnapshot:
+          AddressSnapshot.fromJson(json['billing_address_snapshot'] ?? {}),
+
+      subtotal: json['subtotal']?.toString() ?? '0',
+      discountTotal: json['discount_total']?.toString() ?? '0',
+      taxTotal: json['tax_total']?.toString() ?? '0',
+      shippingTotal: json['shipping_total']?.toString() ?? '0',
+      grandTotal: json['grand_total']?.toString() ?? '0',
+
       notes: json['notes']?.toString(),
-      createdAt: json['created_at']?.toString() ?? '',
-      updatedAt: json['updated_at']?.toString() ?? '',
-      user: json['user'] != null ? User.fromJson(json['user']) : null,
+
+      createdAt: _parseDate(json['created_at']),
+      updatedAt: _parseDate(json['updated_at']),
+
+      items: (json['items'] as List<dynamic>? ?? [])
+          .map((item) => OrderItem.fromJson(item))
+          .toList(),
     );
   }
 
-  static int _toInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is String) return int.tryParse(value) ?? 0;
-    if (value is double) return value.toInt();
-    return 0;
+  Map<String, dynamic> toJson() {
+    return {
+      if (id != null) 'id': id,
+      'order_number': orderNumber,
+      'user_id': userId,
+      'status': status,
+      'financial_status': financialStatus,
+      'shipping_address_snapshot': shippingAddressSnapshot.toJson(),
+      'billing_address_snapshot': billingAddressSnapshot.toJson(),
+      'subtotal': subtotal,
+      'discount_total': discountTotal,
+      'tax_total': taxTotal,
+      'shipping_total': shippingTotal,
+      'grand_total': grandTotal,
+      if (notes != null) 'notes': notes,
+    };
   }
 
-  static double _toDouble(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0.0;
-    return 0.0;
+  /// Convert numeric string → double
+  double get subtotalDouble => double.tryParse(subtotal) ?? 0.0;
+  double get discountDouble => double.tryParse(discountTotal) ?? 0.0;
+  double get taxDouble => double.tryParse(taxTotal) ?? 0.0;
+  double get shippingDouble => double.tryParse(shippingTotal) ?? 0.0;
+  double get grandTotalDouble => double.tryParse(grandTotal) ?? 0.0;
+
+  /// -----------------------------------------
+  ///             COPY WITH SUPPORT
+  /// -----------------------------------------
+  OrderModel copyWith({
+    String? status,
+    String? financialStatus,
+    String? notes,
+    DateTime? updatedAt,
+    List<OrderItem>? items,
+  }) {
+    return OrderModel(
+      id: id,
+      orderNumber: orderNumber,
+      userId: userId,
+      status: status ?? this.status,
+      financialStatus: financialStatus ?? this.financialStatus,
+      shippingAddressSnapshot: shippingAddressSnapshot,
+      billingAddressSnapshot: billingAddressSnapshot,
+      subtotal: subtotal,
+      discountTotal: discountTotal,
+      taxTotal: taxTotal,
+      shippingTotal: shippingTotal,
+      grandTotal: grandTotal,
+      notes: notes ?? this.notes,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      items: items ?? this.items,
+    );
   }
 }

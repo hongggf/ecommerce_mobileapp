@@ -1,4 +1,5 @@
 import 'package:ecommerce_urban/modules/admin_analystics/admin_analystics_view.dart';
+import 'package:ecommerce_urban/modules/admin_orders/admin_order_list_screen.dart';
 import 'package:ecommerce_urban/modules/admin_orders/admin_orders_view.dart';
 import 'package:ecommerce_urban/modules/admin_products/admin_products_view.dart';
 import 'package:ecommerce_urban/modules/admin_users.dart/admin_users_view.dart';
@@ -17,7 +18,7 @@ class Adminbottomnav extends StatelessWidget {
   final List<Widget> pages = [
     AdminScreen(),
     AdminProductsView(),
-    AdminOrderView(),
+    AdminOrderListScreen(),
     AdminUsersView(),
     AdminAnalyticsView(),
   ];
