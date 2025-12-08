@@ -46,20 +46,31 @@ class AdminUsersController extends GetxController {
   // ==================== USER MANAGEMENT ====================
 
   Future<void> loadUsers() async {
-    try {
-      isLoadingUsers.value = true;
-      final users = await _userService.fetchUsers();
-      allUsers.assignAll(users);
-      applyUserFilters();
-      print('✅ Users loaded successfully');
-    } catch (e) {
-      print('❌ Error loading users: $e');
-      Get.snackbar('Error', 'Failed to load users: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingUsers.value = false;
+  try {
+    isLoadingUsers.value = true;
+    print('🔄 Loading users with roles...');
+    
+    // Use the new method that fetches roles
+    final users = await _userService.fetchUsersWithRoles();
+    
+    // DEBUG: Print all users and their roles
+    for (var user in users) {
+      print('👤 User: ${user.name} (${user.email})');
+      print('   📋 Roles: ${user.roles}');
+      print('   Count: ${user.roles?.length ?? 0}');
     }
+    
+    allUsers.assignAll(users);
+    applyUserFilters();
+    print('✅ Users loaded successfully with roles');
+  } catch (e) {
+    print('❌ Error loading users: $e');
+    Get.snackbar('Error', 'Failed to load users: $e',
+        snackPosition: SnackPosition.BOTTOM);
+  } finally {
+    isLoadingUsers.value = false;
   }
+}
 
   Future<void> createUser(Map<String, dynamic> userData) async {
     try {
@@ -312,81 +323,82 @@ class AdminUsersController extends GetxController {
     }
   }
 
-  Future<void> assignRoleToUser(String userId, String roleId) async {
-    try {
-      isLoadingUserRoles.value = true;
-      final success = await _userService.assignRole(userId, roleId);
-      if (success) {
-        // Reload user data to get updated roles
-        final updatedUser = await _userService.fetchUserById(userId);
-        if (updatedUser != null) {
-          final index = allUsers.indexWhere((u) => u.id == userId);
-          if (index != -1) {
-            allUsers[index] = updatedUser;
-            allUsers.refresh();
-            applyUserFilters();
-            print('✅ User roles updated: ${updatedUser.roles}');
-          }
-        }
-        Get.snackbar(
-          'Success',
-          'Role assigned successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2),
-          backgroundColor: Colors.green,
-        );
-        print('✅ Role assigned');
-      }
-    } catch (e) {
-      print('❌ Error assigning role: $e');
+ Future<void> assignRoleToUser(String userId, String roleId) async {
+  try {
+    isLoadingUserRoles.value = true;
+    final success = await _userService.assignRole(userId, roleId);
+    if (success) {
+      print('✅ Role assigned, reloading user data...');
+      // Reload ALL users to ensure assignment tab shows updated data
+      await loadUsers();
+      
       Get.snackbar(
-        'Error',
-        'Failed to assign role: $e',
+        'Success',
+        'Role assigned successfully',
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 2),
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
       );
-    } finally {
-      isLoadingUserRoles.value = false;
+      
+      // Close dialog only if it's still open
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (Get.isDialogOpen ?? false) {
+          Get.back();
+        }
+      });
+      
+      print('✅ Role assigned and users reloaded');
     }
+  } catch (e) {
+    print('❌ Error assigning role: $e');
+    Get.snackbar(
+      'Error',
+      'Failed to assign role: $e',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  } finally {
+    isLoadingUserRoles.value = false;
   }
+}
 
-  Future<void> removeRoleFromUser(String userId, String roleId) async {
-    try {
-      isLoadingUserRoles.value = true;
-      final success = await _userService.removeRole(userId, roleId);
-      if (success) {
-        // Reload user data to get updated roles
-        final updatedUser = await _userService.fetchUserById(userId);
-        if (updatedUser != null) {
-          final index = allUsers.indexWhere((u) => u.id == userId);
-          if (index != -1) {
-            allUsers[index] = updatedUser;
-            allUsers.refresh();
-            applyUserFilters();
-            print('✅ User roles updated: ${updatedUser.roles}');
-          }
-        }
-        Get.snackbar(
-          'Success',
-          'Role removed successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2),
-          backgroundColor: Colors.green,
-        );
-        print('✅ Role removed');
-      }
-    } catch (e) {
-      print('❌ Error removing role: $e');
+Future<void> removeRoleFromUser(String userId, String roleId) async {
+  try {
+    isLoadingUserRoles.value = true;
+    final success = await _userService.removeRole(userId, roleId);
+    if (success) {
+      print('✅ Role removed, reloading user data...');
+      // Reload ALL users to ensure assignment tab shows updated data
+      await loadUsers();
+      
       Get.snackbar(
-        'Error',
-        'Failed to remove role: $e',
+        'Success',
+        'Role removed successfully',
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 2),
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
       );
-    } finally {
-      isLoadingUserRoles.value = false;
+      
+      print('✅ Role removed and users reloaded');
     }
+  } catch (e) {
+    print('❌ Error removing role: $e');
+    Get.snackbar(
+      'Error',
+      'Failed to remove role: $e',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  } finally {
+    isLoadingUserRoles.value = false;
   }
+}
 
   @override
   void onClose() {

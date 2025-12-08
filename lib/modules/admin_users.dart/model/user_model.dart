@@ -22,22 +22,36 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Handle roles - support both formats
+    List<String>? rolesList;
+    
+    if (json['roles'] != null && json['roles'] is List) {
+      rolesList = [];
+      for (var role in json['roles']) {
+        if (role is String) {
+          // Format: ["Admin", "Manager"]
+          rolesList.add(role);
+        } else if (role is Map<String, dynamic> && role.containsKey('name')) {
+          // Format: [{"id": "1", "name": "Admin"}, ...]
+          rolesList.add(role['name'] ?? '');
+        }
+      }
+    }
+
     return UserModel(
       id: json['id']?.toString() ?? '',
-      name: json['name'] ?? '',
+      name: json['name'] ?? json['full_name'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'],
       avatar: json['avatar'],
-      status: json['status'] ?? 'Active',
+      status: json['status'] ?? 'active',
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'])
           : null,
-      roles: json['roles'] != null
-          ? List<String>.from(json['roles'].map((r) => r['name']))
-          : [],
+      roles: rolesList ?? [],
     );
   }
 

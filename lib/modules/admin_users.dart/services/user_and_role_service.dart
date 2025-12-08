@@ -20,32 +20,69 @@ class UserService {
 
   // ==================== USER CRUD ====================
 
-  Future<List<UserModel>> fetchUsers() async {
-    try {
-      final headers = await _headers;
-      print('📡 Fetching users from: $_baseUrl/users');
+ Future<List<UserModel>> fetchUsers() async {
+  try {
+    final headers = await _headers;
+    print('📡 Fetching users from: $_baseUrl/users');
 
-      final response = await http.get(
-        Uri.parse('$_baseUrl/users'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 15));
+    final response = await http.get(
+      Uri.parse('$_baseUrl/users'),
+      headers: headers,
+    ).timeout(const Duration(seconds: 15));
 
-      print('📥 Response Status: ${response.statusCode}');
+    print('📥 Response Status: ${response.statusCode}');
 
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        print('✅ Users loaded: ${jsonData.length}');
-        return jsonData.map((json) => UserModel.fromJson(json)).toList();
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized');
-      } else {
-        throw Exception('Failed to load users: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = json.decode(response.body);
+      print('✅ Users loaded: ${jsonData.length}');
+      
+      // Create list to store users with their roles
+      final List<UserModel> usersWithRoles = [];
+      
+      // Fetch roles for each user
+      for (var userData in jsonData) {
+        final user = UserModel.fromJson(userData);
+        print('📥 Fetching roles for: ${user.name}');
+        
+        try {
+          // Fetch roles for this specific user
+          final userRoles = await listUserRoles(user.id);
+          final roleNames = userRoles.map((r) => r.name).toList();
+          
+          print('✅ ${user.name} has roles: $roleNames');
+          
+          // Create user with roles
+          final userWithRoles = UserModel(
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            avatar: user.avatar,
+            status: user.status,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            roles: roleNames.isNotEmpty ? roleNames : [],
+          );
+          
+          usersWithRoles.add(userWithRoles);
+        } catch (e) {
+          print('⚠️ Could not fetch roles for ${user.name}: $e');
+          // Add user without roles if role fetch fails
+          usersWithRoles.add(user);
+        }
       }
-    } catch (e) {
-      print('❌ Error fetching users: $e');
-      throw Exception('Network error: $e');
+      
+      return usersWithRoles;
+    } else if (response.statusCode == 401) {
+      throw Exception('Unauthorized');
+    } else {
+      throw Exception('Failed to load users: ${response.statusCode}');
     }
+  } catch (e) {
+    print('❌ Error fetching users: $e');
+    throw Exception('Network error: $e');
   }
+}
 
   Future<UserModel?> fetchUserById(String userId) async {
     try {
@@ -207,7 +244,70 @@ class UserService {
       throw Exception('Network error: $e');
     }
   }
+Future<List<UserModel>> fetchUsersWithRoles() async {
+  try {
+    final headers = await _headers;
+    print('📡 Fetching users from: $_baseUrl/users');
 
+    final response = await http.get(
+      Uri.parse('$_baseUrl/users'),
+      headers: headers,
+    ).timeout(const Duration(seconds: 15));
+
+    print('📥 Response Status: ${response.statusCode}');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = json.decode(response.body);
+      print('✅ Users loaded: ${jsonData.length}');
+      
+      // Convert to UserModel first
+      final users = jsonData
+          .map((json) => UserModel.fromJson(json))
+          .toList();
+      
+      // Fetch all roles in parallel for better performance
+      final futures = users.map((user) async {
+        try {
+          final userRoles = await listUserRoles(user.id);
+          final roleNames = userRoles.map((r) => r.name).toList();
+          
+          // Return user with roles
+          return UserModel(
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            avatar: user.avatar,
+            status: user.status,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            roles: roleNames.isNotEmpty ? roleNames : [],
+          );
+        } catch (e) {
+          print('⚠️ Could not fetch roles for ${user.name}: $e');
+          return user; // Return without roles if fetch fails
+        }
+      });
+      
+      // Wait for all role fetches to complete
+      final usersWithRoles = await Future.wait(futures);
+      
+      // Print results
+      for (var user in usersWithRoles) {
+        print('👤 ${user.name}: ${user.roles}');
+      }
+      
+      return usersWithRoles;
+    } else if (response.statusCode == 401) {
+      throw Exception('Unauthorized');
+    } else {
+      throw Exception('Failed to load users: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('❌ Error fetching users: $e');
+    throw Exception('Network error: $e');
+  }
+}
   Future<RoleModel?> createRole(Map<String, dynamic> roleData) async {
     try {
       final headers = await _headers;

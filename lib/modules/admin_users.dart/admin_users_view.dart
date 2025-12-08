@@ -807,21 +807,23 @@ class AdminUsersView extends GetView<AdminUsersController> {
 
   // ==================== ASSIGNMENT TAB ====================
   Widget _buildAssignmentTab() {
-    return Obx(() {
-      if (controller.allUsers.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.people, size: 64, color: Colors.grey[300]),
-              const SizedBox(height: 16),
-              const Text('No users available'),
-            ],
-          ),
-        );
-      }
+  return Obx(() {
+    if (controller.allUsers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people, size: 64, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            const Text('No users available'),
+          ],
+        ),
+      );
+    }
 
-      return ListView.builder(
+    return RefreshIndicator(
+      onRefresh: controller.loadUsers,
+      child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: controller.allUsers.length,
         itemBuilder: (context, index) {
@@ -837,6 +839,7 @@ class AdminUsersView extends GetView<AdminUsersController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // User Info Header
                   Row(
                     children: [
                       CircleAvatar(
@@ -877,6 +880,8 @@ class AdminUsersView extends GetView<AdminUsersController> {
                     ],
                   ),
                   const SizedBox(height: 12),
+                  
+                  // Current Roles Section
                   const Text(
                     'Current Roles:',
                     style: TextStyle(
@@ -885,19 +890,53 @@ class AdminUsersView extends GetView<AdminUsersController> {
                     ),
                   ),
                   const SizedBox(height: 8),
+                  
+                  // Display Roles with Remove Buttons
                   if (user.roles != null && user.roles!.isNotEmpty)
                     Wrap(
                       spacing: 8,
+                      runSpacing: 8,
                       children: user.roles!
-                          .map((role) => _buildBadge(role, Colors.blue))
+                          .map((roleName) => Chip(
+                            label: Text(
+                              roleName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            backgroundColor: Colors.purple,
+                            deleteIcon: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                            onDeleted: () => _removeRoleFromUserDirect(user, roleName),
+                            side: BorderSide.none,
+                          ))
                           .toList(),
                     )
                   else
-                    Text(
-                      'No roles assigned',
-                      style: TextStyle(color: Colors.grey[600]),
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'No roles assigned',
+                        style: TextStyle(
+                          color: Colors.orange[700],
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
+                  
                   const SizedBox(height: 12),
+                  
+                  // Assign Role Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -907,6 +946,9 @@ class AdminUsersView extends GetView<AdminUsersController> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
                         foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
@@ -915,157 +957,191 @@ class AdminUsersView extends GetView<AdminUsersController> {
             ),
           );
         },
-      );
-    });
+      ),
+    );
+  });
+}
+void _removeRoleFromUserDirect(UserModel user, String roleName) {
+  // Find the role ID by role name
+  final role = controller.allRoles.firstWhere(
+    (r) => r.name == roleName,
+    orElse: () => RoleModel(
+      id: '',
+      name: roleName,
+      description: null,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    ),
+  );
+
+  if (role.id.isEmpty) {
+    Get.snackbar(
+      'Error',
+      'Role not found',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+    );
+    return;
   }
 
+  // Show confirmation dialog
+  Get.dialog(
+    AlertDialog(
+      title: const Text('Remove Role'),
+      content: Text('Remove "$roleName" from ${user.name}?'),
+      actions: [
+        TextButton(
+          onPressed: () => Get.back(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            controller.removeRoleFromUser(user.id, role.id);
+            Get.back();
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text('Remove'),
+        ),
+      ],
+    ),
+  );
+}
   void _showAssignRoleDialog(UserModel user) {
-    // Create a reactive copy of the user
-    final Rx<UserModel> reactiveUser = user.obs;
-    
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Obx(() {
-          final currentUser = reactiveUser.value;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Manage Roles - ${currentUser.name}'),
-              const SizedBox(height: 8),
-              if (currentUser.roles != null && currentUser.roles!.isNotEmpty)
-                Text(
-                  'Current Roles: ${currentUser.roles!.join(", ")}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.normal,
-                  ),
-                )
-              else
-                Text(
-                  'No roles assigned yet',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.orange,
-                    fontWeight: FontWeight.normal,
-                  ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Manage Roles - ${user.name}'),
+            const SizedBox(height: 8),
+            if (user.roles != null && user.roles!.isNotEmpty)
+              Text(
+                'Current: ${user.roles!.join(", ")}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.normal,
                 ),
-            ],
-          );
-        }),
-        content: Obx(() {
-          final currentUser = reactiveUser.value;
-          return SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: controller.allRoles
-                  .map((role) {
-                    // Check if role is already assigned
-                    final isAssigned = currentUser.roles?.contains(role.name) ?? false;
+              )
+            else
+              Text(
+                'No roles assigned',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.orange,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: controller.allRoles
+                .map((role) {
+                  final isAssigned = user.roles?.contains(role.name) ?? false;
 
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
-                          color: isAssigned
-                              ? Colors.purple.withOpacity(0.5)
-                              : Colors.grey[300]!,
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: isAssigned
+                            ? Colors.purple.withOpacity(0.5)
+                            : Colors.grey[300]!,
+                      ),
+                    ),
+                    child: CheckboxListTile(
+                      title: Text(
+                        role.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isAssigned ? Colors.purple : Colors.black,
                         ),
                       ),
-                      child: CheckboxListTile(
-                        title: Text(
-                          role.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isAssigned ? Colors.purple : Colors.black,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (role.description != null)
-                              Text(
-                                role.description!,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (role.description != null)
+                            Text(
+                              role.description!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
                               ),
-                            if (isAssigned)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle,
-                                      size: 14,
+                            ),
+                          if (isAssigned)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    size: 14,
+                                    color: Colors.green,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Assigned',
+                                    style: TextStyle(
+                                      fontSize: 11,
                                       color: Colors.green,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Already assigned',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                          ],
-                        ),
-                        value: isAssigned,
-                        onChanged: (value) async {
-                          if (value == true && !isAssigned) {
-                            // Assign new role
-                            print('🔄 Assigning role: ${role.name}');
-                            await controller.assignRoleToUser(currentUser.id, role.id);
-                            // Update reactive user
-                            final updatedUser = await controller.userService.fetchUserById(currentUser.id);
-                            if (updatedUser != null) {
-                              print('✅ Updated roles: ${updatedUser.roles}');
-                              reactiveUser.value = updatedUser;
-                            }
-                          } else if (value == false && isAssigned) {
-                            // Remove role
-                            print('🔄 Removing role: ${role.name}');
-                            await controller.removeRoleFromUser(currentUser.id, role.id);
-                            // Update reactive user
-                            final updatedUser = await controller.userService.fetchUserById(currentUser.id);
-                            if (updatedUser != null) {
-                              print('✅ Updated roles after removal: ${updatedUser.roles}');
-                              reactiveUser.value = updatedUser;
-                            }
-                          } else if (value == true && isAssigned) {
-                            // Try to assign already assigned role
-                            Get.snackbar(
-                              'Info',
-                              '${role.name} is already assigned to ${currentUser.name}',
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: Colors.orange,
-                              colorText: Colors.white,
-                              duration: const Duration(seconds: 2),
-                            );
-                          }
-                        },
-                        activeColor: Colors.purple,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                            ),
+                        ],
                       ),
-                    );
-                  })
-                  .toList(),
-            ),
-          );
-        }),
+                      value: isAssigned,
+                      onChanged: (value) {
+                        if (value == true && !isAssigned) {
+                          // Assign new role
+                          print('🔄 Assigning role: ${role.name}');
+                          controller.assignRoleToUser(user.id, role.id);
+                          // Close dialog after a short delay
+                          Future.delayed(const Duration(milliseconds: 500), () {
+                            if (Get.isDialogOpen ?? false) {
+                              Get.back();
+                            }
+                          });
+                        } else if (value == false && isAssigned) {
+                          // Remove role
+                          print('🔄 Removing role: ${role.name}');
+                          controller.removeRoleFromUser(user.id, role.id);
+                          // Close dialog after a short delay
+                          Future.delayed(const Duration(milliseconds: 500), () {
+                            if (Get.isDialogOpen ?? false) {
+                              Get.back();
+                            }
+                          });
+                        } else if (value == true && isAssigned) {
+                          Get.snackbar(
+                            'Info',
+                            '${role.name} is already assigned',
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: Colors.orange,
+                            colorText: Colors.white,
+                            duration: const Duration(seconds: 2),
+                          );
+                        }
+                      },
+                      activeColor: Colors.purple,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  );
+                })
+                .toList(),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
