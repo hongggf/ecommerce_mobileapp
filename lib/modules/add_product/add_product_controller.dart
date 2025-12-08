@@ -1,36 +1,36 @@
 import 'dart:io';
-import 'dart:convert';
-import 'dart:typed_data';
+
+import 'package:ecommerce_urban/modules/admin_products/admin_products_controller.dart';
+import 'package:ecommerce_urban/modules/admin_products/controller/product_mangement_controller.dart';
+import 'package:ecommerce_urban/modules/admin_products/model/product_model.dart';
+import 'package:ecommerce_urban/modules/admin_products/model/product_varaint_model.dart';
 import 'package:ecommerce_urban/modules/admin_products/services/adminProductApiService.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import '../admin_products/model/product_asset.dart';
-import '../admin_products/model/product_model.dart';
 
 class AdminAddProductController extends GetxController {
   final apiService = Adminproductapiservice();
+  final productManagementController = Get.put(ProductManagementController());
 
   final isLoading = false.obs;
   final isUploading = false.obs;
 
   var selectedImages = <File>[].obs;
-  var uploadedAssets = <ProductAsset>[].obs;
   var categories = <dynamic>[].obs;
 
   final ImagePicker picker = ImagePicker();
 
-  int? editingProductId;
-  int? editingVariantId;
+  final editingProductId = Rx<int?>(null);
+  final editingVariantId = Rx<int?>(null);
 
-  // Controllers
   late TextEditingController nameController;
   late TextEditingController descriptionController;
   late TextEditingController skuController;
   late TextEditingController priceController;
 
-  int? selectedCategoryId;
-  String selectedStatus = "active";
+  final selectedCategoryId = Rx<int?>(null);
+  final selectedStatus = 'active'.obs;
 
   @override
   void onInit() {
@@ -44,15 +44,7 @@ class AdminAddProductController extends GetxController {
 
     final args = Get.arguments;
     if (args != null && args is Product) {
-      editingProductId = args.id;
-      nameController.text = args.name;
-      descriptionController.text = args.description;
-      selectedStatus = args.status;
-      selectedCategoryId = args.categoryId;
-
-      if (args.id != null) {
-        loadExistingAssets(args.id!);
-      }
+      _initializeEditMode(args);
     }
   }
 
@@ -65,7 +57,6 @@ class AdminAddProductController extends GetxController {
     super.onClose();
   }
 
-  // ==================== LOAD CATEGORIES ====================
   Future<void> loadCategories() async {
     try {
       final cats = await apiService.getCategories();
@@ -76,21 +67,14 @@ class AdminAddProductController extends GetxController {
     }
   }
 
-  // ==================== LOAD EXISTING ASSETS ====================
-  Future<void> loadExistingAssets(int productId) async {
-    try {
-      isLoading(true);
-      final assets = await apiService.getProductAssets(productId);
-      uploadedAssets.value = assets;
-      print('✅ Existing assets loaded: ${assets.length}');
-    } catch (e) {
-      print('❌ Error loading existing assets: $e');
-    } finally {
-      isLoading(false);
-    }
+  void _initializeEditMode(Product product) {
+    editingProductId.value = product.id;
+    nameController.text = product.name;
+    descriptionController.text = product.description;
+    selectedStatus.value = product.status;
+    selectedCategoryId.value = product.categoryId;
   }
 
-  // ==================== PICK IMAGES ====================
   Future<void> pickImages() async {
     try {
       final picked = await picker.pickMultiImage();
@@ -110,8 +94,163 @@ class AdminAddProductController extends GetxController {
     }
   }
 
+  // ==================== CREATE PRODUCT ====================
+  Future<void> createProduct() async {
+    print('\n🚀 ========== CREATE PRODUCT STARTED ==========');
+    print('Form validation starting...');
+
+    if (!_validateProduct()) {
+      print('❌ Validation failed');
+      return;
+    }
+
+    try {
+      isLoading(true);
+      print('✅ Validation passed');
+      print('Name: ${nameController.text}');
+      print('Description: ${descriptionController.text}');
+      print('Category ID: ${selectedCategoryId.value}');
+      print('Status: ${selectedStatus.value}');
+
+      final product = Product(
+        name: nameController.text.trim(),
+        description: descriptionController.text.trim(),
+        status: selectedStatus.value,
+        categoryId: selectedCategoryId.value!,
+      );
+
+      print('\n📤 Product object created:');
+      print('Name: ${product.name}');
+      print('Description: ${product.description}');
+      print('CategoryId: ${product.categoryId}');
+      print('Status: ${product.status}');
+
+      print('\n🌐 Calling API...');
+      final createdProduct = await apiService.createProduct(product);
+
+      print('\n📥 API Response received:');
+      print('Response type: ${createdProduct.runtimeType}');
+      print('Product ID: ${createdProduct.id}');
+      print('Product Name: ${createdProduct.name}');
+
+      if (createdProduct.id == null) {
+        print('❌ ERROR: No ID returned from API');
+        throw Exception('Product creation failed - no ID returned from API');
+      }
+
+      editingProductId.value = createdProduct.id;
+      print('\n✅ Product created successfully!');
+      print('Product ID set to: ${editingProductId.value}');
+
+      Get.snackbar(
+        'Success ✅',
+        'Product ID ${editingProductId.value} created!\nNow create variant & upload images.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+
+      // Refresh product list
+      if (Get.isRegistered<AdminProductsController>()) {
+        print('Refreshing product list...');
+        await Get.find<AdminProductsController>().fetchProducts();
+      }
+    } catch (e) {
+      print('\n❌ ========== PRODUCT CREATION FAILED ==========');
+      print('Error: $e');
+      print('Error Type: ${e.runtimeType}');
+      print('Stack trace: $e');
+
+      Get.snackbar(
+        '❌ Error',
+        'Failed to create product:\n$e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+    } finally {
+      isLoading(false);
+      print('\n========== CREATE PRODUCT ENDED ==========\n');
+    }
+  }
+
+  // ==================== CREATE VARIANT ====================
+  Future<void> createVariant() async {
+    print('\n🚀 ========== CREATE VARIANT STARTED ==========');
+
+    if (!_validateVariant()) {
+      print('❌ Validation failed');
+      return;
+    }
+
+    if (editingProductId.value == null) {
+      print('❌ No product ID set');
+      Get.snackbar(
+        'Error',
+        'Create product first',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    try {
+      isLoading(true);
+      print('Product ID: ${editingProductId.value}');
+      print('SKU: ${skuController.text}');
+      print('Price: ${priceController.text}');
+
+      final variant = ProductVariant(
+        productId: editingProductId.value,
+        name: skuController.text.trim(),
+        sku: skuController.text.trim(),
+        price: double.parse(priceController.text.trim()),
+        status: selectedStatus.value,
+      );
+
+      print('🌐 Calling API...');
+      final createdVariant = await apiService.createProductVariant(variant);
+
+      if (createdVariant.id == null) {
+        throw Exception('Variant creation failed - no ID returned from API');
+      }
+
+      editingVariantId.value = createdVariant.id;
+      print('✅ Variant created: ID ${editingVariantId.value}');
+
+      Get.snackbar(
+        'Success ✅',
+        'Variant ID ${editingVariantId.value} created!\nNow upload images.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+
+      skuController.clear();
+      priceController.clear();
+    } catch (e) {
+      print('❌ Variant creation failed: $e');
+      Get.snackbar(
+        '❌ Error',
+        'Failed to create variant:\n$e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+    } finally {
+      isLoading(false);
+      print('========== CREATE VARIANT ENDED ==========\n');
+    }
+  }
+
   // ==================== UPLOAD IMAGES ====================
   Future<void> uploadImages() async {
+    print('\n🚀 ========== UPLOAD IMAGES STARTED ==========');
+
     if (selectedImages.isEmpty) {
       Get.snackbar(
         'Error',
@@ -123,7 +262,7 @@ class AdminAddProductController extends GetxController {
       return;
     }
 
-    if (editingProductId == null) {
+    if (editingProductId.value == null) {
       Get.snackbar(
         'Error',
         'Create product first',
@@ -134,7 +273,7 @@ class AdminAddProductController extends GetxController {
       return;
     }
 
-    if (editingVariantId == null) {
+    if (editingVariantId.value == null) {
       Get.snackbar(
         'Error',
         'Create variant first',
@@ -147,172 +286,107 @@ class AdminAddProductController extends GetxController {
 
     try {
       isUploading(true);
+      print('Images to upload: ${selectedImages.length}');
+      print('Product ID: ${editingProductId.value}');
+      print('Variant ID: ${editingVariantId.value}');
 
       for (int i = 0; i < selectedImages.length; i++) {
-        print('📤 Uploading image ${i + 1}/${selectedImages.length}...');
-        
+        print('\n📤 Uploading image ${i + 1}/${selectedImages.length}...');
+
         await apiService.uploadProductAsset(
           selectedImages[i],
-          editingProductId!,
-          editingVariantId!,
-          isPrimary: i == 0 && uploadedAssets.isEmpty,
+          editingProductId.value!,
+          editingVariantId.value!,
+          isPrimary: i == 0,
         );
       }
 
-      print('✅ All images uploaded');
+      print('\n✅ All images uploaded successfully');
       selectedImages.clear();
-      
-      if (editingVariantId != null) {
-        await loadExistingAssets(editingProductId!);
-      }
 
       Get.snackbar(
-        'Success',
-        'Images uploaded successfully',
+        'Success ✅',
+        'Images uploaded successfully!',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
+
+      await Future.delayed(const Duration(seconds: 1));
+      Get.back();
     } catch (e) {
       print('❌ Upload failed: $e');
       Get.snackbar(
-        'Error',
-        'Upload failed: $e',
+        '❌ Error',
+        'Upload failed:\n$e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        duration: const Duration(seconds: 5),
       );
     } finally {
       isUploading(false);
+      print('========== UPLOAD IMAGES ENDED ==========\n');
     }
   }
 
-  // ==================== DELETE IMAGE ====================
-  Future<void> deleteImage(int assetId) async {
-    try {
-      isLoading(true);
-      print('🗑️ Deleting asset: $assetId');
-      
-      await apiService.deleteProductAsset(assetId);
+  // ==================== VALIDATION ====================
+  bool _validateProduct() {
+    print('\n🔍 Validating product...');
 
-      if (editingProductId != null) {
-        await loadExistingAssets(editingProductId!);
-      }
-
-      Get.snackbar(
-        'Success',
-        'Image deleted successfully',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      print('❌ Failed to delete image: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to delete: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading(false);
-    }
-  }
-
-  // ==================== SUBMIT (CREATE / UPDATE PRODUCT) ====================
-  Future<void> submit() async {
-    // Validation
     if (nameController.text.trim().isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Product name is required',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-      return;
+      print('❌ Name is empty');
+      Get.snackbar('Error', 'Product name is required',
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return false;
     }
 
     if (descriptionController.text.trim().isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Product description is required',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-      return;
+      print('❌ Description is empty');
+      Get.snackbar('Error', 'Product description is required',
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return false;
     }
 
-    if (selectedCategoryId == null) {
-      Get.snackbar(
-        'Error',
-        'Please select a category',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-      return;
+    if (selectedCategoryId.value == null) {
+      print('❌ Category not selected');
+      Get.snackbar('Error', 'Please select a category',
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return false;
     }
 
-    try {
-      isLoading(true);
-
-      final product = Product(
-        id: editingProductId,
-        name: nameController.text.trim(),
-        description: descriptionController.text.trim(),
-        status: selectedStatus,
-        categoryId: selectedCategoryId!,
-      );
-
-      if (editingProductId == null) {
-        print('➕ Creating product: ${product.name}');
-        await apiService.createProduct(product);
-        Get.snackbar(
-          'Success',
-          'Product created successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      } else {
-        print('🔄 Updating product: ${product.name}');
-        await apiService.updateProduct(editingProductId!, product);
-        Get.snackbar(
-          'Success',
-          'Product updated successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      }
-
-      Get.back();
-    } catch (e) {
-      print('❌ Submit failed: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to save product: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading(false);
-    }
+    print('✅ All validations passed');
+    return true;
   }
 
-  // ==================== UTILITY: BASE64 DECODER ====================
-  Uint8List decodeBase64(String base64String) {
-    try {
-      final parts = base64String.split(',');
-      final base = parts.length > 1 ? parts[1] : parts[0];
-      return Uint8List.fromList(base64Decode(base.replaceAll('\n', '')));
-    } catch (e) {
-      print('❌ Error decoding base64: $e');
-      return Uint8List(0);
+  bool _validateVariant() {
+    print('\n🔍 Validating variant...');
+
+    if (skuController.text.trim().isEmpty) {
+      print('❌ SKU is empty');
+      Get.snackbar('Error', 'SKU is required',
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return false;
     }
+
+    if (priceController.text.trim().isEmpty) {
+      print('❌ Price is empty');
+      Get.snackbar('Error', 'Price is required',
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return false;
+    }
+
+    try {
+      double.parse(priceController.text.trim());
+      print('✅ Price is valid: ${priceController.text.trim()}');
+    } catch (e) {
+      print('❌ Price is not a number');
+      Get.snackbar('Error', 'Price must be a valid number',
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return false;
+    }
+
+    print('✅ All variant validations passed');
+    return true;
   }
 }

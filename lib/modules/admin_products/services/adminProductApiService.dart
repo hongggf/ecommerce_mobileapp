@@ -459,7 +459,7 @@ Future<List<ProductAsset>> getProductAssets(int productId) async {
     // ✅ CORRECT ENDPOINT: /product-assets/product/{product_id}
     print('🖼️ Fetching assets for product $productId from /product-assets/product/$productId...');
 
-    final response = await _makeRequest('GET', '/product-assets/product/$productId');
+    final response = await _makeRequest('GET', '/product-assets/$productId');
 
     final data = _getSafeData(response);
 

@@ -426,47 +426,7 @@ class ProductManagementController extends GetxController {
     showAssetForm.value = false;
   }
 
-  // Future<void> uploadAsset(File imageFile, {bool isPrimary = false}) async {
-  //    if (selectedVariant.value?.id == null) {
-  //   Get.snackbar('Error', 'Please select a variant first',
-  //       backgroundColor: Colors.red, colorText: Colors.white);
-  //   return;
-  // }
   
-  // if (product.value?.id == null) {
-  //   Get.snackbar('Error', 'Product not saved yet',
-  //       backgroundColor: Colors.red, colorText: Colors.white);
-  //   return;
-  // }
-  //   try {
-  //     isUploading.value = true;
-
-  //     await apiService.uploadProductAsset(
-  //       imageFile,
-  //       product.value!.id!,
-  //       selectedVariant.value!.id!,
-  //       isPrimary: isPrimary,
-  //     );
-  //     print('✅ Asset uploaded');
-  //     Get.snackbar('Success', 'Image uploaded successfully',
-  //         snackPosition: SnackPosition.BOTTOM,
-  //         backgroundColor: Colors.green,
-  //         colorText: Colors.white);
-
-  //     // Load assets using product ID
-  //     if (product.value?.id != null) {
-  //       await loadAssets(product.value!.id!);
-  //     }
-  //   } catch (e) {
-  //     print('❌ Error uploading asset: $e');
-  //     Get.snackbar('Error', 'Failed to upload image: $e',
-  //         snackPosition: SnackPosition.BOTTOM,
-  //         backgroundColor: Colors.red,
-  //         colorText: Colors.white);
-  //   } finally {
-  //     isUploading.value = false;
-  //   }
-  // }
 
 Future<void> uploadAsset(File imageFile, {bool isPrimary = false}) async {
   print('🖼️ Upload attempt - Variant ID: ${selectedVariant.value?.id}, Product ID: ${product.value?.id}');
