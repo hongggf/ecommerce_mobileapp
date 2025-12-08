@@ -1,17 +1,67 @@
+import 'package:ecommerce_urban/modules/admin_orders/service/order_service.dart';
+import 'package:ecommerce_urban/modules/admin_products/services/adminProductApiService.dart';
+import 'package:ecommerce_urban/modules/admin_users.dart/services/user_and_role_service.dart';
 import 'package:get/get.dart';
 
 class AdminController extends GetxController {
-  // Summary Cards
-  var summaries = <DashboardSummary>[
-    DashboardSummary(title: 'Total Users', value: '1,234', icon: '👤'),
-    DashboardSummary(title: 'Total Products', value: '567', icon: '📦'),
-    DashboardSummary(title: 'Total Orders', value: '890', icon: '🛒'),
-    DashboardSummary(title: 'Total Sales Amount', value: '\$45,678', icon: '💰'),
-    DashboardSummary(title: 'Out-of-Stock Products', value: '12', icon: '❌'),
-    DashboardSummary(title: 'Low Stock Alerts', value: '5', icon: '⚠️'),
-    DashboardSummary(title: 'Total Suppliers', value: '34', icon: '🏭'),
-  ].obs;
+   final OrderService _orderService = OrderService();
+  final Adminproductapiservice _productService = Adminproductapiservice();
+  final UserService _userService = UserService();
 
+  // Observable counters
+  final RxInt totalOrders = 0.obs;
+  final RxInt totalProducts = 0.obs;
+  final RxInt totalUsers = 0.obs;
+  final RxBool isLoadingStats = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadDashboardStats();
+  }
+
+  Future<void> loadDashboardStats() async {
+    try {
+      isLoadingStats.value = true;
+
+      // Load orders
+      try {
+        final orders = await _orderService.fetchOrders();
+        totalOrders.value = orders.length;
+        print('✅ Orders loaded: ${orders.length}');
+      } catch (e) {
+        print('⚠️ Error loading orders: $e');
+        totalOrders.value = 0;
+      }
+
+      // Load products
+      try {
+        final products = await _productService.getProducts();
+        totalProducts.value = products.length;
+        print('✅ Products loaded: ${products.length}');
+      } catch (e) {
+        print('⚠️ Error loading products: $e');
+        totalProducts.value = 0;
+      }
+
+      // Load users
+      try {
+        final users = await _userService.fetchUsersWithRoles();
+        totalUsers.value = users.length;
+        print('✅ Users loaded: ${users.length}');
+      } catch (e) {
+        print('⚠️ Error loading users: $e');
+        totalUsers.value = 0;
+      }
+    } finally {
+      isLoadingStats.value = false;
+    }
+  }
+
+  // Call this when data changes
+  void refreshStats() {
+    loadDashboardStats();
+  }
   // Quick Actions
   var quickActions = <QuickAction>[
     QuickAction(title: 'Add New Product', icon: '➕'),

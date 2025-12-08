@@ -7,6 +7,6 @@ final adminAnalysticsRoute = [
   GetPage(
     name: AppRoutes.adminAnalytics,
     page: () => AdminAnalyticsView(),
-    binding:AdminAnalysticsBinding(),
+    binding:AdminAnalyticsBinding(),
   )
 ];  

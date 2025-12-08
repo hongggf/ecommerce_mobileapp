@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:ecommerce_urban/app/constants/constants.dart';
 import 'package:ecommerce_urban/modules/admin_products/controller/product_mangement_controller.dart';
 
 class AssetCardWidget extends StatelessWidget {
@@ -69,45 +69,45 @@ class AssetCardWidget extends StatelessWidget {
     );
   }
 
-  /// Build image with proper URL and base64 handling
+  /// Build image from URL only (no base64 fallback)
   Widget _buildImage() {
-    // Check what data we have
     print('🖼️ Asset ID: ${asset.id}');
     print('   URL: ${asset.url}');
-    print('   Has base64: ${asset.base64File != null && asset.base64File!.isNotEmpty}');
 
-    // Try multiple URL approaches
-    if (asset.url != null && asset.url!.isNotEmpty) {
-      final url = asset.url.toString();
-      
-      // Approach 1: Try with full URL
-      if (!url.startsWith('http')) {
-        // It's a path, construct the URL
-        return _tryLoadUrl('http://10.0.2.2:8000$url');
-      } else {
-        // Already a full URL
-        return _tryLoadUrl(url);
-      }
+    if (asset.url == null || asset.url!.isEmpty) {
+      return Center(
+        child: Icon(
+          Icons.image_not_supported,
+          color: Colors.grey.shade400,
+          size: 48,
+        ),
+      );
     }
 
-    // Fallback to base64
-    print('📥 Using base64 image');
-    return _buildBase64Image();
-  }
-
-  /// Try to load image from URL with proper error handling
-  Widget _tryLoadUrl(String url) {
-    print('🌐 Attempting to load from: $url');
+    final url = asset.url.toString();
     
+    // Build full URL using ApiConstants
+    String finalUrl = url;
+    
+    if (url.contains('localhost')) {
+      // Replace localhost with your API constant
+      finalUrl = url.replaceAll('localhost:8000', ApiConstants.baseUrl.replaceAll('/api', ''));
+      finalUrl = finalUrl.replaceAll('localhost', ApiConstants.baseUrl.replaceAll('/api', ''));
+    } else if (!url.startsWith('http')) {
+      // It's a relative path
+      finalUrl = ApiConstants.baseUrl.replaceAll('/api', '') + url;
+    }
+
+    print('🌐 Loading image from: $finalUrl');
+
     return Image.network(
-      url,
+      finalUrl,
       fit: BoxFit.cover,
-      headers: {
-        'Accept': 'image/*',
-      },
+      cacheHeight: 300,  // Add caching
+      cacheWidth: 300,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
-          print('✅ Image loaded successfully from: $url');
+          print('✅ Image loaded successfully');
           return child;
         }
         return Center(
@@ -120,71 +120,35 @@ class AssetCardWidget extends StatelessWidget {
         );
       },
       errorBuilder: (context, error, stackTrace) {
-        print('❌ Network load failed for $url');
-        print('   Error: $error');
-        print('   Falling back to base64...');
-        return _buildBase64Image();
-      },
-    );
-  }
-
-  /// Build image from base64
-  Widget _buildBase64Image() {
-    try {
-      if (asset.base64File == null || asset.base64File!.isEmpty) {
-        print('⚠️ No base64 data available');
+        // Ignore connection retry errors (they're normal)
+        if (error.toString().contains('Connection closed')) {
+          print('ℹ️ Image retry (ignore this): $error');
+          return SizedBox.shrink(); // Return empty while retrying
+        }
+        
+        print('❌ Image load failed: $error');
         return Center(
-          child: Icon(
-            Icons.image_not_supported,
-            color: Colors.grey.shade400,
-            size: 48,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.broken_image,
+                color: Colors.grey.shade400,
+                size: 48,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Failed to load',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
         );
-      }
-
-      String base64String = asset.base64File!;
-
-      // Remove data URL prefix if present
-      if (base64String.startsWith('data:')) {
-        final parts = base64String.split(',');
-        if (parts.length > 1) {
-          base64String = parts[1];
-          print('📦 Removed data URL prefix');
-        }
-      }
-
-      // Clean whitespace
-      base64String = base64String.replaceAll('\n', '').replaceAll('\r', '');
-
-      print('📥 Decoding base64 (${base64String.length} chars)');
-
-      final bytes = base64Decode(base64String);
-      print('✅ Base64 decoded: ${bytes.length} bytes');
-
-      return Image.memory(
-        bytes,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          print('❌ Base64 decode failed: $error');
-          return Center(
-            child: Icon(
-              Icons.image_not_supported,
-              color: Colors.grey.shade400,
-              size: 48,
-            ),
-          );
-        },
-      );
-    } catch (e) {
-      print('❌ Base64 error: $e');
-      return Center(
-        child: Icon(
-          Icons.image_not_supported,
-          color: Colors.grey.shade400,
-          size: 48,
-        ),
-      );
-    }
+      },
+    );
   }
 
   void _showDeleteDialog(BuildContext context) {

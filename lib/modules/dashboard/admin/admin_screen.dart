@@ -1,118 +1,9 @@
-// import 'package:ecommerce_urban/app/constants/app_spacing.dart';
-// import 'package:ecommerce_urban/app/widgets/item_widget.dart';
-// import 'package:ecommerce_urban/modules/dashboard/admin/admin_controller.dart';
-// import 'package:ecommerce_urban/modules/dashboard/admin/widgets/admin_kpi_card_widget.dart';
-// import 'package:ecommerce_urban/modules/dashboard/admin/widgets/admin_quick_action_card_widget.dart';
-// import 'package:ecommerce_urban/app/widgets/title_widget.dart';
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-
-// class AdminScreen extends StatelessWidget {
-//   AdminScreen({super.key});
-
-//   final AdminController controller = Get.find();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Dashboard'),
-//       ),
-//       body: SingleChildScrollView(
-//         padding: const EdgeInsets.all(16),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             kpiSection(),
-//             SizedBox(height: AppSpacing.paddingM),
-//             quickAction(),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget kpiSection() {
-//     return AdminKPICardWidget(
-//       items: [
-//         KPIItem(
-//             icon: Icons.error_outline,
-//             iconBgColor: Colors.redAccent,
-//             title: 'Low Stock',
-//             value: '1234'),
-//         KPIItem(
-//             icon: Icons.shopping_cart,
-//             iconBgColor: Colors.orange,
-//             title: 'Orders',
-//             value: '567'),
-//         KPIItem(
-//             icon: Icons.inventory_2_outlined,
-//             iconBgColor: Colors.blue,
-//             title: 'Products',
-//             value: '500'),
-//       ],
-//     );
-//   }
-
-//   Widget quickAction() {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         TitleWidget(title: "Quick Actions"),
-//         ItemWidget(
-//           item: CardItem(
-//             icon: Icons.category,
-//             iconBgColor: Colors.blue,
-//             title: 'Add New Category',
-//             rightIcon: Icons.arrow_forward,
-//             onTapCard: () => print('Add New Product clicked'),
-//           ),
-//         ),
-//         ItemWidget(
-//           item: CardItem(
-//             icon: Icons.add_box,
-//             iconBgColor: Colors.blue,
-//             title: 'Add New Product',
-//             rightIcon: Icons.arrow_forward,
-//             onTapCard: () => print('Add New Product clicked'),
-//           ),
-//         ),
-//         ItemWidget(
-//           item: CardItem(
-//             icon: Icons.shopping_cart,
-//             iconBgColor: Colors.orange,
-//             title: 'Create Order',
-//             rightIcon: Icons.arrow_forward,
-//             onTapCard: () => print('Create Order clicked'),
-//           ),
-//         ),
-//         ItemWidget(
-//           item: CardItem(
-//             icon: Icons.store,
-//             iconBgColor: Colors.green,
-//             title: 'Add Stock',
-//             rightIcon: Icons.arrow_forward,
-//             onTapCard: () => print('Add Stock clicked'),
-//           ),
-//         ),
-//         ItemWidget(
-//           item: CardItem(
-//             icon: Icons.person_add,
-//             iconBgColor: Colors.purple,
-//             title: 'Add User',
-//             rightIcon: Icons.arrow_forward,
-//             onTapCard: () => print('Add User clicked'),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
+import 'package:ecommerce_urban/modules/admin_orders/admin_create_order_screen.dart';
+import 'package:ecommerce_urban/modules/admin_users.dart/create_new_user_screen.dart';
 import 'package:ecommerce_urban/modules/dashboard/admin/admin_controller.dart';
 import 'package:ecommerce_urban/modules/dashboard/admin/widgets/admin_kpi_card_widget.dart';
 import 'package:ecommerce_urban/modules/dashboard/admin/widgets/admin_quick_action_card_widget.dart';
-
 import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -120,7 +11,7 @@ import 'package:get/get.dart';
 class AdminScreen extends StatelessWidget {
   AdminScreen({super.key});
 
-  final AdminController controller = Get.find();
+  final AdminController controller = Get.find<AdminController>();
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +23,8 @@ class AdminScreen extends StatelessWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          // Refresh data from API
+          // Refresh dashboard stats
+          controller.refreshStats();
           await Future.delayed(const Duration(seconds: 1));
         },
         child: SingleChildScrollView(
@@ -215,36 +107,43 @@ class AdminScreen extends StatelessWidget {
             ),
             TextButton.icon(
               onPressed: () {
-                
+                // Refresh stats
+                controller.refreshStats();
               },
-              icon: const Icon(Icons.analytics_outlined, size: 18),
-              label: const Text(''),
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Refresh'),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        AdminKPICardWidget(
-          items: [
-            KPIItem(
-              icon: Icons.error_outline,
-              iconBgColor: Colors.redAccent,
-              title: 'Low Stock',
-              value: '1,234',
-            ),
-            KPIItem(
-              icon: Icons.shopping_cart,
-              iconBgColor: Colors.orange,
-              title: 'Orders',
-              value: '567',
-            ),
-            KPIItem(
-              icon: Icons.inventory_2_outlined,
-              iconBgColor: Colors.blue,
-              title: 'Products',
-              value: '500',
-            ),
-          ],
-        ),
+        Obx(() {
+          if (controller.isLoadingStats.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return AdminKPICardWidget(
+            items: [
+              KPIItem(
+                icon: Icons.shopping_cart,
+                iconBgColor: Colors.orange,
+                title: 'Total Orders',
+                value: '${controller.totalOrders.value}',
+              ),
+              KPIItem(
+                icon: Icons.inventory_2_outlined,
+                iconBgColor: Colors.blue,
+                title: 'Total Products',
+                value: '${controller.totalProducts.value}',
+              ),
+              KPIItem(
+                icon: Icons.people,
+                iconBgColor: Colors.purple,
+                title: 'Total Users',
+                value: '${controller.totalUsers.value}',
+              ),
+            ],
+          );
+        }),
       ],
     );
   }
@@ -266,27 +165,18 @@ class AdminScreen extends StatelessWidget {
           icon: Icons.shopping_cart,
           iconColor: Colors.white,
           iconBgColor: Colors.orange,
-          title: 'Manage Orders',
+          title: 'Create new order',
           onTap: () {
-            Get.toNamed('/manage_orders');
-          },
-        ),
-        AdminQuickActionCard(
-          icon: Icons.store,
-          iconColor: Colors.white,
-          iconBgColor: Colors.green,
-          title: 'Stock Management',
-          onTap: () {
-            Get.toNamed('/stock_management');
+            Get.to(() => CreateOrderScreen());
           },
         ),
         AdminQuickActionCard(
           icon: Icons.people,
           iconColor: Colors.white,
           iconBgColor: Colors.purple,
-          title: 'User Management',
+          title: 'Add New User',
           onTap: () {
-            Get.toNamed('/user_management');
+            Get.to(() => const CreateUserScreen());
           },
         ),
         AdminQuickActionCard(
@@ -304,7 +194,7 @@ class AdminScreen extends StatelessWidget {
           iconBgColor: Colors.blueGrey,
           title: 'Settings',
           onTap: () {
-           Get.toNamed('/profile');
+            Get.toNamed('/profile');
           },
         ),
       ],
