@@ -1,4 +1,3 @@
-
 import 'package:ecommerce_urban/app/constants/constants.dart';
 import 'package:ecommerce_urban/app/services/storage_services.dart';
 import 'package:ecommerce_urban/modules/admin_products/model/product_asset.dart';
@@ -12,7 +11,7 @@ import '../model/category_model.dart';
 import '../model/product_model.dart';
 
 class Adminproductapiservice {
-  static const String baseUrl = ApiConstants.baseUrl; // http://127.0.0.1:8000/api
+  static const String baseUrl = ApiConstants.baseUrl;
   final StorageService _storage = StorageService();
 
   Adminproductapiservice();
@@ -46,8 +45,11 @@ class Adminproductapiservice {
       print('\n🔐 ========== API REQUEST ==========');
       print('METHOD: $method');
       print('URL: $url');
-      print('TOKEN: ${token != null ? "Present" : "MISSING"}');
-      if (body != null) print('BODY: ${jsonEncode(body)}');
+      print('TOKEN: ${token != null ? "Present (${token.substring(0, 10)}...)" : "MISSING"}');
+      print('HEADERS: $headers');
+      if (body != null) {
+        print('BODY: ${jsonEncode(body)}');
+      }
       print('====================================\n');
 
       switch (method) {
@@ -88,8 +90,8 @@ class Adminproductapiservice {
       print('BODY LENGTH: ${response.body.length} bytes');
 
       if (response.body.isNotEmpty) {
-        final preview = response.body.length > 300
-            ? response.body.substring(0, 300) + '...(truncated)'
+        final preview = response.body.length > 500
+            ? response.body.substring(0, 500) + '...(truncated)'
             : response.body;
         print('PREVIEW: $preview');
       }
@@ -107,6 +109,7 @@ class Adminproductapiservice {
           return decoded;
         } catch (e) {
           print('❌ JSON PARSE ERROR: $e');
+          print('Response body: ${response.body}');
           throw FormatException(
               'Invalid JSON response. Status: ${response.statusCode}\nError: $e');
         }
@@ -118,13 +121,19 @@ class Adminproductapiservice {
         throw Exception('Forbidden: You do not have permission');
       } else if (response.statusCode == 404) {
         throw Exception('Not found: Resource does not exist');
+      } else if (response.statusCode == 422) {
+        // Validation error
+        print('❌ VALIDATION ERROR: ${response.body}');
+        final errorData = jsonDecode(response.body);
+        final errors = errorData['errors'] ?? errorData;
+        throw Exception('Validation error: ${jsonEncode(errors)}');
       } else if (response.statusCode == 500) {
         print('❌ SERVER ERROR: ${response.body}');
         throw Exception('Server error: ${response.body}');
       } else {
         print('❌ API ERROR ${response.statusCode}');
         throw Exception(
-            'API Error: ${response.statusCode} - ${response.body.substring(0, 200)}');
+            'API Error: ${response.statusCode} - ${response.body}');
       }
     } on TimeoutException {
       print('❌ REQUEST TIMEOUT');
@@ -140,33 +149,29 @@ class Adminproductapiservice {
       rethrow;
     } catch (e) {
       print('❌ UNEXPECTED ERROR: $e');
-      throw Exception('Request failed: $e');
+      rethrow;
     }
   }
 
   // ============== HELPER: Safe List/Data Extraction ==============
   dynamic _getSafeData(dynamic response) {
-    // If response is already a list, return it
     if (response is List) {
-      print('✅ Response is a direct list with ${(response as List).length} items');
+      print('✅ Response is a direct list with ${response.length} items');
       return response;
     }
-    
-    // If response is a map, check for data key (Laravel pagination)
+
     if (response is Map) {
-      // Check for 'data' key (Laravel pagination response)
       if (response['data'] != null) {
         print('✅ Response has data key with ${(response['data'] as List?)?.length ?? 0} items');
         return response['data'];
       }
-      
-      // Check if the whole response is the data
+
       if (response.containsKey('id')) {
         print('✅ Response is a single object');
         return response;
       }
     }
-    
+
     print('⚠️ Could not extract data from response');
     return response;
   }
@@ -180,7 +185,7 @@ class Adminproductapiservice {
       final response = await _makeRequest('GET', '/categories');
 
       final data = _getSafeData(response);
-      
+
       if (data is! List) {
         print('⚠️ Response is not a list: $data');
         return [];
@@ -209,13 +214,23 @@ class Adminproductapiservice {
   Future<Category> createCategory(Category category) async {
     try {
       print('➕ Creating category: ${category.name}');
+      print('📤 Payload: ${category.toJson()}');
+
       final response = await _makeRequest(
         'POST',
         '/categories',
         body: category.toJson(),
       );
-      print('✅ Category created: ID ${response['id']}');
-      return Category.fromJson(response as Map<String, dynamic>);
+
+      print('📥 Category response type: ${response.runtimeType}');
+      print('📥 Category response: $response');
+
+      if (response is Map && response['id'] != null) {
+        print('✅ Category created: ID ${response['id']}');
+        return Category.fromJson(response as Map<String, dynamic>);
+      } else {
+        throw Exception('Invalid category response: $response');
+      }
     } catch (e) {
       print('❌ Failed to create category: $e');
       rethrow;
@@ -252,55 +267,86 @@ class Adminproductapiservice {
   // -----------------------
   // PRODUCTS
   // -----------------------
- Future<List<Product>> getProducts() async {
-  try {
-    print('📦 Fetching products with pagination...');
-    
-    // Start with 10 per page to test
-    final response = await _makeRequest(
-      'GET', 
-      '/products?per_page=10&page=1'
-    );
+  // FIXED: Removed duplicate getProducts() method
+  Future<List<Product>> getProducts() async {
+    try {
+      print('📦 Fetching products with pagination...');
 
-    final data = _getSafeData(response);
+      final response = await _makeRequest('GET', '/products?per_page=100&page=1');
 
-    if (data is! List) {
-      print('⚠️ Response is not a list: $data');
-      return [];
+      print('📊 Raw response type: ${response.runtimeType}');
+
+      List<dynamic> productList = [];
+
+      if (response is Map) {
+        if (response['data'] != null && response['data'] is List) {
+          productList = response['data'] as List<dynamic>;
+          print('✅ Extracted from pagination data: ${productList.length} items');
+        } else {
+          print('⚠️ No data key in response');
+          return [];
+        }
+      } else if (response is List) {
+        productList = response;
+        print('✅ Response is direct list: ${productList.length} items');
+      } else {
+        print('⚠️ Unexpected response type');
+        return [];
+      }
+
+      final products = productList
+          .map((p) {
+            try {
+              final productData = p as Map<String, dynamic>;
+              print('✅ Parsing product: ${productData['name']} (ID: ${productData['id']})');
+              return Product.fromJson(productData);
+            } catch (e) {
+              print('⚠️ Error parsing product: $e');
+              print('   Raw data: $p');
+              return null;
+            }
+          })
+          .whereType<Product>()
+          .toList();
+
+      print('✅ Products loaded: ${products.length}');
+      return products;
+    } catch (e) {
+      print('❌ Failed to fetch products: $e');
+      rethrow;
     }
-
-    print('✅ API returned ${(data as List).length} products');
-
-    final products = data
-        .map((p) {
-          try {
-            return Product.fromJson(p as Map<String, dynamic>);
-          } catch (e) {
-            print('⚠️ Error parsing product: $e');
-            return null;
-          }
-        })
-        .whereType<Product>()
-        .toList();
-
-    print('✅ Products loaded: ${products.length}');
-    return products;
-  } catch (e) {
-    print('❌ Failed to fetch products: $e');
-    rethrow;
   }
-}
 
   Future<Product> createProduct(Product product) async {
     try {
       print('➕ Creating product: ${product.name}');
+      final payload = product.toJson();
+      print('📤 Payload: $payload');
+      
+      // Verify payload has required fields
+      if (!payload.containsKey('category_id') || payload['category_id'] == null) {
+        throw Exception('category_id is missing or null in payload');
+      }
+
       final response = await _makeRequest(
         'POST',
         '/products',
-        body: product.toJson(),
+        body: payload,
       );
-      print('✅ Product created: ID ${response['id']}');
-      return Product.fromJson(response as Map<String, dynamic>);
+
+      print('📥 Create response type: ${response.runtimeType}');
+      print('📥 Create response: $response');
+
+      if (response is Map) {
+        if (response['id'] != null) {
+          print('✅ Product created with ID: ${response['id']}');
+          return Product.fromJson(response as Map<String, dynamic>);
+        } else {
+          throw Exception('No ID in response: $response');
+        }
+      } else {
+        throw Exception('Unexpected response format: ${response.runtimeType}');
+      }
     } catch (e) {
       print('❌ Failed to create product: $e');
       rethrow;
@@ -335,13 +381,12 @@ class Adminproductapiservice {
   }
 
   // -----------------------
-  // PRODUCT VARIANTS (Fixed: endpoint is /product-varaints not /product-variants)
+  // PRODUCT VARIANTS
   // -----------------------
   Future<List<ProductVariant>> getProductVariants(int productId) async {
     try {
       print('📋 Fetching variants for product $productId from /product-variants...');
 
-      // Try to get variants with pagination to avoid truncation
       final response = await _makeRequest('GET', '/product-variants?per_page=100&page=1');
 
       final data = _getSafeData(response);
@@ -353,17 +398,15 @@ class Adminproductapiservice {
 
       print('✅ API returned ${(data as List).length} total variants');
 
-      // Filter to only this product's variants
       final variants = data
           .map((v) {
             try {
               final variantData = v as Map<String, dynamic>;
-              
-              // Convert price string to double if needed
+
               if (variantData['price'] is String) {
                 variantData['price'] = double.parse(variantData['price'] as String);
               }
-              
+
               return ProductVariant.fromJson(variantData);
             } catch (e) {
               print('⚠️ Error parsing variant: $e');
@@ -377,32 +420,33 @@ class Adminproductapiservice {
 
       print('📊 Filtered to product $productId: ${variants.length} variants');
       if (variants.isNotEmpty) {
-        variants.forEach((v) {
+        for (var v in variants) {
           print('   ✓ ${v.name} (ID: ${v.id}, ProductID: ${v.productId}, Price: ${v.price})');
-        });
+        }
       }
       return variants;
     } catch (e) {
       print('⚠️ Failed to fetch variants: $e');
-      return []; // Return empty list instead of crashing
+      return [];
     }
   }
 
   Future<ProductVariant> createProductVariant(ProductVariant variant) async {
     try {
       print('➕ Creating variant: ${variant.name}');
+      print('📤 Payload: ${variant.toJson()}');
+      
       final response = await _makeRequest(
         'POST',
         '/product-variants',
         body: variant.toJson(),
       );
-      
-      // Handle price as string
+
       var responseData = response as Map<String, dynamic>;
       if (responseData['price'] is String) {
         responseData['price'] = double.parse(responseData['price'] as String);
       }
-      
+
       print('✅ Variant created: ID ${responseData['id']}');
       return ProductVariant.fromJson(responseData);
     } catch (e) {
@@ -411,10 +455,7 @@ class Adminproductapiservice {
     }
   }
 
-  Future<ProductVariant> updateProductVariant(
-    int id,
-    ProductVariant variant,
-  ) async {
+  Future<ProductVariant> updateProductVariant(int id, ProductVariant variant) async {
     try {
       print('🔄 Updating variant: ID $id');
       final response = await _makeRequest(
@@ -422,13 +463,12 @@ class Adminproductapiservice {
         '/product-variants/$id',
         body: variant.toJson(),
       );
-      
-      // Handle price as string
+
       var responseData = response as Map<String, dynamic>;
       if (responseData['price'] is String) {
         responseData['price'] = double.parse(responseData['price'] as String);
       }
-      
+
       print('✅ Variant updated: ID $id');
       return ProductVariant.fromJson(responseData);
     } catch (e) {
@@ -449,22 +489,23 @@ class Adminproductapiservice {
   }
 
   // -----------------------
-  // PRODUCT ASSETS
-  // -----------------------
- // In your adminProductApiService.dart file
-// Find the getProductAssets method and REPLACE it with this:
+// PRODUCT ASSETS - Optimized for Large Images
+// -----------------------
 
+/// Add this method to your Adminproductapiservice class
+
+
+/// Get all assets for a product (returns URLs only)
 Future<List<ProductAsset>> getProductAssets(int productId) async {
   try {
-    // ✅ CORRECT ENDPOINT: /product-assets/product/{product_id}
-    print('🖼️ Fetching assets for product $productId from /product-assets/product/$productId...');
+    print('🖼️ Fetching assets for product $productId...');
 
     final response = await _makeRequest('GET', '/product-assets/$productId');
 
     final data = _getSafeData(response);
 
     if (data is! List) {
-      print('⚠️ Response is not a list: $data');
+      print('⚠️ Response is not a list');
       return [];
     }
 
@@ -472,11 +513,7 @@ Future<List<ProductAsset>> getProductAssets(int productId) async {
         .map((a) {
           try {
             final assetData = a as Map<String, dynamic>;
-            
-            print('   📦 Asset ${assetData['id']}:');
-            print('      - url: ${assetData['url']}');
-            print('      - has base64_file: ${assetData.containsKey('base64_file')}');
-            
+            print('   📦 Asset ${assetData['id']}: ${assetData['url']}');
             return ProductAsset.fromJson(assetData);
           } catch (e) {
             print('⚠️ Error parsing asset: $e');
@@ -487,11 +524,6 @@ Future<List<ProductAsset>> getProductAssets(int productId) async {
         .toList();
 
     print('✅ Assets loaded: ${assets.length}');
-    if (assets.isNotEmpty) {
-      assets.forEach((a) {
-        print('   ✓ Asset ID: ${a.id}, URL: ${a.url}');
-      });
-    }
     return assets;
   } catch (e) {
     print('❌ Failed to fetch assets: $e');
@@ -499,78 +531,62 @@ Future<List<ProductAsset>> getProductAssets(int productId) async {
   }
 }
 
-  Future<ProductAsset> uploadProductAsset(
-    File imageFile,
-    int productId,
-    int variantId, {
-    bool isPrimary = false,
-  }) async {
-    try {
-      print('📤 Uploading asset for product $productId, variant $variantId...');
-      final bytes = await imageFile.readAsBytes();
-      final base64Image = base64Encode(bytes);
-      final mimeType = _getMimeType(imageFile.path);
-      final base64File = 'data:$mimeType;base64,$base64Image';
-
-      final response = await _makeRequest(
-        'POST',
-        '/product-assets',
-        body: {
-          'product_id': productId,
-          'variant_id': variantId,
-          'base64_file': base64File,
-          'kind': 'image',
-          'is_primary': isPrimary,
-        },
-      );
-      print('✅ Asset uploaded: ID ${response['id']}');
-      return ProductAsset.fromJson(response as Map<String, dynamic>);
-    } catch (e) {
-      print('❌ Failed to upload asset: $e');
-      rethrow;
-    }
-  }
-  // Add this method to AdminProductApiService class
-
-/// Get base64 for a single asset (only when needed for display)
-Future<String?> getAssetBase64(int assetId) async {
+/// Upload product asset
+Future<ProductAsset> uploadProductAsset(
+  File imageFile,
+  int productId,
+  int variantId, {
+  bool isPrimary = false,
+}) async {
   try {
-    print('🖼️ Fetching base64 for asset $assetId...');
+    print('📤 Uploading asset...');
     
-    final response = await _makeRequest('GET', '/product-assets/$assetId');
+    final bytes = await imageFile.readAsBytes();
+    print('   File size: ${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB');
     
-    if (response is Map && response['base64_file'] != null) {
-      final base64 = response['base64_file'] as String;
-      print('✅ Base64 fetched: ${base64.length} chars');
-      return base64;
-    }
+    final base64Image = base64Encode(bytes);
+    final mimeType = _getMimeType(imageFile.path);
+    final base64File = 'data:$mimeType;base64,$base64Image';
+
+    final response = await _makeRequest(
+      'POST',
+      '/product-assets',
+      body: {
+        'product_id': productId,
+        'variant_id': variantId,
+        'base64_file': base64File,
+        'kind': 'image',
+        'is_primary': isPrimary,
+      },
+    );
     
-    print('⚠️ No base64 available for asset $assetId');
-    return null;
+    print('✅ Asset uploaded: ID ${response['id']}');
+    print('   URL: ${response['url']}');
+    
+    return ProductAsset.fromJson(response as Map<String, dynamic>);
   } catch (e) {
-    print('❌ Failed to fetch base64: $e');
-    return null;
+    print('❌ Failed to upload: $e');
+    rethrow;
   }
 }
 
-  Future<void> deleteProductAsset(int id) async {
-    try {
-      print('🗑️ Deleting asset: ID $id');
-      await _makeRequest('DELETE', '/product-assets/$id');
-      print('✅ Asset deleted: ID $id');
-    } catch (e) {
-      print('❌ Failed to delete asset: $e');
-      rethrow;
-    }
+/// Delete product asset
+Future<void> deleteProductAsset(int id) async {
+  try {
+    print('🗑️ Deleting asset: ID $id');
+    await _makeRequest('DELETE', '/product-assets/$id');
+    print('✅ Asset deleted');
+  } catch (e) {
+    print('❌ Failed to delete: $e');
+    rethrow;
   }
+}
 
-  String _getMimeType(String filePath) {
-    if (filePath.endsWith('.png')) return 'image/png';
-    if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
-      return 'image/jpeg';
-    }
-    if (filePath.endsWith('.gif')) return 'image/gif';
-    if (filePath.endsWith('.webp')) return 'image/webp';
-    return 'image/jpeg';
-  }
+String _getMimeType(String filePath) {
+  if (filePath.endsWith('.png')) return 'image/png';
+  if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) return 'image/jpeg';
+  if (filePath.endsWith('.gif')) return 'image/gif';
+  if (filePath.endsWith('.webp')) return 'image/webp';
+  return 'image/jpeg';
+}
 }

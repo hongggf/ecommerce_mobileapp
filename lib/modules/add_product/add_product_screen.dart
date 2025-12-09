@@ -5,6 +5,7 @@ import 'package:ecommerce_urban/modules/add_product/add_product_controller.dart'
 
 class AdminAddProductView extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
+  final _categoryNameController = TextEditingController();
 
   AdminAddProductView({super.key});
 
@@ -25,8 +26,183 @@ class AdminAddProductView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ==================== STEP 0: CATEGORY MANAGEMENT ====================
+              _buildSectionTitle('Step 1: Category Management'),
+              const SizedBox(height: 16),
+
+              // ADD NEW CATEGORY SECTION
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue.shade200),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.blue.shade50,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Add New Category (Optional)',
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _categoryNameController,
+                            decoration: _buildInputDecoration(
+                                'Category Name', Icons.folder_open),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Obx(
+                          () => ElevatedButton.icon(
+                            onPressed: controller.isCreatingCategory.value
+                                ? null
+                                : () {
+                                    if (_categoryNameController.text
+                                        .trim()
+                                        .isNotEmpty) {
+                                      controller.createCategory(
+                                          _categoryNameController.text.trim());
+                                      _categoryNameController.clear();
+                                    } else {
+                                      Get.snackbar(
+                                        'Error',
+                                        'Enter category name',
+                                        backgroundColor: Colors.orange,
+                                        colorText: Colors.white,
+                                      );
+                                    }
+                                  },
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green.shade700,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // SELECT CATEGORY SECTION
+              Obx(
+                () {
+                  if (controller.categories.isEmpty) {
+                    return _buildDisabledSection(
+                        'No categories available. Add one above or create from Step 2.');
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Select Existing Category',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<int>(
+                        value: controller.selectedCategoryId.value,
+                        decoration: _buildInputDecoration(
+                            'Choose Category', Icons.category),
+                        items: controller.categories.map((category) {
+                          return DropdownMenuItem<int>(
+                            value: category.id,
+                            child: Text(category.name),
+                          );
+                        }).toList(),
+                        onChanged: (v) {
+                          print('Category selected: $v');
+                          controller.selectedCategoryId.value = v;
+                        },
+                        validator: (v) {
+                          if (v == null) {
+                            print('❌ Category validator: v is null');
+                            return "Please select a category";
+                          }
+                          print('✅ Category validator: v=$v');
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Available Categories',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 120,
+                        child: ListView.builder(
+                          itemCount: controller.categories.length,
+                          itemBuilder: (context, index) {
+                            final category = controller.categories[index];
+                            final isSelected = controller
+                                    .selectedCategoryId.value ==
+                                category.id;
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.blue.shade600
+                                      : Colors.grey.shade300,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                                color: isSelected
+                                    ? Colors.blue.shade50
+                                    : Colors.grey.shade50,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.folder,
+                                          color: Colors.blue.shade600,
+                                          size: 20),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        category.name,
+                                        style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                  ),
+                                  if (isSelected)
+                                    Icon(Icons.check_circle,
+                                        color: Colors.blue.shade600),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+
+              const SizedBox(height: 32),
+              const Divider(height: 32),
+
               // ==================== STEP 1: PRODUCT DETAILS ====================
-              _buildSectionTitle('Step 1: Product Details'),
+              _buildSectionTitle('Step 2: Product Details'),
               const SizedBox(height: 16),
 
               // NAME
@@ -46,33 +222,6 @@ class AdminAddProductView extends StatelessWidget {
                 decoration:
                     _buildInputDecoration('Description', Icons.description),
                 validator: (v) => v!.isEmpty ? "Description is required" : null,
-              ),
-              const SizedBox(height: 16),
-
-              // CATEGORY
-              Obx(
-                () => DropdownButtonFormField<int>(
-                  value: controller.selectedCategoryId.value,
-                  decoration: _buildInputDecoration('Category', Icons.category),
-                  items: controller.categories.map((category) {
-                    return DropdownMenuItem<int>(
-                      value: category.id,
-                      child: Text(category.name),
-                    );
-                  }).toList(),
-                  onChanged: (v) {
-                    print('Category selected: $v');
-                    controller.selectedCategoryId.value = v;
-                  },
-                  validator: (v) {
-                    if (v == null) {
-                      print('❌ Category validator: v is null');
-                      return "Category is required";
-                    }
-                    print('✅ Category validator: v=$v');
-                    return null;
-                  },
-                ),
               ),
               const SizedBox(height: 16),
 
@@ -133,8 +282,8 @@ class AdminAddProductView extends StatelessWidget {
               const SizedBox(height: 32),
               const Divider(height: 32),
 
-              // ==================== STEP 2: VARIANT ====================
-              _buildSectionTitle('Step 2: Add Variant (SKU & Price)'),
+              // ==================== STEP 3: VARIANT ====================
+              _buildSectionTitle('Step 3: Add Variant (SKU & Price)'),
               const SizedBox(height: 16),
 
               // Check if product exists - wrap in Obx to react to changes
@@ -200,8 +349,8 @@ class AdminAddProductView extends StatelessWidget {
               const SizedBox(height: 32),
               const Divider(height: 32),
 
-              // ==================== STEP 3: IMAGES ====================
-              _buildSectionTitle('Step 3: Upload Images'),
+              // ==================== STEP 4: IMAGES ====================
+              _buildSectionTitle('Step 4: Upload Images'),
               const SizedBox(height: 16),
 
               // Check if variant exists - wrap in Obx to react to changes
@@ -314,6 +463,15 @@ class AdminAddProductView extends StatelessWidget {
         message,
         style:
             TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Center(
+      child: Text(
+        message,
+        style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
       ),
     );
   }

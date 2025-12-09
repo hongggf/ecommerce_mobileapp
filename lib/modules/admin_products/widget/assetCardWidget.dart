@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ecommerce_urban/app/constants/constants.dart';
 import 'package:ecommerce_urban/modules/admin_products/controller/product_mangement_controller.dart';
+
 
 class AssetCardWidget extends StatelessWidget {
   final dynamic asset;
@@ -69,85 +69,94 @@ class AssetCardWidget extends StatelessWidget {
     );
   }
 
-  /// Build image from URL only (no base64 fallback)
   Widget _buildImage() {
-    print('🖼️ Asset ID: ${asset.id}');
+    print('🖼️ Asset ${asset.id}: Building image from URL');
     print('   URL: ${asset.url}');
 
     if (asset.url == null || asset.url!.isEmpty) {
-      return Center(
-        child: Icon(
-          Icons.image_not_supported,
-          color: Colors.grey.shade400,
-          size: 48,
-        ),
-      );
+      return _buildErrorWidget('No image URL');
     }
 
-    final url = asset.url.toString();
-    
-    // Build full URL using ApiConstants
-    String finalUrl = url;
-    
-    if (url.contains('localhost')) {
-      // Replace localhost with your API constant
-      finalUrl = url.replaceAll('localhost:8000', ApiConstants.baseUrl.replaceAll('/api', ''));
-      finalUrl = finalUrl.replaceAll('localhost', ApiConstants.baseUrl.replaceAll('/api', ''));
-    } else if (!url.startsWith('http')) {
-      // It's a relative path
-      finalUrl = ApiConstants.baseUrl.replaceAll('/api', '') + url;
-    }
-
-    print('🌐 Loading image from: $finalUrl');
+    // Fix URL for Android emulator
+    String imageUrl = _fixUrlForEmulator(asset.url.toString());
+    print('   Final URL: $imageUrl');
 
     return Image.network(
-      finalUrl,
+      imageUrl,
       fit: BoxFit.cover,
-      cacheHeight: 300,  // Add caching
-      cacheWidth: 300,
+      width: double.infinity,
+      height: double.infinity,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
-          print('✅ Image loaded successfully');
+          print('   ✅ Image loaded successfully');
           return child;
         }
+        
+        final progress = loadingProgress.expectedTotalBytes != null
+            ? loadingProgress.cumulativeBytesLoaded /
+                loadingProgress.expectedTotalBytes!
+            : null;
+        
         return Center(
           child: CircularProgressIndicator(
-            value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
-                : null,
+            value: progress,
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade700),
           ),
         );
       },
       errorBuilder: (context, error, stackTrace) {
-        // Ignore connection retry errors (they're normal)
-        if (error.toString().contains('Connection closed')) {
-          print('ℹ️ Image retry (ignore this): $error');
-          return SizedBox.shrink(); // Return empty while retrying
+        print('   ❌ Image error: $error');
+        
+        // Ignore connection retry errors
+        if (error.toString().contains('Connection closed') || 
+            error.toString().contains('Connection reset')) {
+          return const SizedBox.shrink();
         }
         
-        print('❌ Image load failed: $error');
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.broken_image,
-                color: Colors.grey.shade400,
-                size: 48,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Failed to load',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        );
+        return _buildErrorWidget('Failed to load');
       },
+    );
+  }
+
+  /// Fix URL for Android emulator
+  String _fixUrlForEmulator(String url) {
+    if (url.contains('10.0.2.2')) {
+      return url;
+    }
+    
+    if (url.contains('localhost')) {
+      return url.replaceAll('localhost', '10.0.2.2');
+    }
+    
+    if (url.contains('127.0.0.1')) {
+      return url.replaceAll('127.0.0.1', '10.0.2.2');
+    }
+    
+    return url;
+  }
+
+  Widget _buildErrorWidget(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.broken_image,
+            color: Colors.grey.shade400,
+            size: 48,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
