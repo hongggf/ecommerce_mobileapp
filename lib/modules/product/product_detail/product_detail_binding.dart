@@ -1,5 +1,5 @@
-import 'package:ecommerce_urban/modules/product/product_detail/product_detail_controller.dart';
 import 'package:get/get.dart';
+import 'product_detail_controller.dart';
 
 class ProductDetailBinding extends Bindings {
   @override

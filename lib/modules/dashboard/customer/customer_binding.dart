@@ -1,5 +1,5 @@
-import 'package:ecommerce_urban/modules/dashboard/customer/customer_controller.dart';
 import 'package:get/get.dart';
+import 'customer_controller.dart';
 
 class CustomerBinding extends Bindings {
   @override

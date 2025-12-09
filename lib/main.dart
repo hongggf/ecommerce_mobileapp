@@ -15,12 +15,14 @@ void main() async {
   Get.put(RatioController());
 
   runApp(MyApp());
+  
 }
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
   final ThemeController themeController = Get.find<ThemeController>();
+  
   
 
   @override

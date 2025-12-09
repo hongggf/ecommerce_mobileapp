@@ -202,19 +202,21 @@
 //     return 'Bearer ${token ?? ''}';
 //   }
 // }
-import 'dart:convert';
-import 'package:ecommerce_urban/app/constants/constants.dart';
+// lib/modules/auth/auth_service.dart
+
+
+import 'package:ecommerce_urban/app/services/base_http_service.dart';
 import 'package:ecommerce_urban/modules/auth/auth_model.dart';
 import 'package:ecommerce_urban/modules/auth/login/login_request.dart';
 import 'package:ecommerce_urban/modules/auth/register/register_request.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:ecommerce_urban/app/services/storage_services.dart';
 
-class AuthService {
-  final String _baseUrl = ApiConstants.baseUrl;
+
+class AuthService extends BaseHttpService {
   final StorageService _storage = StorageService();
 
+  /// Register new user
   Future<AuthModel> register(
     String fullName,
     String email,
@@ -229,109 +231,97 @@ class AuthService {
         phone: phone,
       );
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/register'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(request.toJson()),
+      // Use base class post method (no auth required)
+      final response = await post(
+        '/register',
+        request.toJson(),
+        requireAuth: false,
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final authModel = AuthModel.fromJson(jsonDecode(response.body));
+      final authModel = AuthModel.fromJson(response);
 
-        // Save token and user data
-        if (authModel.token != null) {
-          await _storage.saveToken(authModel.token!);
-        }
-        await _storage.saveUserData(authModel.toJson());
-
-        return authModel;
+      // Save token and user data
+      if (authModel.token != null) {
+        await _storage.saveToken(authModel.token!);
       }
-      throw Exception('Registration failed: ${response.reasonPhrase}');
+      await _storage.saveUserData(authModel.toJson());
+
+      return authModel;
     } catch (e) {
-      throw Exception(e.toString());
+      throw Exception('Registration failed: $e');
     }
   }
 
+  /// Login user
   Future<AuthModel> login(String email, String password) async {
     try {
       final request = LoginRequest(email: email, password: password);
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/login'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(request.toJson()),
+      // Use base class post method (no auth required)
+      final response = await post(
+        '/login',
+        request.toJson(),
+        requireAuth: false,
       );
 
-      print("Login Response: ${response.body}");
+      print("Login Response: $response");
 
-      if (response.statusCode == 200) {
-        final authModel = AuthModel.fromJson(jsonDecode(response.body));
+      final authModel = AuthModel.fromJson(response);
 
-        // Save token
-        if (authModel.token != null) {
-          await _storage.saveToken(authModel.token!);
-        }
-
-        // Save user data (including role)
-        await _storage.saveUserData(authModel.toJson());
-
-        // Save role separately for quick access
-        if (authModel.role != null) {
-          print("🔐 Saving Role: ${authModel.role}");
-          await _storage.saveRole(authModel.role!);
-        }
-
-        return authModel;
+      // Save token
+      if (authModel.token != null) {
+        await _storage.saveToken(authModel.token!);
       }
 
-      throw Exception("Login failed");
+      // Save user data (including role)
+      await _storage.saveUserData(authModel.toJson());
+
+      // Save role separately for quick access
+      if (authModel.role != null) {
+        print("🔐 Saving Role: ${authModel.role}");
+        await _storage.saveRole(authModel.role!);
+      }
+
+      return authModel;
     } catch (e) {
-      throw Exception(e.toString());
+      throw Exception('Login failed: $e');
     }
   }
 
+  /// Get saved role
   Future<String?> getSavedRole() async {
     return await _storage.getRole();
   }
 
+  /// Logout user
   Future<void> logout() async {
     try {
       final token = await _storage.getToken();
 
       if (token != null) {
-        await http.post(
-          Uri.parse('$_baseUrl/logout'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-        );
+        // Use base class post method (with auth)
+        await post('/logout', {}, requireAuth: true);
       }
-
-      // Only clear auth-related data, NOT cart/order history
-      await _storage.clearAuthData();
     } catch (e) {
+      print('Logout API error: $e');
+    } finally {
+      // Always clear auth data regardless of API success
       await _storage.clearAuthData();
-      throw Exception(e.toString());
     }
   }
 
+  /// Check if token is valid
   Future<bool> isTokenValid() async {
     final token = await _storage.getToken();
     return token != null && token.isNotEmpty;
   }
 
+  /// Get token
   Future<String?> getToken() async {
     return await _storage.getToken();
   }
 
+  /// Get auth header
   Future<String> getAuthHeader() async {
     final token = await _storage.getToken();
     return 'Bearer ${token ?? ''}';

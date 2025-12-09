@@ -1,9 +1,12 @@
+// lib/modules/cart/views/cart_screen.dart
+
 import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
 import 'package:ecommerce_urban/modules/cart/cart_controller.dart';
+import 'package:ecommerce_urban/modules/order/order_summary_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../order/order_summary_screen.dart';
+
 
 class CartScreen extends GetView<CartController> {
   const CartScreen({super.key});
@@ -15,12 +18,35 @@ class CartScreen extends GetView<CartController> {
         title: const Text('Shopping Cart'),
         centerTitle: true,
         elevation: 1,
+        actions: [
+          Obx(() {
+            if (controller.cartItems.isEmpty) return const SizedBox();
+            return IconButton(
+              icon: const Icon(Icons.delete_outline),
+              onPressed: () => _showClearCartDialog(context),
+            );
+          }),
+        ],
       ),
       body: Obx(() {
+        // Show loading state
+        if (controller.isLoading.value && controller.cartItems.isEmpty) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        // Show login prompt if not authenticated
+        if (!controller.isLoggedIn.value) {
+          return _buildLoginPrompt(context);
+        }
+
+        // Show empty cart
         if (controller.cartItems.isEmpty) {
           return _buildEmptyCart(context);
         }
 
+        // Show cart with items
         return Column(
           children: [
             _buildSelectAllBar(),
@@ -39,6 +65,42 @@ class CartScreen extends GetView<CartController> {
     );
   }
 
+  /// LOGIN PROMPT
+  Widget _buildLoginPrompt(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.lock_outline,
+            size: 90,
+            color: Colors.grey.shade300,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Please Login',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Sign in to view and manage your cart',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => Get.toNamed('/login'),
+            icon: const Icon(Icons.login),
+            label: const Text('Go to Login'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// EMPTY CART UI
   Widget _buildEmptyCart(BuildContext context) {
     return Center(
@@ -48,13 +110,28 @@ class CartScreen extends GetView<CartController> {
           Icon(
             Icons.shopping_cart_outlined,
             size: 90,
+            color: Colors.grey.shade300,
           ),
           const SizedBox(height: 20),
-          Text('Your cart is empty',
-              style: Theme.of(context).textTheme.titleLarge),
+          Text(
+            'Your cart is empty',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const SizedBox(height: 8),
-          Text('Add items to get started',
-              style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            'Add items to get started',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => Get.back(),
+            icon: const Icon(Icons.shopping_bag),
+            label: const Text('Continue Shopping'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
         ],
       ),
     );
@@ -65,7 +142,7 @@ class CartScreen extends GetView<CartController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE5E5E5))),
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
       child: Row(
         children: [
@@ -75,12 +152,15 @@ class CartScreen extends GetView<CartController> {
               )),
           const Text(
             "Select All",
-            style: TextStyle(),
+            style: TextStyle(fontWeight: FontWeight.w500),
           ),
           const Spacer(),
           Obx(() => Text(
                 "Selected: ${controller.selectedItemsCount.value}",
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                ),
               )),
         ],
       ),
@@ -123,6 +203,14 @@ class CartScreen extends GetView<CartController> {
                   width: 80,
                   height: 80,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey.shade200,
+                      child: const Icon(Icons.image_not_supported),
+                    );
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -133,12 +221,30 @@ class CartScreen extends GetView<CartController> {
                     Text(
                       item.name,
                       maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: AppFontSize.bodyLarge,
                         fontWeight: FontWeight.w600,
                         height: 1.2,
                       ),
                     ),
+                    const SizedBox(height: 6),
+                    if (item.size != null && item.size!.isNotEmpty)
+                      Text(
+                        'Size: ${item.size}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    if (item.color != null && item.color!.isNotEmpty)
+                      Text(
+                        'Color: ${item.color}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
                     const SizedBox(height: 6),
                     Text(
                       "\$${item.price.toStringAsFixed(2)}",
@@ -154,7 +260,7 @@ class CartScreen extends GetView<CartController> {
                 ),
               ),
               GestureDetector(
-                onTap: () => controller.removeItem(item.id),
+                onTap: () => _showRemoveDialog(item),
                 child: const Icon(Icons.close, color: Colors.red, size: 22),
               )
             ],
@@ -173,11 +279,19 @@ class CartScreen extends GetView<CartController> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          GestureDetector(
-            onTap: () => controller.decreaseQuantity(item.id),
-            child: const Padding(
-              padding: EdgeInsets.all(6),
-              child: Icon(Icons.remove, size: 18),
+          Obx(
+            () => GestureDetector(
+              onTap: controller.isLoading.value
+                  ? null
+                  : () => controller.decreaseQuantity(item.id),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  Icons.remove,
+                  size: 18,
+                  color: controller.isLoading.value ? Colors.grey : Colors.black,
+                ),
+              ),
             ),
           ),
           Obx(() => Padding(
@@ -190,11 +304,19 @@ class CartScreen extends GetView<CartController> {
                   ),
                 ),
               )),
-          GestureDetector(
-            onTap: () => controller.increaseQuantity(item.id),
-            child: const Padding(
-              padding: EdgeInsets.all(6),
-              child: Icon(Icons.add, size: 18),
+          Obx(
+            () => GestureDetector(
+              onTap: controller.isLoading.value
+                  ? null
+                  : () => controller.increaseQuantity(item.id),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  Icons.add,
+                  size: 18,
+                  color: controller.isLoading.value ? Colors.grey : Colors.black,
+                ),
+              ),
             ),
           ),
         ],
@@ -206,22 +328,85 @@ class CartScreen extends GetView<CartController> {
   Widget _buildCheckoutBar() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFE5E5E5))),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: Colors.white,
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Subtotal:",
+                style: TextStyle(
+                  fontSize: AppFontSize.bodyLarge,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Obx(() => Text(
+                    "\$${controller.getSelectedItemsTotal().toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Shipping:",
+                style: TextStyle(
+                  fontSize: AppFontSize.bodyLarge,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Obx(() => Text(
+                    "\$${controller.getShippingCost().toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Tax:",
+                style: TextStyle(
+                  fontSize: AppFontSize.bodyLarge,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Obx(() => Text(
+                    "\$${controller.getTax().toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )),
+            ],
+          ),
+          const Divider(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 "Total:",
                 style: TextStyle(
-                    fontSize: AppFontSize.titleLarge,
-                    fontWeight: FontWeight.w500),
+                  fontSize: AppFontSize.titleLarge,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Obx(() => Text(
-                    "\$${controller.getSelectedItemsTotal().toStringAsFixed(2)}",
+                    "\$${controller.getGrandTotal().toStringAsFixed(2)}",
                     style: TextStyle(
                       fontSize: 20,
                       color: AppColors.primary,
@@ -232,20 +417,113 @@ class CartScreen extends GetView<CartController> {
           ),
           const SizedBox(height: 14),
           Obx(() => ElevatedButton(
-                onPressed: controller.selectedItemsCount.value > 0
-                    ? () => Get.to(() => const OrderSummaryScreen())
+                onPressed: controller.selectedItemsCount.value > 0 &&
+                        !controller.isLoading.value
+                    ? () => _showCheckoutConfirmation()
                     : null,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                   backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  disabledBackgroundColor: Colors.grey.shade300,
                 ),
-                child: Text(
-                  "Checkout (${controller.selectedItemsCount.value})",
-                  style: const TextStyle(fontSize: 16),
-                ),
+                child: controller.isLoading.value
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        "Checkout (${controller.selectedItemsCount.value})",
+                        style: const TextStyle(fontSize: 16),
+                      ),
               )),
+        ],
+      ),
+    );
+  }
+
+  void _showRemoveDialog(dynamic item) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Remove Item'),
+        content: Text('Remove ${item.name} from cart?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              controller.removeItem(item.id);
+              Get.back();
+            },
+            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showClearCartDialog(BuildContext context) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Clear Cart'),
+        content: const Text('Remove all items from cart?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              controller.clearCart();
+              Get.back();
+            },
+            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCheckoutConfirmation() {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Confirm Order'),
+        content: Obx(
+          () => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Items: ${controller.selectedItemsCount.value}'),
+              const SizedBox(height: 8),
+              Text(
+                'Total: \$${controller.getGrandTotal().toStringAsFixed(2)}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              controller.placeOrder();
+              Get.to(() => const OrderSummaryScreen());
+            },
+            child: const Text('Confirm'),
+          ),
         ],
       ),
     );

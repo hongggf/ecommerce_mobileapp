@@ -1,3 +1,5 @@
+// lib/modules/product/product_list/product_list_screen.dart
+
 import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
 import 'package:flutter/material.dart';
@@ -5,124 +7,80 @@ import 'package:get/get.dart';
 import 'product_controller.dart';
 
 class ProductListScreen extends StatelessWidget {
-  final String categoryName;
-
-  ProductListScreen({super.key, required this.categoryName});
+  ProductListScreen({super.key});
 
   final ProductController controller = Get.find<ProductController>();
 
-  // -------------------------
-  // FILTER / SORT DIALOG
-  // -------------------------
-
-  // -------------------------
-  // MAIN UI
-  // -------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(categoryName),
+        title: Text(controller.categoryName ?? 'Products'),
         actions: [
           IconButton(
-              onPressed: _openSortFilterDialog,
-              icon: Icon(Icons.filter_alt_outlined))
+            onPressed: _openSortFilterDialog,
+            icon: Icon(Icons.filter_alt_outlined),
+          )
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: controller.loadProducts,
+        onRefresh: () => controller.loadProducts(refresh: true),
         child: Obx(() {
-          if (controller.isLoading.value) {
+          if (controller.isLoading.value && controller.products.isEmpty) {
             return Center(child: CircularProgressIndicator());
           }
 
-          if (controller.products.isEmpty) {
+          if (controller.filteredProducts.isEmpty) {
             return Center(
-              child: Text("No products found", style: TextStyle(fontSize: 16)),
+              child: Text(
+                "No products found",
+                style: TextStyle(fontSize: 16),
+              ),
             );
           }
 
-          return GridView.builder(
-            padding: EdgeInsets.all(12),
-            itemCount: controller.products.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.68,
-            ),
-            itemBuilder: (_, index) {
-              return _buildCard(controller.products[index]);
+          return NotificationListener<ScrollNotification>(
+            onNotification: (ScrollNotification scrollInfo) {
+              if (!controller.isLoading.value &&
+                  scrollInfo.metrics.pixels ==
+                      scrollInfo.metrics.maxScrollExtent) {
+                controller.loadMore();
+              }
+              return false;
             },
+            child: GridView.builder(
+              padding: EdgeInsets.all(12),
+              itemCount: controller.filteredProducts.length +
+                  (controller.currentPage.value < controller.lastPage.value
+                      ? 1
+                      : 0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.68,
+              ),
+              itemBuilder: (_, index) {
+                if (index == controller.filteredProducts.length) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                return _buildCard(controller.filteredProducts[index]);
+              },
+            ),
           );
         }),
       ),
     );
   }
 
-// void _openSortFilterDialog() {
-//     Get.dialog(
-//       AlertDialog(
-//         title: const Text("Sort & Filter"),
-//         content: Column(
-//           mainAxisSize: MainAxisSize.min,
-//           children: [
-//             const Text("Sort By"),
-//             const SizedBox(height: 10),
-
-//             // SORT OPTIONS
-//             Obx(() => DropdownButton<String>(
-//                   value: controller.selectedSort.value,
-//                   items: [
-//                     "Latest",
-//                     "LowToHigh",
-//                     "HighToLow",
-//                   ]
-//                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-//                       .toList(),
-//                   onChanged: (value) {
-//                     controller.applySort(value!);
-//                   },
-//                 )),
-
-//             const SizedBox(height: 20),
-//             const Text("Filter By"),
-//             const SizedBox(height: 10),
-
-//             // FILTER OPTIONS
-//             Obx(() => DropdownButton<String>(
-//                   value: controller.selectedFilter.value,
-//                   items: [
-//                     "None",
-//                     "<50",
-//                     "Nike",
-//                   ]
-//                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-//                       .toList(),
-//                   onChanged: (value) {
-//                     controller.applyFilter(value!);
-//                   },
-//                 )),
-//           ],
-//         ),
-//         actions: [
-//           TextButton(
-//             onPressed: () => Get.back(),
-//             child: const Text("Close"),
-//           )
-//         ],
-//       ),
-//     );
-//   }
   void _openSortFilterDialog() {
     Get.bottomSheet(
       Container(
-        // Apply subtle padding and rounded top corners for a modern look
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Get.isDarkMode
               ? AppColors.darkSurface
-              : AppColors.lightBackground, // Use your app's background color
+              : AppColors.lightBackground,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
@@ -132,7 +90,6 @@ class ProductListScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Title/Header
             Text(
               "Sort & Filter",
               style: TextStyle(
@@ -140,33 +97,21 @@ class ProductListScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Divider(height: 25, thickness: 1), // Visual separator
-
-            // 2. Sort Options Section
+            const Divider(height: 25, thickness: 1),
             Text(
               "Sort By",
               style: TextStyle(fontSize: AppFontSize.headlineSmall),
             ),
             const SizedBox(height: 10),
-
-            // Custom Widget for Dropdown to keep UI clean and consistent
             _buildSortDropdown(),
-
             const SizedBox(height: 30),
-
-            // 3. Filter Options Section
-            Text(
-              "Filter By",
-              style: TextStyle(fontSize: AppFontSize.headlineSmall),
-            ),
+            // Text(
+            //   "Filter By",
+            //   style: TextStyle(fontSize: AppFontSize.headlineSmall),
+            // ),
             const SizedBox(height: 10),
-
-            // Custom Widget for Dropdown
-            _buildFilterDropdown(),
-
+            // _buildFilterDropdown(),
             const SizedBox(height: 30),
-
-            // 4. Action Button (optional, but good for closing)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -190,73 +135,59 @@ class ProductListScreen extends StatelessWidget {
     );
   }
 
-// Helper widget for a more styled dropdown
   Widget _buildSortDropdown() {
-    return Obx(
-      () => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300), // Subtle border
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            isExpanded: true, // Make it take full width
-            value: controller.selectedSort.value,
-            items: [
-              "Latest",
-              "LowToHigh",
-              "HighToLow",
-            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-            onChanged: (value) {
-              controller.applySort(value!);
-              // Optional: Close sheet immediately on selection
-              // Get.back();
-            },
+    return Obx(() => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
           ),
-        ),
-      ),
-    );
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: controller.selectedSort.value,
+              items: [
+                "Latest",
+                "LowToHigh",
+                "HighToLow",
+              ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              onChanged: (value) {
+                controller.applySort(value!);
+              },
+            ),
+          ),
+        ));
   }
 
-// Helper widget for a more styled dropdown
-  Widget _buildFilterDropdown() {
-    return Obx(
-      () => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            isExpanded: true,
-            value: controller.selectedFilter.value,
-            items: [
-              "None",
-              "<50",
-              "Nike",
-            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-            onChanged: (value) {
-              controller.applyFilter(value!);
-              // Optional: Close sheet immediately on selection
-              // Get.back();
-            },
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildFilterDropdown() {
+  //   return Obx(() => Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+  //     decoration: BoxDecoration(
+  //       border: Border.all(color: Colors.grey.shade300),
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child: DropdownButtonHideUnderline(
+  //       child: DropdownButton<String>(
+  //         isExpanded: true,
+  //         value: controller.selectedFilter.value,
+  //         items: [
+  //           "None",
+  //           "<50",
+  //           "Nike",
+  //         ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+  //         onChanged: (value) {
+  //           controller.applyFilter(value!);
+  //         },
+  //       ),
+  //     ),
+  //   ));
+  // }
 
-  // -------------------------
-  // PRODUCT CARD UI
-  // -------------------------
-  Widget _buildCard(Map item) {
+  Widget _buildCard(product) {
     return GestureDetector(
-      onTap: () => Get.toNamed('/product_detail'),
+      onTap: () => controller.goToProductDetail(product),
       child: Container(
         decoration: BoxDecoration(
-          // color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -269,22 +200,22 @@ class ProductListScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --------------------------
-            // PRODUCT IMAGE + FAVORITE
-            // --------------------------
             Stack(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                   child: Image.network(
-                    item["image"],
+                    product.primaryImageUrl,
                     height: 150,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 150,
+                      color: Colors.grey.shade200,
+                      child: Icon(Icons.image, size: 50),
+                    ),
                   ),
                 ),
-
-                // ❤️ Favorite Icon
                 Positioned(
                   top: 8,
                   right: 8,
@@ -292,7 +223,7 @@ class ProductListScreen extends StatelessWidget {
                     onTap: () {
                       Get.snackbar(
                         "Wishlist",
-                        "${item["name"]} added to wishlist",
+                        "${product.name} added to wishlist",
                         snackPosition: SnackPosition.BOTTOM,
                         backgroundColor: AppColors.primary,
                       );
@@ -319,10 +250,6 @@ class ProductListScreen extends StatelessWidget {
                 ),
               ],
             ),
-
-            // --------------------------
-            // PRODUCT NAME + PRICE + ADD TO CART
-            // --------------------------
             Expanded(
               child: Padding(
                 padding:
@@ -330,9 +257,8 @@ class ProductListScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name
                     Text(
-                      item["name"],
+                      product.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -340,27 +266,21 @@ class ProductListScreen extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
-
                     SizedBox(height: 4),
-
-                    // Price
                     Text(
-                      "\$${item["price"]}",
+                      "\$${product.lowestPrice.toStringAsFixed(2)}",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                         color: Colors.blueAccent,
                       ),
                     ),
-
                     Spacer(),
-
-                    // ADD TO CART BUTTON
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          Get.snackbar("Cart", "Added ${item["name"]} to cart");
+                          Get.snackbar("Cart", "Added ${product.name} to cart");
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,

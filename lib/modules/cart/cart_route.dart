@@ -8,5 +8,6 @@ final cartRoute = [
     name: AppRoutes.cart,
     page: () => CartScreen(),
     binding: CartBinding(),
+    transition: Transition.cupertino
   )
 ];

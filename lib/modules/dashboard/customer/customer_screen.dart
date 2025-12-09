@@ -1,12 +1,11 @@
+// lib/modules/dashboard/customer/customer_screen.dart
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
-import 'package:ecommerce_urban/app/widgets/category_list_widget.dart';
 import 'package:ecommerce_urban/app/widgets/product_card_widget.dart';
 import 'package:ecommerce_urban/app/widgets/search_widget.dart';
 import 'package:ecommerce_urban/app/widgets/title_widget.dart';
-import 'package:ecommerce_urban/modules/bottom_nav/bottom_controller.dart';
-import 'package:ecommerce_urban/modules/auth/auth_controller.dart';
 import 'package:ecommerce_urban/modules/dashboard/customer/customer_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,16 +19,14 @@ class CustomerScreen extends StatefulWidget {
 }
 
 class _CustomerScreenState extends State<CustomerScreen> {
-  final List<Widget> silderIMG = [
+  final List<Widget> sliderIMG = [
     Image.asset("assets/images/slider1.jpg", fit: BoxFit.cover),
     Image.asset("assets/images/slider2.jpg", fit: BoxFit.cover),
   ];
 
-  late final CustomerController customerController = Get.find<CustomerController>();
-  late final BottomNavController bottomController = Get.find<BottomNavController>();
- late final AuthController auth = Get.find<AuthController>();
+  final CustomerController controller = Get.find<CustomerController>();
+  final currentIndex = 0.obs;
 
-  var currentIndex = 0.obs;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,104 +43,167 @@ class _CustomerScreenState extends State<CustomerScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-            left: AppSpacing.paddingS, right: AppSpacing.paddingS),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SearchCardNavigation(
-              onTap: () => Get.toNamed('/search'),
-            ),
-            SizedBox(height: AppSpacing.paddingS),
-            _SliderWidget(),
-            SizedBox(height: AppSpacing.paddingL),
-            _categorySection(),
-            SizedBox(height: AppSpacing.paddingL),
-            _popularProductSection(),
-          ],
+      body: RefreshIndicator(
+        onRefresh: controller.refreshDashboard,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: AppSpacing.paddingS,
+            right: AppSpacing.paddingS,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SearchCardNavigation(
+                onTap: () => Get.toNamed('/search'),
+              ),
+              SizedBox(height: AppSpacing.paddingS),
+              _SliderWidget(),
+              SizedBox(height: AppSpacing.paddingL),
+              _categorySection(),
+              SizedBox(height: AppSpacing.paddingL),
+              _popularProductSection(),
+              SizedBox(height: 100),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _categorySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TitleWidget(
-          title: "Category",
-          icon: Icons.arrow_forward_rounded,
-          onIconTap: () {},
-        ),
-        CategoryListWidget(
-          categories: [
-            Category(name: "Shoes"),
-            Category(name: "Bags"),
-            Category(name: "Watches"),
-          ],
-          selectedIndex: 0,
-          onCategoryTap: (index) {
-            print("Selected category index: $index");
-          },
-        ),
-      ],
-    );
+    return Obx(() {
+      if (controller.isCategoriesLoading.value) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      if (controller.categories.isEmpty) {
+        return Center(
+          child: Text('No categories available'),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TitleWidget(
+            title: "Category",
+            icon: Icons.arrow_forward_rounded,
+            onIconTap: () {
+              Get.toNamed('/product', arguments: {
+                'categoryName': 'All Categories',
+              });
+            },
+          ),
+          SizedBox(height: 12),
+          SizedBox(
+            height: 45,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: controller.categories.length,
+              itemBuilder: (context, index) {
+                final category = controller.categories[index];
+                return GestureDetector(
+                  onTap: () => controller.onCategoryTap(index),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSpacing.paddingS),
+                        child: Center(
+                          child: Text(
+                            category.name.toUpperCase(),
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _popularProductSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              "Popular Products",
-              style: TextStyle(
-                fontSize: AppFontSize.titleLarge,
-                fontWeight: FontWeight.bold,
+    return Obx(() {
+      if (controller.isProductsLoading.value) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      if (controller.popularProducts.isEmpty) {
+        return Center(
+          child: Text('No products available'),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                "Popular Products",
+                style: TextStyle(
+                  fontSize: AppFontSize.titleLarge,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            Spacer(),
-            GestureDetector(
-              onTap: () => {
-                Get.toNamed('/product', arguments: {
+              Spacer(),
+              GestureDetector(
+                onTap: () => Get.toNamed('/product', arguments: {
                   'categoryName': 'Popular Products',
-                })
-              },
-              child: Text("see all",
+                }),
+                child: Text(
+                  "see all",
                   style: TextStyle(
                     fontSize: AppFontSize.bodyLarge,
                     color: Colors.blue,
-                  )),
-            ),
-          ],
-        ),
-        SizedBox(
-          height: 260, // Height of each product card
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: 10,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              return SizedBox(
-                width: 180,
-                child: ProductCardWidget(
-                  imageUrl: "https://picsum.photos/300",
-                  title: "Nike Shoes",
-                  description: "Comfortable running shoes for everyday use.",
-                  showWishlist: true,
-                  isWishlisted: index.isEven,
-                  onTap: () => Get.toNamed('/product_detail'),
-                  onWishlistTap: () => print("Wishlist clicked $index"),
+                  ),
                 ),
-              );
-            },
+              ),
+            ],
           ),
-        ),
-      ],
-    );
+          SizedBox(height: 12),
+          SizedBox(
+            height: 260,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: controller.popularProducts.length,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final product = controller.popularProducts[index];
+                return SizedBox(
+                  width: 180,
+                  child: ProductCardWidget(
+                    imageUrl: product.primaryImageUrl,
+                    title: product.name,
+                    description: '\$${product.lowestPrice.toStringAsFixed(2)}',
+                    showWishlist: true,
+                    isWishlisted: false,
+                    onTap: () => controller.goToProductDetail(product),
+                    onWishlistTap: () => print("Wishlist clicked $index"),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _SliderWidget() {
@@ -160,7 +220,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
               currentIndex.value = index;
             },
           ),
-          items: silderIMG.map((i) {
+          items: sliderIMG.map((i) {
             return Builder(
               builder: (BuildContext context) {
                 return ClipRRect(
@@ -175,14 +235,12 @@ class _CustomerScreenState extends State<CustomerScreen> {
             );
           }).toList(),
         ),
-
-        // ✅ Indicator
         Positioned(
           bottom: 10,
           left: MediaQuery.of(context).size.width * 0.4,
           child: Obx(() => AnimatedSmoothIndicator(
                 activeIndex: currentIndex.value,
-                count: silderIMG.length,
+                count: sliderIMG.length,
                 effect: const ExpandingDotsEffect(
                   dotWidth: 10,
                   dotHeight: 10,

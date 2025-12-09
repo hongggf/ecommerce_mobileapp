@@ -1,60 +1,123 @@
+// lib/modules/product/product_list/product_controller.dart
+
+import 'package:ecommerce_urban/app/model/product_model.dart';
+import 'package:ecommerce_urban/app/repositories/product_repository.dart';
 import 'package:get/get.dart';
 
 class ProductController extends GetxController {
-  RxBool isLoading = true.obs;
-  RxList<Map<String, dynamic>> products = <Map<String, dynamic>>[].obs;
+  final ProductRepository _productRepo = ProductRepository();
 
-  // Sorting & Filtering State
-  RxString selectedSort = "Latest".obs;
-  RxString selectedFilter = "None".obs;
+  final isLoading = false.obs;
+  final products = <ProductModel>[].obs;
+  final filteredProducts = <ProductModel>[].obs;
+
+  final selectedSort = 'Latest'.obs;
+  final selectedFilter = 'None'.obs;
+
+  final currentPage = 1.obs;
+  final lastPage = 1.obs;
+  final total = 0.obs;
+
+  int? categoryId;
+  String? categoryName;
 
   @override
   void onInit() {
     super.onInit();
+
+    final args = Get.arguments;
+    if (args != null) {
+      categoryId = args['categoryId'];
+      categoryName = args['categoryName'];
+    }
+
+    print('🎯 ProductController initialized');
+    print('📂 Category ID: $categoryId');
+    print('📝 Category Name: $categoryName');
+
     loadProducts();
   }
 
-  Future<void> loadProducts() async {
-    isLoading(true);
+  Future<void> loadProducts({bool refresh = false}) async {
+    if (refresh) {
+      currentPage.value = 1;
+      products.clear();
+    }
 
-    await Future.delayed(const Duration(seconds: 1)); // simulate fetch
+    isLoading.value = true;
 
-    products.assignAll([
-      {"image": "https://picsum.photos/300?1", "name": "Air Max", "price": 79.99},
-      {"image": "https://picsum.photos/300?2", "name": "Sneaker X", "price": 49.99},
-      {"image": "https://picsum.photos/300?3", "name": "Sandals", "price": 25.99},
-      {"image": "https://picsum.photos/300?4", "name": "Leather Bag", "price": 120.00},
-    ]);
+    try {
+      final result = await _productRepo.getProducts(
+        page: currentPage.value,
+        perPage: 15,
+        categoryId: categoryId,
+      );
 
-    isLoading(false);
-  }
+      final List<ProductModel> newProducts = result['data'];
 
-  // -------------------------
-  // SORT LOGIC
-  // -------------------------
-  void applySort(String value) {
-    selectedSort.value = value;
+      if (refresh) {
+        products.value = newProducts;
+      } else {
+        products.addAll(newProducts);
+      }
 
-    if (value == "LowToHigh") {
-      products.sort((a, b) => a["price"].compareTo(b["price"]));
-    } else if (value == "HighToLow") {
-      products.sort((a, b) => b["price"].compareTo(a["price"]));
+      lastPage.value = result['last_page'];
+      total.value = result['total'];
+
+      _applyFiltersAndSort();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load products: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  // -------------------------
-  // FILTER LOGIC
-  // -------------------------
-  void applyFilter(String value) {
-    selectedFilter.value = value;
-
-    loadProducts(); // refresh (simulate real filter)
-    if (value == "<50") {
-      products.value =
-          products.where((p) => p["price"] < 50).toList();
-    } else if (value == "Nike") {
-      products.value =
-          products.where((p) => p["name"].toString().contains("Air")).toList();
+  Future<void> loadMore() async {
+    if (currentPage.value < lastPage.value && !isLoading.value) {
+      currentPage.value++;
+      await loadProducts();
     }
+  }
+
+  void _applyFiltersAndSort() {
+    var tempList = List<ProductModel>.from(products);
+
+    // Filter
+    if (selectedFilter.value == '<50') {
+      tempList = tempList.where((p) => p.lowestPrice < 50).toList();
+    } else if (selectedFilter.value == 'Nike') {
+      tempList =
+          tempList.where((p) => p.name.toLowerCase().contains('nike')).toList();
+    }
+
+    // Sort
+    if (selectedSort.value == 'LowToHigh') {
+      tempList.sort((a, b) => a.lowestPrice.compareTo(b.lowestPrice));
+    } else if (selectedSort.value == 'HighToLow') {
+      tempList.sort((a, b) => b.lowestPrice.compareTo(a.lowestPrice));
+    }
+
+    filteredProducts.value = tempList;
+  }
+
+  void applySort(String sortType) {
+    selectedSort.value = sortType;
+    _applyFiltersAndSort();
+  }
+
+  void applyFilter(String filterType) {
+    selectedFilter.value = filterType;
+    _applyFiltersAndSort();
+  }
+
+  void goToProductDetail(ProductModel product) {
+    Get.toNamed('/product_detail', arguments: {
+      'productId': product.id,
+      'product': product,
+    });
   }
 }

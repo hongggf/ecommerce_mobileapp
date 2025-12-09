@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 final productRoutes = [
   GetPage(
     name: AppRoutes.product,
-    page: () => ProductListScreen(categoryName: "All products"),
+    page: () => ProductListScreen(),
     binding: ProductBinding(),
     transition: Transition.fadeIn,
   ),
