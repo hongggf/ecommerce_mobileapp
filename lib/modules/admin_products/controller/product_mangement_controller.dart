@@ -1,215 +1,136 @@
 import 'dart:io';
-import 'package:ecommerce_urban/modules/admin_products/model/category_model.dart';
-import 'package:ecommerce_urban/modules/admin_products/model/product_asset.dart';
-import 'package:ecommerce_urban/modules/admin_products/model/product_model.dart';
-import 'package:ecommerce_urban/modules/admin_products/model/product_varaint_model.dart';
-import 'package:ecommerce_urban/modules/admin_products/services/adminProductApiService.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../model/product_model.dart';
+import '../model/product_varaint_model.dart';
+
 
 class ProductManagementController extends GetxController {
-  final apiService = Adminproductapiservice();
-
-  // Product State
-  final product = Rx<Product?>(null);
-  final productName = RxString('');
-  final productDescription = RxString('');
-  final selectedCategoryId = RxnInt();
-  final productStatus = RxString('active');
-
-  // Variants State
-  final variants = RxList<ProductVariant>([]);
-  final selectedVariant = Rx<ProductVariant?>(null);
-  final variantName = RxString('');
-  final variantSku = RxString('');
-  final variantPrice = RxString('');
-  final variantStatus = RxString('active');
-
-  // Assets State
-  final assets = RxList<ProductAsset>([]);
-  final selectedAsset = Rx<ProductAsset?>(null);
-
-  // UI State
-  final isLoading = RxBool(false);
-  final isLoadingVariants = RxBool(false);
-  final isLoadingAssets = RxBool(false);
-  final isUploading = RxBool(false);
-  final categories = RxList<Category>([]);
-  final errorMessage = RxString('');
-  final currentStep = RxInt(0);
-  final showVariantForm = RxBool(false);
-  final showAssetForm = RxBool(false);
+  // Reactive variables
+  var isLoading = false.obs;
+  var isLoadingVariants = false.obs;
+  var isLoadingAssets = false.obs;
+  var currentStep = 0.obs;
+  
+  // Product data
+  var product = Rxn<Product>();
+  var productName = ''.obs;
+  var productDescription = ''.obs;
+  var productStatus = 'active'.obs;
+  var selectedCategoryId = Rxn<int>();
+  
+  // Categories
+  var categories = <Category>[].obs;
+  
+  // Variants
+  var variants = <ProductVariant>[].obs;
+  var selectedVariant = Rxn<ProductVariant>();
+  var showVariantForm = false.obs;
+  var variantName = ''.obs;
+  var variantSku = ''.obs;
+  var variantPrice = ''.obs;
+  var variantStatus = 'active'.obs;
+  
+  // Assets
+  var assets = <Asset>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    final args = Get.arguments;
-    if (args is Product) {
-      _initializeWithProduct(args);
-    } else {
-      _loadCategories();
-    }
-  }
-
-  // ==================== INITIALIZATION ====================
-  Future<void> _initializeWithProduct(Product productData) async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      product.value = productData;
-      productName.value = productData.name;
-      productDescription.value = productData.description;
-      selectedCategoryId.value = productData.categoryId;
-      productStatus.value = productData.status;
-
-      await _loadCategories();
-      if (productData.id != null) {
-        await _loadVariants(productData.id!);
+    fetchCategories();
+    
+    // Check if editing existing product
+    final productArg = Get.arguments;
+    if (productArg != null && productArg is Product) {
+      product.value = productArg;
+      productName.value = productArg.name;
+      productDescription.value = productArg.description;
+      productStatus.value = productArg.status;
+      selectedCategoryId.value = productArg.categoryId;
+      
+      if (productArg.variants != null) {
+        variants.value = productArg.variants!;
       }
-    } catch (e) {
-      errorMessage.value = 'Failed to initialize: $e';
-      print('❌ Error initializing: $e');
-    } finally {
-      isLoading.value = false;
     }
   }
 
-  Future<void> _loadCategories() async {
-    try {
-      final fetchedCategories = await apiService.getCategories();
-      categories.value = fetchedCategories;
-      print('✅ Categories loaded: ${categories.length}');
-    } catch (e) {
-      errorMessage.value = 'Failed to load categories: $e';
-      print('❌ Error loading categories: $e');
-    }
+  // Fetch categories
+  Future<void> fetchCategories() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    categories.value = [
+      Category(id: 1, name: 'Electronics'),
+      Category(id: 2, name: 'Clothing'),
+      Category(id: 3, name: 'Home & Garden'),
+      Category(id: 4, name: 'Sports'),
+      Category(id: 5, name: 'Books'),
+    ];
   }
 
-  // ==================== PRODUCT MANAGEMENT ====================
+  // Save product (step 0)
   Future<void> saveProduct() async {
-    if (!_validateProduct()) return;
-
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      final newProduct = Product(
-        id: product.value?.id,
-        name: productName.value.trim(),
-        description: productDescription.value.trim(),
-        status: productStatus.value,
-        categoryId: selectedCategoryId.value!,
+    if (productName.value.isEmpty) {
+      Get.snackbar(
+        'Validation Error',
+        'Please enter a product name',
+        snackPosition: SnackPosition.BOTTOM,
       );
-
-      if (product.value?.id != null) {
-        await apiService.updateProduct(product.value!.id!, newProduct);
-        print('✅ Product updated');
-        Get.snackbar('Success', 'Product updated',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white);
-      } else {
-        final created = await apiService.createProduct(newProduct);
-        product.value = created;
-        print('✅ Product created with ID: ${created.id}');
-        Get.snackbar('Success', 'Product created',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white);
-      }
-
-      if (product.value?.id != null) {
-        print('📋 Product ID exists: ${product.value!.id}');
-        currentStep.value = 1;
-        await _loadVariants(product.value!.id!);
-      } else {
-        print('❌ ERROR: Product has no ID!');
-        Get.snackbar('Error', 'Product was not saved properly');
-        return;
-      }
-    } catch (e) {
-      print('❌ Error saving product: $e');
-      Get.snackbar('Error', 'Failed to save product: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white);
-    } finally {
-      isLoading.value = false;
+      return;
     }
-  }
 
-  Future<void> deleteProduct() async {
-    if (product.value?.id == null) return;
+    if (selectedCategoryId.value == null) {
+      Get.snackbar(
+        'Validation Error',
+        'Please select a category',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
 
     try {
       isLoading.value = true;
-      await apiService.deleteProduct(product.value!.id!);
-      print('✅ Product deleted');
-      Get.back();
-      Get.snackbar('Success', 'Product deleted successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white);
-    } catch (e) {
-      print('❌ Error deleting product: $e');
-      Get.snackbar('Error', 'Failed to delete product: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white);
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  bool _validateProduct() {
-    if (productName.value.trim().isEmpty) {
-      _showError('Product name is required');
-      return false;
-    }
-    if (productDescription.value.trim().isEmpty) {
-      _showError('Product description is required');
-      return false;
-    }
-    if (selectedCategoryId.value == null) {
-      _showError('Please select a category');
-      return false;
-    }
-    return true;
-  }
-
-  // ==================== VARIANT MANAGEMENT ====================
-  Future<void> _loadVariants(int productId) async {
-    try {
-      isLoadingVariants.value = true;
-      print('📋 Loading variants for product $productId...');
-
-      final allVariants = await apiService.getProductVariants(productId);
-      print('✅ API returned ${allVariants.length} total variants');
-
-      // Filter to only this product's variants
-      final filtered =
-          allVariants.where((v) => v.productId == productId).toList();
-      print('📊 Filtered to product $productId: ${filtered.length} variants');
-
-      variants.value = filtered;
-
-      if (filtered.isNotEmpty) {
-        filtered.forEach((v) {
-          print('   ✓ ${v.name} (ID: ${v.id}, ProductID: ${v.productId}, SKU: ${v.sku})');
-        });
+      
+      // Simulate network delay
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      // Mock save product
+      if (product.value == null) {
+        product.value = Product(
+          id: DateTime.now().millisecondsSinceEpoch,
+          name: productName.value,
+          description: productDescription.value,
+          status: productStatus.value,
+          categoryId: selectedCategoryId.value!,
+        );
       } else {
-        print('⚠️ No variants found for product $productId');
+        product.value = Product(
+          id: product.value!.id,
+          name: productName.value,
+          description: productDescription.value,
+          status: productStatus.value,
+          categoryId: selectedCategoryId.value!,
+        );
       }
+      
+      isLoading.value = false;
+      
+      Get.snackbar(
+        'Success',
+        'Product saved successfully',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      
+      nextStep();
     } catch (e) {
-      errorMessage.value = 'Failed to load variants: $e';
-      print('❌ Error loading variants: $e');
-      variants.value = [];
-    } finally {
-      isLoadingVariants.value = false;
+      isLoading.value = false;
+      Get.snackbar(
+        'Error',
+        'Failed to save product',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
+  // Variant management
   void openVariantForm([ProductVariant? variant]) {
     if (variant != null) {
       selectedVariant.value = variant;
@@ -218,296 +139,186 @@ class ProductManagementController extends GetxController {
       variantPrice.value = variant.price.toString();
       variantStatus.value = variant.status;
     } else {
-      _resetVariantForm();
+      selectedVariant.value = null;
+      variantName.value = '';
+      variantSku.value = '';
+      variantPrice.value = '';
+      variantStatus.value = 'active';
     }
     showVariantForm.value = true;
   }
 
   void closeVariantForm() {
-    _resetVariantForm();
     showVariantForm.value = false;
-  }
-
-  void _resetVariantForm() {
     selectedVariant.value = null;
-    variantName.value = '';
-    variantSku.value = '';
-    variantPrice.value = '';
-    variantStatus.value = 'active';
   }
 
   Future<void> saveVariant() async {
-    if (!_validateVariant()) return;
+    if (variantName.value.isEmpty || variantSku.value.isEmpty || variantPrice.value.isEmpty) {
+      Get.snackbar(
+        'Validation Error',
+        'Please fill all variant fields',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
 
     try {
       isLoading.value = true;
-      errorMessage.value = '';
-
-      print('\n🔍 ===== SAVING VARIANT =====');
-      print('Product ID: ${product.value?.id}');
-      print('Variant Name: ${variantName.value}');
-      print('Variant SKU: ${variantSku.value}');
-      print('Variant Price: ${variantPrice.value}');
-
-      final variant = ProductVariant(
-        id: selectedVariant.value?.id,
-        productId: product.value?.id,
-        name: variantName.value.trim(),
-        sku: variantSku.value.trim(),
-        price: double.parse(variantPrice.value.trim()),
-        status: variantStatus.value,
-      );
-
-      if (selectedVariant.value?.id != null) {
-        print('🔄 Updating variant ID: ${selectedVariant.value!.id}');
-        await apiService.updateProductVariant(
-            selectedVariant.value!.id!, variant);
-        print('✅ Variant updated');
-        Get.snackbar('Success', 'Variant updated successfully',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white);
-      } else {
-        print('➕ Creating new variant...');
-        final created = await apiService.createProductVariant(variant);
-        print('✅ Variant created with ID: ${created.id}');
-        Get.snackbar('Success', 'Variant created successfully',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white);
-      }
-
-      closeVariantForm();
-
-      // Wait a bit for DB to update
       await Future.delayed(const Duration(milliseconds: 500));
-
-      // Reload variants - THIS IS KEY
-      if (product.value?.id != null) {
-        print('📋 Reloading variants...');
-        await _loadVariants(product.value!.id!);
-        
-        if (variants.isNotEmpty) {
-          print('✅ Variants reloaded: ${variants.length} total');
-          
-          // Auto-select the newly created/updated variant
-          ProductVariant? savedVariant;
-          if (selectedVariant.value?.id != null) {
-            // Updated variant - find by ID
-            savedVariant = variants.firstWhereOrNull(
-              (v) => v.id == selectedVariant.value?.id,
-            );
-            print('🔍 Looking for updated variant ID: ${selectedVariant.value?.id}');
-          } else {
-            // New variant - select the last one (most recently created)
-            savedVariant = variants.last;
-            print('🔍 New variant created - selecting last one: ${savedVariant.name}');
-          }
-
-          if (savedVariant != null) {
-            print('🎯 Auto-selecting variant: ${savedVariant.name} (ID: ${savedVariant.id})');
-            selectedVariant.value = savedVariant;
-          }
-        } else {
-          print('⚠️ WARNING: Variants list is empty after reload!');
+      
+      final price = double.tryParse(variantPrice.value) ?? 0.0;
+      
+      if (selectedVariant.value != null) {
+        // Update existing variant
+        final index = variants.indexWhere((v) => v.id == selectedVariant.value!.id);
+        if (index != -1) {
+          variants[index] = ProductVariant(
+            id: selectedVariant.value!.id,
+            name: variantName.value,
+            sku: variantSku.value,
+            price: price,
+            status: variantStatus.value,
+          );
         }
+      } else {
+        // Add new variant
+        variants.add(ProductVariant(
+          id: DateTime.now().millisecondsSinceEpoch,
+          name: variantName.value,
+          sku: variantSku.value,
+          price: price,
+          status: variantStatus.value,
+        ));
       }
-
-      print('============================\n');
-    } catch (e) {
-      print('❌ Error saving variant: $e');
-
-      String errorMsg = 'Failed to save variant';
-
-      if (e.toString().contains('SKU has already been used')) {
-        errorMsg =
-            '❌ SKU Error: This SKU has already been used.\n\nPlease use a different SKU.';
-      } else if (e.toString().contains('SKU')) {
-        errorMsg = '❌ SKU Error: ${e.toString()}';
-      } else if (e.toString().contains('price')) {
-        errorMsg = '❌ Price Error: Please enter a valid price.';
-      } else if (e.toString().contains('name')) {
-        errorMsg = '❌ Name Error: Variant name is required.';
-      }
-
-      Get.snackbar('Error', errorMsg,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 4));
-    } finally {
+      
       isLoading.value = false;
+      closeVariantForm();
+      
+      Get.snackbar(
+        'Success',
+        'Variant saved successfully',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      isLoading.value = false;
+      Get.snackbar(
+        'Error',
+        'Failed to save variant',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
   Future<void> deleteVariant(ProductVariant variant) async {
-    if (variant.id == null) return;
-
     try {
-      isLoading.value = true;
-      await apiService.deleteProductVariant(variant.id!);
-      print('✅ Variant deleted');
-
-      if (product.value?.id != null) {
-        await _loadVariants(product.value!.id!);
-      }
-      Get.snackbar('Success', 'Variant deleted successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white);
+      await Future.delayed(const Duration(milliseconds: 300));
+      variants.removeWhere((v) => v.id == variant.id);
+      
+      Get.snackbar(
+        'Success',
+        'Variant deleted successfully',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
-      print('❌ Error deleting variant: $e');
-      Get.snackbar('Error', 'Failed to delete variant: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white);
-    } finally {
-      isLoading.value = false;
+      Get.snackbar(
+        'Error',
+        'Failed to delete variant',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
-  bool _validateVariant() {
-    if (variantName.value.trim().isEmpty) {
-      _showError('Variant name is required');
-      return false;
-    }
-    if (variantSku.value.trim().isEmpty) {
-      _showError('SKU is required');
-      return false;
-    }
-    if (variantPrice.value.trim().isEmpty) {
-      _showError('Price is required');
-      return false;
-    }
-    try {
-      double.parse(variantPrice.value.trim());
-    } catch (e) {
-      _showError('Price must be a valid number');
-      return false;
-    }
-    return true;
+  // Asset management
+  void selectVariantForAssets(ProductVariant variant) {
+    selectedVariant.value = variant;
+    currentStep.value = 2;
+    fetchAssets();
   }
 
-  // ==================== ASSET MANAGEMENT ====================
-  Future<void> loadAssets(int variantId) async {
+  Future<void> fetchAssets() async {
     try {
       isLoadingAssets.value = true;
+      await Future.delayed(const Duration(milliseconds: 800));
       
-      // Use product ID, not variant ID
-      if (product.value?.id == null) {
-        print('⚠️ No product ID available');
-        assets.value = [];
-        return;
-      }
+      // Mock assets
+      assets.value = [
+        Asset(
+          id: 1,
+          url: 'https://picsum.photos/400/400?random=1',
+          isPrimary: true,
+        ),
+        Asset(
+          id: 2,
+          url: 'https://picsum.photos/400/400?random=2',
+          isPrimary: false,
+        ),
+        Asset(
+          id: 3,
+          url: 'https://picsum.photos/400/400?random=3',
+          isPrimary: false,
+        ),
+      ];
       
-      print('🖼️ Loading assets for product ${product.value!.id}...');
-      final fetchedAssets = await apiService.getProductAssets(product.value!.id!);
-      assets.value = fetchedAssets;
-      print('✅ Assets loaded: ${assets.length}');
+      isLoadingAssets.value = false;
     } catch (e) {
-      errorMessage.value = 'Failed to load assets: $e';
-      print('❌ Error loading assets: $e');
-      assets.value = [];
-    } finally {
       isLoadingAssets.value = false;
     }
   }
 
-  void selectVariantForAssets(ProductVariant variant) {
-    selectedVariant.value = variant;
-    currentStep.value = 2;
-    // Load assets for the product, not variant
-    if (product.value?.id != null) {
-      loadAssets(product.value!.id!);
-    }
-  }
-
-  void closeAssetForm() {
-    showAssetForm.value = false;
-  }
-
-  
-
-Future<void> uploadAsset(File imageFile, {bool isPrimary = false}) async {
-  print('🖼️ Upload attempt - Variant ID: ${selectedVariant.value?.id}, Product ID: ${product.value?.id}');
-  
-  if (selectedVariant.value?.id == null || product.value?.id == null) {
-    print('❌ Cannot upload: Missing variant (${selectedVariant.value?.id}) or product (${product.value?.id})');
-    Get.snackbar('Error', 'Variant or product not selected',
-        backgroundColor: Colors.red, colorText: Colors.white);
-    return;
-  }
-
-  try {
-    isUploading.value = true;
-    print('📤 Uploading file: ${imageFile.path}');
-    
-    await apiService.uploadProductAsset(
-      imageFile,
-      product.value!.id!,
-      selectedVariant.value!.id!,
-      isPrimary: isPrimary,
-    );
-    
-    print('✅ Upload successful');
-    Get.snackbar('Success', 'Image uploaded successfully',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white);
-
-    if (product.value?.id != null) {
-      await loadAssets(product.value!.id!);
-    }
-  } catch (e) {
-    print('❌ Upload error: $e');
-    Get.snackbar('Error', 'Failed to upload image: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white);
-  } finally {
-    isUploading.value = false;
-  }
-}
-  Future<void> deleteAsset(ProductAsset asset) async {
-    if (asset.id == null) return;
-
+  Future<void> uploadAsset(File file) async {
     try {
-      isLoading.value = true;
-      await apiService.deleteProductAsset(asset.id!);
-      print('✅ Asset deleted');
-
-      // Reload using product ID
-      if (product.value?.id != null) {
-        await loadAssets(product.value!.id!);
-      }
-      Get.snackbar('Success', 'Image deleted successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white);
+      isLoadingAssets.value = true;
+      await Future.delayed(const Duration(milliseconds: 1000));
+      
+      // Mock upload
+      assets.add(Asset(
+        id: DateTime.now().millisecondsSinceEpoch,
+        url: 'https://picsum.photos/400/400?random=${assets.length + 4}',
+        isPrimary: false,
+      ));
+      
+      isLoadingAssets.value = false;
+      
+      Get.snackbar(
+        'Success',
+        'Image uploaded successfully',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
-      print('❌ Error deleting asset: $e');
-      Get.snackbar('Error', 'Failed to delete image: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white);
-    } finally {
-      isLoading.value = false;
+      isLoadingAssets.value = false;
+      Get.snackbar(
+        'Error',
+        'Failed to upload image',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
-  // ==================== UTILITIES ====================
-  void _showError(String message) {
-    Get.snackbar(
-      'Validation Error',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.orange,
-      colorText: Colors.white,
-    );
+  Future<void> deleteAsset(Asset asset) async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 300));
+      assets.removeWhere((a) => a.id == asset.id);
+      
+      Get.snackbar(
+        'Success',
+        'Image deleted successfully',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to delete image',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
+  // Navigation
   void nextStep() {
-    currentStep.value++;
+    if (currentStep.value < 2) {
+      currentStep.value++;
+    }
   }
 
   void previousStep() {
@@ -515,32 +326,20 @@ Future<void> uploadAsset(File imageFile, {bool isPrimary = false}) async {
       currentStep.value--;
     }
   }
+}
 
-  void goToStep(int step) {
-    currentStep.value = step;
-  }
+// Mock Models
+class Category {
+  final int id;
+  final String name;
 
-  @override
-  void onClose() {
-    productName.close();
-    productDescription.close();
-    selectedCategoryId.close();
-    productStatus.close();
-    variantName.close();
-    variantSku.close();
-    variantPrice.close();
-    variantStatus.close();
-    variants.close();
-    assets.close();
-    categories.close();
-    isLoading.close();
-    isLoadingVariants.close();
-    isLoadingAssets.close();
-    isUploading.close();
-    errorMessage.close();
-    currentStep.close();
-    showVariantForm.close();
-    showAssetForm.close();
-    super.onClose();
-  }
+  Category({required this.id, required this.name});
+}
+
+class Asset {
+  final int id;
+  final String url;
+  final bool isPrimary;
+
+  Asset({required this.id, required this.url, required this.isPrimary});
 }

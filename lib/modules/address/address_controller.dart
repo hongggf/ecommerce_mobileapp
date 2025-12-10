@@ -2,7 +2,6 @@ import 'package:ecommerce_urban/modules/address/address_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 class AddressController extends GetxController {
   final RxList<AddressModel> addresses = <AddressModel>[].obs;
   final RxBool isLoading = false.obs;
@@ -72,7 +71,7 @@ class AddressController extends GetxController {
   void openAddAddressForm() {
     clearForm();
     editingAddressId = null;
-    Get.toNamed('/address/form');
+    Get.toNamed('/address_form');
   }
 
   void openEditAddressForm(AddressModel address) {

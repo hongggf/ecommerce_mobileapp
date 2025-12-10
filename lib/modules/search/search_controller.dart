@@ -1,37 +1,38 @@
-// lib/app/modules/search/controllers/search_controller.dart
-
-import 'package:get/get.dart';
+// lib/modules/search/search_controller.dart
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'package:get/get.dart';
+
+class SearchItem {
+  final String id;
+  final String name;
+  final String image;
+  final double price;
+  final double rating;
+
+  SearchItem({
+    required this.id,
+    required this.name,
+    required this.image,
+    required this.price,
+    required this.rating,
+  });
+}
 
 class SearchController extends GetxController {
   final TextEditingController searchTextController = TextEditingController();
-  
-  final RxList<Product> searchResults = <Product>[].obs;
-  final RxList<String> recentSearches = <String>[].obs;
-  final RxList<String> popularSearches = <String>[
-    'Laptop',
-    'Smartphone',
-    'Headphones',
-    'Watch',
-    'Camera',
-    'Shoes',
-  ].obs;
-  
+  final RxString searchQuery = ''.obs;
   final RxBool isLoading = false.obs;
   final RxBool showResults = false.obs;
-  final RxString searchQuery = ''.obs;
-  
-  // Filter options
-  final RxString selectedCategory = 'All'.obs;
-  final RxString selectedPriceRange = 'All'.obs;
-  final RxString selectedRating = 'All'.obs;
-  final RxString sortBy = 'relevance'.obs;
-
-  // SharedPreferences key
-  static const String _recentSearchesKey = 'recent_searches';
-  static const int _maxRecentSearches = 10;
+  final RxList<SearchItem> searchResults = <SearchItem>[].obs;
+  final RxList<String> recentSearches = <String>[].obs;
+  final RxList<String> popularSearches = <String>[
+    'Nike Shoes',
+    'Adidas Jacket',
+    'Running Shoes',
+    'Casual Wear',
+    'Sports Gear',
+    'Designer Bags',
+  ].obs;
 
   @override
   void onInit() {
@@ -39,45 +40,58 @@ class SearchController extends GetxController {
     _loadRecentSearches();
   }
 
-  @override
-  void onClose() {
-    searchTextController.dispose();
-    super.onClose();
+  void _loadRecentSearches() {
+    recentSearches.assignAll(['Nike', 'Adidas', 'Casual']);
   }
 
-  void onSearchChanged(String query) {
-    searchQuery.value = query;
-    if (query.isEmpty) {
+  void onSearchChanged(String value) {
+    searchQuery.value = value;
+    if (value.isEmpty) {
       showResults.value = false;
       searchResults.clear();
-    } else {
-      showResults.value = true;
-      _performSearch(query);
     }
   }
 
-  void onSearchSubmitted(String query) {
-    if (query.isNotEmpty) {
-      _addToRecentSearches(query);
-      _performSearch(query);
+  void onSearchSubmitted(String value) {
+    if (value.isNotEmpty) {
+      performSearch(value);
+      _addToRecentSearches(value);
     }
   }
 
-  void _performSearch(String query) {
+  void performSearch(String query) {
     isLoading.value = true;
-    
-    // Simulate API call
-    Future.delayed(const Duration(milliseconds: 800), () {
-      // Mock search results - replace with actual API call
-      searchResults.value = _getMockSearchResults(query);
+    Future.delayed(const Duration(milliseconds: 600), () {
+      final results = [
+        SearchItem(id: '1', name: 'Nike $query', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100', price: 129.99, rating: 4.5),
+        SearchItem(id: '2', name: 'Adidas $query', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100', price: 139.99, rating: 4.3),
+        SearchItem(id: '3', name: 'Puma $query', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100', price: 99.99, rating: 4.2),
+      ];
+      searchResults.assignAll(results);
+      showResults.value = true;
       isLoading.value = false;
     });
   }
 
-  void searchFromChip(String query) {
-    searchTextController.text = query;
-    searchQuery.value = query;
-    onSearchSubmitted(query);
+  void searchFromChip(String item) {
+    searchTextController.text = item;
+    searchQuery.value = item;
+    performSearch(item);
+    _addToRecentSearches(item);
+  }
+
+  void _addToRecentSearches(String search) {
+    if (!recentSearches.contains(search)) {
+      recentSearches.insert(0, search);
+    }
+  }
+
+  void removeRecentSearch(String search) {
+    recentSearches.remove(search);
+  }
+
+  void clearAllRecentSearches() {
+    recentSearches.clear();
   }
 
   void clearSearch() {
@@ -87,197 +101,16 @@ class SearchController extends GetxController {
     showResults.value = false;
   }
 
-  void removeRecentSearch(String query) {
-    recentSearches.remove(query);
-    _saveRecentSearches();
-  }
-
-  void clearAllRecentSearches() {
-    recentSearches.clear();
-    _saveRecentSearches();
-  }
-
-  // SharedPreferences Methods
-  Future<void> _addToRecentSearches(String query) async {
-    // Remove if already exists
-    if (recentSearches.contains(query)) {
-      recentSearches.remove(query);
-    }
-    
-    // Add to the beginning
-    recentSearches.insert(0, query);
-    
-    // Keep only the last N searches
-    if (recentSearches.length > _maxRecentSearches) {
-      recentSearches.removeRange(_maxRecentSearches, recentSearches.length);
-    }
-    
-    await _saveRecentSearches();
-  }
-
-  Future<void> _loadRecentSearches() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? searchesJson = prefs.getString(_recentSearchesKey);
-      
-      if (searchesJson != null) {
-        final List<dynamic> decoded = json.decode(searchesJson);
-        recentSearches.value = decoded.cast<String>();
-      }
-    } catch (e) {
-      print('Error loading recent searches: $e');
-    }
-  }
-
-  Future<void> _saveRecentSearches() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String encoded = json.encode(recentSearches);
-      await prefs.setString(_recentSearchesKey, encoded);
-    } catch (e) {
-      print('Error saving recent searches: $e');
-    }
-  }
-
   void showFilterBottomSheet() {
-    Get.bottomSheet(
-      FilterBottomSheet(),
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-    );
+    Get.snackbar('Filter', 'Filter options coming soon', snackPosition: SnackPosition.BOTTOM);
   }
-
-  void applyFilters() {
-    _performSearch(searchQuery.value);
-    Get.back();
-  }
-
-  void resetFilters() {
-    selectedCategory.value = 'All';
-    selectedPriceRange.value = 'All';
-    selectedRating.value = 'All';
-    sortBy.value = 'relevance';
-  }
-
-  List<Product> _getMockSearchResults(String query) {
-    // Mock data - replace with actual API response
-    return List.generate(
-      8,
-      (index) => Product(
-        id: index.toString(),
-        name: 'Product ${index + 1} - $query',
-        price: (index + 1) * 10.99,
-        rating: 4.0 + (index % 5) * 0.2,
-        image: 'assets/images/product${index + 1}.jpg',
-        category: index % 2 == 0 ? 'Electronics' : 'Fashion',
-      ),
-    );
-  }
-}
-
-// Mock Product Model
-class Product {
-  final String id;
-  final String name;
-  final double price;
-  final double rating;
-  final String image;
-  final String category;
-
-  Product({
-    required this.id,
-    required this.name,
-    required this.price,
-    required this.rating,
-    required this.image,
-    required this.category,
-  });
-}
-
-// Filter Bottom Sheet Widget
-class FilterBottomSheet extends GetView<SearchController> {
-  const FilterBottomSheet({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Filters',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              TextButton(
-                onPressed: controller.resetFilters,
-                child: const Text('Reset'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Sort By',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 10),
-          Obx(() => Wrap(
-                spacing: 8,
-                children: ['relevance', 'price_low', 'price_high', 'rating']
-                    .map((sort) => ChoiceChip(
-                          label: Text(_getSortLabel(sort)),
-                          selected: controller.sortBy.value == sort,
-                          onSelected: (selected) {
-                            if (selected) controller.sortBy.value = sort;
-                          },
-                        ))
-                    .toList(),
-              )),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: controller.applyFilters,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Apply Filters',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getSortLabel(String sort) {
-    switch (sort) {
-      case 'relevance':
-        return 'Relevance';
-      case 'price_low':
-        return 'Price: Low to High';
-      case 'price_high':
-        return 'Price: High to Low';
-      case 'rating':
-        return 'Rating';
-      default:
-        return sort;
-    }
+  void onClose() {
+    searchTextController.dispose();
+    super.onClose();
   }
 }
+
+// ============================================================================
+

@@ -8,10 +8,8 @@ class AddressFormView extends GetView<AddressController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
         title: Text(
           controller.editingAddressId != null ? 'Edit Address' : 'Add Address',
           style: const TextStyle(
@@ -134,7 +132,6 @@ class AddressFormView extends GetView<AddressController> {
             const SizedBox(height: 16),
             Obx(() => Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: CheckboxListTile(
@@ -170,10 +167,9 @@ class AddressFormView extends GetView<AddressController> {
                 controller.editingAddressId != null
                     ? 'Update Address'
                     : 'Save Address',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
                 ),
               ),
             ),
@@ -200,7 +196,6 @@ class AddressFormView extends GetView<AddressController> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
           ),
         ),
         const SizedBox(height: 8),
@@ -213,7 +208,6 @@ class AddressFormView extends GetView<AddressController> {
             hintText: hint,
             prefixIcon: Icon(icon, color: const Color(0xFF6C63FF)),
             filled: true,
-            fillColor: Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,

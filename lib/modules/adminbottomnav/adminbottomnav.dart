@@ -1,6 +1,6 @@
 import 'package:ecommerce_urban/modules/admin_analystics/admin_analystics_view.dart';
 import 'package:ecommerce_urban/modules/admin_orders/admin_order_list_screen.dart';
-import 'package:ecommerce_urban/modules/admin_products/admin_products_view.dart';
+import 'package:ecommerce_urban/modules/admin_products/views/admin_products_view.dart';
 import 'package:ecommerce_urban/modules/admin_users.dart/admin_users_view.dart';
 import 'package:ecommerce_urban/modules/adminbottomnav/adminbottom_controller.dart';
 

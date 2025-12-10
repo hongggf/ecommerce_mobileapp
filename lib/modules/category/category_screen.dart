@@ -1,102 +1,91 @@
-import 'package:ecommerce_urban/app/constants/app_spacing.dart';
-import 'package:ecommerce_urban/app/widgets/category_list_widget.dart';
-import 'package:ecommerce_urban/app/widgets/search_widget.dart';
-import 'package:ecommerce_urban/app/widgets/title_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:get/instance_manager.dart';
-import 'package:get/get.dart  ';
 
-class CategoryScreen extends StatelessWidget {
+// lib/modules/category/views/category_screen.dart
+import 'package:ecommerce_urban/modules/category/cateogry_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
+
+
+class CategoryScreen extends GetView<CategoryController> {
   const CategoryScreen({super.key});
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Category"),
+        title: const Text('Categories'),
         centerTitle: true,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(AppSpacing.paddingS),
-        child: Column(
-          children: [
-            SearchCardNavigation(
-              onTap: () => Get.toNamed('/search'),
-            ),
-            SizedBox(height: AppSpacing.paddingL),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _popularCategorySection(),
-                    SizedBox(height: AppSpacing.paddingXXL),
-                    _allCategoriesGrid(),
-                  ],
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Popular Categories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              Expanded(
+                child: GridView.builder(
+                  itemCount: controller.categories.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 1.2,
+                  ),
+                  itemBuilder: (context, index) {
+                    return _buildCategoryCard(context, controller.categories[index]);
+                  },
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _popularCategorySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TitleWidget(
-          title: "Popular Categories",
-        ),
-        SizedBox(height: AppSpacing.paddingXS),
-        CategoryListWidget(
-          categories: [
-            Category(name: "Shoes"),
-            Category(name: "Bags"),
-            Category(name: "Watches"),
-            Category(name: "Shoes"),
-            Category(name: "Bags"),
-            Category(name: "Watches"),
-          ],
-          selectedIndex: 0,
-          onCategoryTap: (index) {
-            print("Selected category index: $index");
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _allCategoriesGrid() {
-    return Column(
-      children: [
-        TitleWidget(
-          title: "All Categories",
-        ),
-        SizedBox(height: AppSpacing.paddingXS),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: 10,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: AppSpacing.paddingXS,
-            crossAxisSpacing: AppSpacing.paddingXS,
-            childAspectRatio: 2.5,
+            ],
           ),
-          itemBuilder: (context, index) {
-            return InkWell(
-              onTap: () {},
-              child: Card(
-                child: Center(
-                  child: Text("Category Name",
-                      style: Theme.of(context).textTheme.titleMedium),
-                ),
-              ),
-            );
-          },
+        );
+      }),
+    );
+  }
+
+  Widget _buildCategoryCard(BuildContext context, CategoryItem category) {
+    return GestureDetector(
+      onTap: () => controller.selectCategory(category),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: AppColors.primary.withOpacity(0.1),
+          border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 2),
+          boxShadow: [
+            BoxShadow(
+              offset: const Offset(0, 4),
+              blurRadius: 12,
+              color: Colors.black.withOpacity(0.08),
+            ),
+          ],
         ),
-      ],
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => controller.selectCategory(category),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(category.icon, style: const TextStyle(fontSize: 48)),
+                const SizedBox(height: 12),
+                Text(
+                  category.name,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

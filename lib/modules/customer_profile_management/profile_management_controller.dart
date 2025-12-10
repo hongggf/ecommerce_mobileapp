@@ -1,4 +1,4 @@
-import 'package:ecommerce_urban/modules/profile_management/user_profile_model.dart';
+import 'package:ecommerce_urban/modules/customer_profile_management/user_profile_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

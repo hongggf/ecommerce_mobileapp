@@ -9,9 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-// Import the separate widget files
-
-
 class ProductManagementView extends StatefulWidget {
   const ProductManagementView({super.key});
 
@@ -58,25 +55,46 @@ class _ProductManagementViewState extends State<ProductManagementView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Obx(() {
       return Scaffold(
+        backgroundColor: isDark ? theme.scaffoldBackgroundColor : Colors.grey[50],
         appBar: AppBar(
           title: Text(
-            controller.product.value == null ? 'Create Product' : 'Edit Product',
+            controller.product.value == null
+                ? 'Create Product'
+                : 'Edit Product',
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           centerTitle: true,
-          backgroundColor: Colors.blue.shade700,
           elevation: 0,
+          backgroundColor: isDark ? theme.appBarTheme.backgroundColor : Colors.white,
+          surfaceTintColor: Colors.transparent,
         ),
         body: controller.isLoading.value && controller.product.value == null
             ? const LoadingShimmerWidget()
             : SingleChildScrollView(
                 child: Column(
                   children: [
-                    StepIndicatorWidget(controller: controller),
-                    const SizedBox(height: 16),
+                    // Modern Step Indicator
+                    Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? theme.cardColor : Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: StepIndicatorWidget(controller: controller),
+                    ),
+                    const SizedBox(height: 20),
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

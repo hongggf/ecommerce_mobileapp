@@ -1,111 +1,97 @@
-// lib/modules/product/product_detail/product_detail_screen.dart
-
-import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
-import 'package:ecommerce_urban/app/constants/app_spacing.dart';
-import 'package:ecommerce_urban/modules/product/product_detail/product_detail_controller.dart';
+import 'package:ecommerce_urban/app/constants/app_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
+import 'package:ecommerce_urban/modules/product/product_detail/product_detail_controller.dart';
 
-class ProductDetailScreen extends StatelessWidget {
-  ProductDetailScreen({super.key});
-  final ProductDetailController controller = Get.put(ProductDetailController());
-  final PageController pageController = PageController();
+class ProductDetailScreen extends GetView<ProductDetailController> {
+  const ProductDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Obx(() {
-        if (controller.isLoading.value && controller.product.value == null) {
+        if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
-        }
-
-        if (controller.product.value == null) {
-          return const Center(child: Text('Product not found'));
         }
 
         return CustomScrollView(
           slivers: [
-            _buildAppBar(controller),
+            _buildAppBar(),
             SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: AppSpacing.paddingM),
-                  _buildProductInfo(controller),
-                  SizedBox(height: AppSpacing.paddingM),
-                  if (controller.sizes.isNotEmpty) ...[
-                    _buildSizeSelector(controller),
-                    SizedBox(height: AppSpacing.paddingM),
-                  ],
-                  _buildDescription(controller),
-                  SizedBox(height: 100), // Space for bottom bar
+                  const SizedBox(height: 16),
+                  _buildProductInfo(context),
+                  const SizedBox(height: 24),
+                  _buildSizeSelector(context),
+                  const SizedBox(height: 24),
+                  _buildDescription(context),
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
           ],
         );
       }),
-      bottomNavigationBar: Obx(() => controller.product.value != null
-          ? _buildBottomBar(controller)
-          : const SizedBox.shrink()),
+      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
-  Widget _buildAppBar(ProductDetailController controller) {
+  Widget _buildAppBar() {
     return SliverAppBar(
       expandedHeight: 400,
       pinned: true,
-      leading: IconButton(
-        icon: Container(
-          padding: const EdgeInsets.all(8),
+      leading: GestureDetector(
+        onTap: () => Get.back(),
+        child: Container(
+          margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: AppColors.primary,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2))
             ],
           ),
-          child: const Icon(Icons.arrow_back),
+          child: const Icon(Icons.arrow_back, color: Colors.white),
         ),
-        onPressed: () => Get.back(),
       ),
       actions: [
-        Obx(() => IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+        Container(
+          margin: EdgeInsets.all(10),
+          child: Obx(() => GestureDetector(
+                onTap: controller.toggleFavorite,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                      )
+                    ],
+                  ),
+                  child: Icon(
+                    controller.isFavorite.value
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: Colors.white,
+                    size: AppWidgetSize.iconM,
+                  ),
                 ),
-                child: Icon(
-                  controller.isFavorite.value
-                      ? Icons.favorite
-                      : Icons.favorite_border,
-                  color: Colors.white,
-                ),
-              ),
-              onPressed: controller.toggleFavorite,
-            )),
-        const SizedBox(width: 8),
+              )),
+        ),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: Obx(() => PageView.builder(
-              controller: pageController,
-              onPageChanged: (index) {
-                controller.selectedImageIndex.value = index;
-              },
+              onPageChanged: (index) =>
+                  controller.selectedImageIndex.value = index,
               itemCount: controller.productImages.length,
               itemBuilder: (context, index) {
                 return Image.network(
@@ -113,7 +99,7 @@ class ProductDetailScreen extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     color: Colors.grey.shade200,
-                    child: const Icon(Icons.image, size: 100),
+                    child: Icon(Icons.image, size: AppWidgetSize.imageL),
                   ),
                 );
               },
@@ -122,52 +108,47 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductInfo(ProductDetailController controller) {
-    final product = controller.product.value!;
-
+  Widget _buildProductInfo(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.paddingM),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            product.name,
-            style: TextStyle(
-              fontSize: AppFontSize.headlineMedium,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Obx(() => Row(
-                children: [
-                  Text(
-                    '\$${controller.currentPrice.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                ],
+          Text(controller.productName,
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Obx(() => Text(
+                '\$${controller.currentPrice.toStringAsFixed(2)}',
+                style: TextStyle(
+                    fontSize: AppFontSize.titleLarge,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary),
               )),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.star, color: Colors.amber, size: 20),
+              const SizedBox(width: 4),
+              const Text('4.5 (120 reviews)',
+                  style: TextStyle(fontSize: 14, color: Colors.grey)),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildSizeSelector(ProductDetailController controller) {
+  Widget _buildSizeSelector(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.paddingM),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Select Size/Variant',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          const Text('Select Size',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           Obx(() => Wrap(
                 spacing: 12,
@@ -193,7 +174,6 @@ class ProductDetailScreen extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: isSelected ? Colors.white : Colors.black,
-                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -206,51 +186,38 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDescription(ProductDetailController controller) {
-    final product = controller.product.value!;
-
+  Widget _buildDescription(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.paddingM),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Description',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          const Text('Description',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text(
-            product.description ?? 'No description available',
-            style: const TextStyle(
-              height: 1.5,
-              color: Colors.grey,
-            ),
+            controller.productDesc,
+            style: TextStyle(height: 1.5, color: Colors.grey.shade600),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomBar(ProductDetailController controller) {
+  Widget _buildBottomBar() {
     return Container(
-      padding: EdgeInsets.all(AppSpacing.paddingM),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
+              color: Colors.black12,
+              blurRadius: 10,
+              offset: const Offset(0, -2))
         ],
       ),
       child: SafeArea(
         child: Row(
           children: [
-            // Quantity Selector
             Container(
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
@@ -265,9 +232,7 @@ class ProductDetailScreen extends StatelessWidget {
                   Obx(() => Text(
                         '${controller.quantity.value}',
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       )),
                   IconButton(
                     icon: const Icon(Icons.add),
@@ -277,7 +242,6 @@ class ProductDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Add to Cart Button
             Expanded(
               child: ElevatedButton(
                 onPressed: controller.addToCart,
@@ -285,16 +249,14 @@ class ProductDetailScreen extends StatelessWidget {
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                      borderRadius: BorderRadius.circular(8)),
                 ),
-                child: const Text(
+                child: Text(
                   'Add to Cart',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                      fontSize: AppFontSize.titleLarge,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ),
             ),

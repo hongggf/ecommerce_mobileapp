@@ -1,5 +1,8 @@
-import 'package:ecommerce_urban/modules/profile_management/profile_management_controller.dart';
-import 'package:ecommerce_urban/modules/profile_management/user_profile_model.dart';
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
+import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
+import 'package:ecommerce_urban/app/constants/app_spacing.dart';
+import 'package:ecommerce_urban/modules/customer_profile_management/profile_management_controller.dart';
+import 'package:ecommerce_urban/modules/customer_profile_management/user_profile_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -106,7 +109,6 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
                         ),
                         child: const Icon(
                           Icons.camera_alt,
-                          color: Colors.white,
                           size: 20,
                         ),
                       ),
@@ -140,7 +142,7 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF666666),
+                  // color: Color(0xFF666666),
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -239,7 +241,6 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -262,10 +263,7 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF999999),
-                  ),
+                  style: const TextStyle(fontSize: 12, color: AppColors.accent),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -365,7 +363,6 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      side: const BorderSide(color: Color(0xFFE0E0E0)),
                     ),
                     child: const Text(
                       'Cancel',
@@ -389,12 +386,11 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Save Changes',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -423,7 +419,6 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
           ),
         ),
         const SizedBox(height: 8),
@@ -435,18 +430,17 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
           decoration: InputDecoration(
             prefixIcon: Icon(icon, color: const Color(0xFF6C63FF)),
             filled: true,
-            fillColor: Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF6C63FF), width: 2),
+              borderSide: BorderSide(color: AppColors.accent, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -466,20 +460,18 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Gender',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: AppFontSize.headlineLarge,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
           ),
         ),
         const SizedBox(height: 8),
         Obx(() => Container(
               decoration: BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE0E0E0)),
+                border: Border.all(),
               ),
               child: Row(
                 children: [
@@ -491,7 +483,7 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
                         controller.selectedGender.value = value ?? '';
                       },
                       title: const Text('Male'),
-                      activeColor: const Color(0xFF6C63FF),
+                      activeColor: AppColors.accent,
                     ),
                   ),
                   Expanded(
@@ -502,7 +494,7 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
                         controller.selectedGender.value = value ?? '';
                       },
                       title: const Text('Female'),
-                      activeColor: const Color(0xFF6C63FF),
+                      activeColor: AppColors.accent,
                     ),
                   ),
                 ],
@@ -516,13 +508,12 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Date of Birth',
           style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
-          ),
+              fontSize: AppFontSize.headlineLarge,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accent),
         ),
         const SizedBox(height: 8),
         Obx(() => InkWell(
@@ -530,14 +521,13 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE0E0E0)),
+                  border: Border.all(),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.cake, color: Color(0xFF6C63FF)),
-                    const SizedBox(width: 16),
+                    Icon(Icons.cake, color: AppColors.accent),
+                    SizedBox(width: AppSpacing.paddingL),
                     Text(
                       controller.selectedDate.value != null
                           ? '${controller.selectedDate.value!.day}/${controller.selectedDate.value!.month}/${controller.selectedDate.value!.year}'
@@ -545,7 +535,7 @@ class ProfileManagementView extends GetView<ProfileManagementController> {
                       style: TextStyle(
                         fontSize: 16,
                         color: controller.selectedDate.value != null
-                            ? const Color(0xFF1A1A1A)
+                            ? AppColors.primary
                             : const Color(0xFF999999),
                       ),
                     ),

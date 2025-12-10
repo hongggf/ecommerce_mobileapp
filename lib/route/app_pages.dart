@@ -17,7 +17,7 @@ import 'package:ecommerce_urban/modules/order_history/order_history_route.dart';
 import 'package:ecommerce_urban/modules/order_management.dart/order_management_route.dart';
 import 'package:ecommerce_urban/modules/product/product_route.dart';
 import 'package:ecommerce_urban/modules/profile/profile_routes.dart';
-import 'package:ecommerce_urban/modules/profile_management/profile_management_route.dart';
+import 'package:ecommerce_urban/modules/customer_profile_management/profile_management_route.dart';
 import 'package:ecommerce_urban/modules/search/search_route.dart';
 import 'package:ecommerce_urban/modules/stock_mangement/stock_route.dart';
 import 'package:ecommerce_urban/modules/user_mangement/user_management_route.dart';
@@ -45,7 +45,7 @@ class AppPages {
     ...categoryRoute,
     ...bottomNavRoute,
     ...adminUsersRoute,
-    ...orderRoutes,
+   ...orderRoutes,
     ...dashboardRoutes,
     ...adminOrderRoute,
     ...adminAnalysticsRoute,

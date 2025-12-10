@@ -1,3 +1,4 @@
+// lib/modules/order/order_summary_screen.dart
 import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
 import 'package:ecommerce_urban/modules/cart/cart_controller.dart';
@@ -13,6 +14,7 @@ class OrderSummaryScreen extends GetView<CartController> {
       appBar: AppBar(
         title: const Text('Order Summary'),
         centerTitle: true,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -42,7 +44,7 @@ class OrderSummaryScreen extends GetView<CartController> {
     );
   }
 
-  // Title
+  // SECTION TITLE
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -57,19 +59,33 @@ class OrderSummaryScreen extends GetView<CartController> {
   Widget _buildOrderItems(BuildContext context) {
     return Obx(
       () {
-        final selectedItems = controller.getSelectedItems();
+        final selectedItems = controller.cartItems
+            .where((item) => item.isSelected.value)
+            .toList();
+
+        if (selectedItems.isEmpty) {
+          return Center(
+            child: Text(
+              'No items in order',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 14,
+              ),
+            ),
+          );
+        }
+
         return Container(
           decoration: BoxDecoration(
-            // color: IsDarkmode.value ? Colors.grey[800] : Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
+            border: Border.all(color: Colors.grey.shade300),
           ),
           child: ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(12),
             itemCount: selectedItems.length,
-            separatorBuilder: (_, __) => Divider(color: Colors.grey[300]),
+            separatorBuilder: (_, __) => Divider(color: Colors.grey.shade300),
             itemBuilder: (context, index) {
               final item = selectedItems[index];
               return Row(
@@ -85,7 +101,7 @@ class OrderSummaryScreen extends GetView<CartController> {
                         return Container(
                           width: 60,
                           height: 60,
-                          color: Colors.grey[300],
+                          color: Colors.grey.shade300,
                           child: const Icon(Icons.broken_image),
                         );
                       },
@@ -102,25 +118,23 @@ class OrderSummaryScreen extends GetView<CartController> {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
-                        // FIXED RxInt quantity
-                        Text(
+                        Obx(() => Text(
                           'Qty: ${item.quantity.value}',
                           style: TextStyle(
-                            fontSize: AppFontSize.labelLarge,
-                            color: Colors.grey[600],
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
                           ),
-                        ),
+                        )),
                       ],
                     ),
                   ),
-                  // FIXED Price calculation with RxInt
-                  Text(
+                  Obx(() => Text(
                     '\$${(item.price * item.quantity.value).toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.accent,
+                      color: Colors.blueAccent,
                     ),
-                  ),
+                  )),
                 ],
               );
             },
@@ -130,21 +144,20 @@ class OrderSummaryScreen extends GetView<CartController> {
     );
   }
 
-  // ADDRESS
+  // ADDRESS CARD
   Widget _buildAddressCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        //color: Colors.blue[50],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue[300]!),
+        border: Border.all(color: Colors.blue.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.location_on, color: Colors.blue[700], size: 20),
+              Icon(Icons.location_on, color: Colors.blue.shade700, size: 20),
               const SizedBox(width: 8),
               const Text(
                 'Delivery Address',
@@ -165,11 +178,13 @@ class OrderSummaryScreen extends GetView<CartController> {
           ),
           const SizedBox(height: 12),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Get.snackbar('Address', 'Change address feature coming soon');
+            },
             child: Text(
               'Change Address',
               style: TextStyle(
-                color: Colors.blue[700],
+                color: Colors.blue.shade700,
                 fontWeight: FontWeight.w600,
                 fontSize: 12,
               ),
@@ -180,7 +195,7 @@ class OrderSummaryScreen extends GetView<CartController> {
     );
   }
 
-  // PRICING
+  // PRICING BREAKDOWN
   Widget _buildPricingBreakdown(BuildContext context) {
     return Obx(
       () {
@@ -192,9 +207,8 @@ class OrderSummaryScreen extends GetView<CartController> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            // color: Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
+            border: Border.all(color: Colors.grey.shade300),
           ),
           child: Column(
             children: [
@@ -203,12 +217,12 @@ class OrderSummaryScreen extends GetView<CartController> {
               _buildPricingRow(
                 'Shipping',
                 shipping == 0 ? 'FREE' : '\$${shipping.toStringAsFixed(2)}',
-                color: shipping == 0 ? Colors.green : Colors.grey[700],
+                color: shipping == 0 ? Colors.green : Colors.grey.shade700,
               ),
               const SizedBox(height: 12),
               _buildPricingRow('Tax (10%)', '\$${tax.toStringAsFixed(2)}'),
               Divider(
-                color: Colors.grey[300],
+                color: Colors.grey.shade300,
                 height: 20,
               ),
               _buildPricingRow(
@@ -223,7 +237,7 @@ class OrderSummaryScreen extends GetView<CartController> {
     );
   }
 
-  // Row format
+  // PRICING ROW
   Widget _buildPricingRow(String label, String value,
       {bool isTotal = false, Color? color}) {
     return Row(
@@ -242,28 +256,27 @@ class OrderSummaryScreen extends GetView<CartController> {
           style: TextStyle(
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
             fontSize: isTotal ? 18 : 13,
-            color: isTotal ? Colors.blue : color,
+            color: isTotal ? AppColors.primary : color,
           ),
         ),
       ],
     );
   }
 
-  // Payment method
+  // PAYMENT METHOD CARD
   Widget _buildPaymentMethodCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        // color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.payment, color: Colors.blue[700], size: 20),
+              Icon(Icons.payment, color: Colors.blue.shade700, size: 20),
               const SizedBox(width: 8),
               const Text(
                 'Payment Method',
@@ -278,12 +291,12 @@ class OrderSummaryScreen extends GetView<CartController> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                Icon(Icons.credit_card, color: Colors.grey[700]),
+                Icon(Icons.credit_card, color: Colors.grey.shade700),
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Column(
@@ -309,11 +322,13 @@ class OrderSummaryScreen extends GetView<CartController> {
           ),
           const SizedBox(height: 12),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Get.snackbar('Payment', 'Change payment method coming soon');
+            },
             child: Text(
               'Change Payment Method',
               style: TextStyle(
-                color: Colors.blue[700],
+                color: Colors.blue.shade700,
                 fontWeight: FontWeight.w600,
                 fontSize: 12,
               ),
@@ -324,7 +339,7 @@ class OrderSummaryScreen extends GetView<CartController> {
     );
   }
 
-  // BUTTONS
+  // ORDER BUTTONS
   Widget _buildOrderButton(BuildContext context) {
     return Column(
       children: [
@@ -340,7 +355,10 @@ class OrderSummaryScreen extends GetView<CartController> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: AppColors.primary,
-                disabledBackgroundColor: Colors.grey[400],
+                disabledBackgroundColor: Colors.grey.shade400,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: controller.isLoading.value
                   ? const SizedBox(
@@ -369,6 +387,12 @@ class OrderSummaryScreen extends GetView<CartController> {
             onPressed: () {
               Get.back();
             },
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             child: const Text('Back to Cart'),
           ),
         ),
@@ -376,32 +400,36 @@ class OrderSummaryScreen extends GetView<CartController> {
     );
   }
 
-  // ORDER CONFIRMATION
+  // ORDER CONFIRMATION DIALOG
   void _showOrderConfirmationDialog(BuildContext context) {
     controller.placeOrder();
-    Future.delayed(const Duration(seconds: 2), () {
-      if (Get.isDialogOpen ?? false) {
-        Get.back();
-      }
+    Future.delayed(const Duration(seconds: 1), () {
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Order Confirmed!'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 60,
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.check_circle,
+                  color: Colors.green.shade700,
+                  size: 60,
+                ),
               ),
               const SizedBox(height: 16),
               const Text(
                 'Your order has been placed successfully.',
                 textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 8),
               Text(
@@ -409,7 +437,7 @@ class OrderSummaryScreen extends GetView<CartController> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: Colors.grey.shade600,
                 ),
               ),
             ],
@@ -417,9 +445,9 @@ class OrderSummaryScreen extends GetView<CartController> {
           actions: [
             TextButton(
               onPressed: () {
-                Get.back();
-                Get.back();
-                Get.back();
+                Get.back(); // Close dialog
+                Get.back(); // Close OrderSummaryScreen
+                Get.back(); // Go back from Cart
               },
               child: const Text('Back to Home'),
             ),

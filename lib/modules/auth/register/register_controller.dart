@@ -14,6 +14,9 @@ class RegisterController extends GetxController {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
+  final RxBool obscurePassword= true.obs;
+   final RxBool obscureConfirmPassword = true.obs;
+
   var isLoading = false.obs;
 
   Future<void> register() async {
@@ -70,6 +73,13 @@ class RegisterController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+  void togglePasswordVisibility() {
+    obscurePassword.value = !obscurePassword.value;
+  }
+
+  void toggleConfirmPasswordVisibility() {
+    obscureConfirmPassword.value = !obscureConfirmPassword.value;
   }
 
   void goToLogin() {

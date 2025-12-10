@@ -1,4 +1,5 @@
 import 'package:ecommerce_urban/app/constants/app_colors.dart';
+import 'package:ecommerce_urban/app/constants/app_widget.dart';
 import 'package:ecommerce_urban/modules/address/address_controller.dart';
 import 'package:ecommerce_urban/modules/address/address_model.dart';
 import 'package:flutter/material.dart';
@@ -46,10 +47,12 @@ class AddressListView extends GetView<AddressController> {
         );
       }),
       floatingActionButton: FloatingActionButton.extended(
+        
         onPressed: controller.openAddAddressForm,
         backgroundColor: AppColors.accent,
         icon: const Icon(Icons.add),
         label: const Text('Add Address'),
+        
       ),
     );
   }
@@ -58,7 +61,6 @@ class AddressListView extends GetView<AddressController> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: address.isDefault
             ? Border.all(color: const Color(0xFF6C63FF), width: 2)
@@ -100,10 +102,9 @@ class AddressListView extends GetView<AddressController> {
                     const SizedBox(width: 12),
                     Text(
                       address.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
                       ),
                     ),
                   ],
@@ -118,10 +119,9 @@ class AddressListView extends GetView<AddressController> {
                       color: const Color(0xFF6C63FF),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Default',
                       style: TextStyle(
-                        color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -138,7 +138,6 @@ class AddressListView extends GetView<AddressController> {
                   address.fullName,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF1A1A1A),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -153,7 +152,6 @@ class AddressListView extends GetView<AddressController> {
                   address.phoneNumber,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF666666),
                   ),
                 ),
               ],
@@ -162,15 +160,16 @@ class AddressListView extends GetView<AddressController> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.location_on,
-                    size: 16, color: Color(0xFF666666)),
+                Icon(
+                  Icons.location_on,
+                  size: AppWidgetSize.iconS,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     address.fullAddress,
                     style: const TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF666666),
                     ),
                   ),
                 ),
@@ -184,14 +183,14 @@ class AddressListView extends GetView<AddressController> {
                     child: OutlinedButton(
                       onPressed: () => controller.setDefaultAddress(address.id),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF6C63FF)),
+                        side: const BorderSide(color: AppColors.accent),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: const Text(
                         'Set as Default',
-                        style: TextStyle(color: Color(0xFF6C63FF)),
+                        style: TextStyle(),
                       ),
                     ),
                   ),
@@ -199,11 +198,18 @@ class AddressListView extends GetView<AddressController> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => controller.openEditAddressForm(address),
-                    icon: const Icon(Icons.edit, size: 16),
-                    label: const Text('Edit'),
+                    icon: const Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                    label: Text(
+                      'Edit',
+                      style: TextStyle(color: AppColors.primary),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF1A1A1A),
-                      side: const BorderSide(color: Color(0xFFE0E0E0)),
+                      side: BorderSide(color: Color(0xFFE0E0E0)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

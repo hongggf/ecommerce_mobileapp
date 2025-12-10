@@ -120,11 +120,11 @@ class LoginController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   var isLoading = false.obs;
+  final RxBool obscurePassword = true.obs;
 
   Future<void> login() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
-
     if (email.isEmpty || password.isEmpty) {
       Get.snackbar('Error', 'Please enter email and password');
       return;
@@ -166,6 +166,11 @@ class LoginController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Toggle password visibility
+  void togglePasswordVisibility() {
+    obscurePassword.value = !obscurePassword.value;
   }
 
   void goToRegister() {

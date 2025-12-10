@@ -1,3 +1,4 @@
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/modules/admin_users.dart/admin_users_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,10 +22,9 @@ class CreateUserScreen extends StatelessWidget {
     final formKey = GlobalKey<FormState>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('Create New User'),
-        backgroundColor: Colors.purple,
+        backgroundColor: AppColors.primary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -60,7 +60,6 @@ class CreateUserScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -82,7 +81,6 @@ class CreateUserScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -107,7 +105,6 @@ class CreateUserScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
                 ),
               ),
               const SizedBox(height: 20),
@@ -135,7 +132,6 @@ class CreateUserScreen extends StatelessWidget {
                         showPassword.value
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: Colors.purple,
                       ),
                       onPressed: () => showPassword.value = !showPassword.value,
                     ),
@@ -143,7 +139,6 @@ class CreateUserScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -180,7 +175,6 @@ class CreateUserScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -216,7 +210,6 @@ class CreateUserScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
                   ),
                   items: ['active', 'inactive']
                       .map((status) => DropdownMenuItem(
@@ -262,7 +255,7 @@ class CreateUserScreen extends StatelessWidget {
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
+                      backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

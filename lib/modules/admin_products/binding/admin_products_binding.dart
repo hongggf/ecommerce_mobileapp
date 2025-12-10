@@ -1,4 +1,4 @@
-import 'package:ecommerce_urban/modules/admin_products/admin_products_controller.dart';
+import 'package:ecommerce_urban/modules/admin_products/controller/admin_products_controller.dart';
 import 'package:ecommerce_urban/modules/admin_products/controller/product_mangement_controller.dart';
 
 

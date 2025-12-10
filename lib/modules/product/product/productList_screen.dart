@@ -1,41 +1,40 @@
-// lib/modules/product/product_list/product_list_screen.dart
-
-import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
+import 'package:ecommerce_urban/app/constants/app_spacing.dart';
+import 'package:ecommerce_urban/modules/product/product/product_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'product_controller.dart';
+import 'package:ecommerce_urban/app/constants/app_colors.dart';
 
-class ProductListScreen extends StatelessWidget {
-  ProductListScreen({super.key});
-
-  final ProductController controller = Get.find<ProductController>();
+class ProductListScreen extends GetView<ProductController> {
+  const ProductListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(controller.categoryName ?? 'Products'),
+        title: Obx(() => Text(controller.categoryName.value)),
+        centerTitle: true,
+        elevation: 0,
         actions: [
           IconButton(
             onPressed: _openSortFilterDialog,
-            icon: Icon(Icons.filter_alt_outlined),
+            icon: const Icon(Icons.filter_alt_outlined),
           )
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => controller.loadProducts(refresh: true),
+        onRefresh: () async => controller.loadProducts(refresh: true),
         child: Obx(() {
           if (controller.isLoading.value && controller.products.isEmpty) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (controller.filteredProducts.isEmpty) {
             return Center(
-              child: Text(
-                "No products found",
-                style: TextStyle(fontSize: 16),
-              ),
+              child: Text('No products found',
+                  style: TextStyle(
+                      fontSize: AppFontSize.labelLarge,
+                      color: AppColors.warning)),
             );
           }
 
@@ -49,7 +48,7 @@ class ProductListScreen extends StatelessWidget {
               return false;
             },
             child: GridView.builder(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               itemCount: controller.filteredProducts.length +
                   (controller.currentPage.value < controller.lastPage.value
                       ? 1
@@ -62,9 +61,9 @@ class ProductListScreen extends StatelessWidget {
               ),
               itemBuilder: (_, index) {
                 if (index == controller.filteredProducts.length) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
-                return _buildCard(controller.filteredProducts[index]);
+                return _buildProductCard(controller.filteredProducts[index]);
               },
             ),
           );
@@ -78,9 +77,7 @@ class ProductListScreen extends StatelessWidget {
       Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Get.isDarkMode
-              ? AppColors.darkSurface
-              : AppColors.lightBackground,
+          color: Get.isDarkMode ? Colors.grey.shade900 : Colors.white,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
@@ -90,28 +87,18 @@ class ProductListScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Sort & Filter",
-              style: TextStyle(
-                fontSize: AppFontSize.headlineSmall,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Divider(height: 25, thickness: 1),
-            Text(
-              "Sort By",
-              style: TextStyle(fontSize: AppFontSize.headlineSmall),
-            ),
-            const SizedBox(height: 10),
+            Text('Sort & Filter',
+                style: TextStyle(
+                    fontSize: AppFontSize.headlineSmall,
+                    fontWeight: FontWeight.bold)),
+            Divider(height: AppSpacing.marginXS),
+            Text('Sort By',
+                style: TextStyle(
+                    fontSize: AppFontSize.headlineSmall,
+                    fontWeight: FontWeight.w600)),
+            SizedBox(height: AppSpacing.paddingS),
             _buildSortDropdown(),
-            const SizedBox(height: 30),
-            // Text(
-            //   "Filter By",
-            //   style: TextStyle(fontSize: AppFontSize.headlineSmall),
-            // ),
-            const SizedBox(height: 10),
-            // _buildFilterDropdown(),
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -120,13 +107,9 @@ class ProductListScreen extends StatelessWidget {
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                      borderRadius: BorderRadius.circular(10)),
                 ),
-                child: Text(
-                  "Apply & Close",
-                  style: TextStyle(fontSize: AppFontSize.headlineSmall),
-                ),
+                child: Text('Apply & Close'),
               ),
             ),
           ],
@@ -146,114 +129,58 @@ class ProductListScreen extends StatelessWidget {
             child: DropdownButton<String>(
               isExpanded: true,
               value: controller.selectedSort.value,
-              items: [
-                "Latest",
-                "LowToHigh",
-                "HighToLow",
-              ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              items: ['Latest', 'LowToHigh', 'HighToLow']
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
               onChanged: (value) {
-                controller.applySort(value!);
+                if (value != null) {
+                  controller.applySort(value);
+                }
               },
             ),
           ),
         ));
   }
 
-  // Widget _buildFilterDropdown() {
-  //   return Obx(() => Container(
-  //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-  //     decoration: BoxDecoration(
-  //       border: Border.all(color: Colors.grey.shade300),
-  //       borderRadius: BorderRadius.circular(8),
-  //     ),
-  //     child: DropdownButtonHideUnderline(
-  //       child: DropdownButton<String>(
-  //         isExpanded: true,
-  //         value: controller.selectedFilter.value,
-  //         items: [
-  //           "None",
-  //           "<50",
-  //           "Nike",
-  //         ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-  //         onChanged: (value) {
-  //           controller.applyFilter(value!);
-  //         },
-  //       ),
-  //     ),
-  //   ));
-  // }
-
-  Widget _buildCard(product) {
+  Widget _buildProductCard(Product product) {
     return GestureDetector(
       onTap: () => controller.goToProductDetail(product),
       child: Container(
+        height: 260, // ← FIXED HEIGHT to avoid overflow
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
               blurRadius: 12,
               color: Colors.black12.withOpacity(0.08),
             ),
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                  child: Image.network(
-                    product.primaryImageUrl,
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      height: 150,
-                      color: Colors.grey.shade200,
-                      child: Icon(Icons.image, size: 50),
-                    ),
-                  ),
+            // ---------- IMAGE ----------
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Image.network(
+                product.image,
+                height: 140, // ← FIXED
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 140,
+                  color: Colors.grey.shade200,
+                  child: const Icon(Icons.image, size: 50),
                 ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: () {
-                      Get.snackbar(
-                        "Wishlist",
-                        "${product.name} added to wishlist",
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: AppColors.primary,
-                      );
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 6,
-                          )
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.favorite_border,
-                        size: 20,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
+
+            // ---------- INFO ----------
             Expanded(
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -261,44 +188,67 @@ class ProductListScreen extends StatelessWidget {
                       product.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
+
                     Text(
-                      "\$${product.lowestPrice.toStringAsFixed(2)}",
+                      '\$${product.price.toStringAsFixed(2)}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
-                        color: Colors.blueAccent,
+                        color: AppColors.primary,
                       ),
                     ),
-                    Spacer(),
+                    const SizedBox(height: 4),
+
+                    Row(
+                      children: [
+                        const Icon(Icons.star, size: 16, color: Colors.amber),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${product.rating}',
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+
+                    const Spacer(),
+
+                    // ---------- ADD TO CART ----------
                     SizedBox(
                       width: double.infinity,
+                      height: 32, // ← FIXED BUTTON HEIGHT
                       child: ElevatedButton(
                         onPressed: () {
-                          Get.snackbar("Cart", "Added ${product.name} to cart");
+                          Get.snackbar(
+                            'Cart',
+                            'Added ${product.name} to cart',
+                            snackPosition: SnackPosition.TOP,
+                            backgroundColor: AppColors.primary,
+                          );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(vertical: 8),
+                          backgroundColor: AppColors.primary,
+                          padding: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: Text(
-                          "Add to Cart",
-                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        child: const Text(
+                          'Add to Cart',
+                          style: TextStyle(fontSize: 12),
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

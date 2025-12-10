@@ -1,106 +1,6 @@
-// import 'package:ecommerce_urban/modules/auth/register/register_controller.dart';
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-
-// class RegisterScreen extends StatelessWidget {
-//   RegisterScreen({super.key});
-
-//   late final RegisterController controller = Get.find<RegisterController>();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: SafeArea(
-//         child: Padding(
-//           padding: const EdgeInsets.symmetric(horizontal: 20),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               const SizedBox(height: 50),
-//               const Text(
-//                 "Create\nyour Account",
-//                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-//               ),
-//               const SizedBox(height: 30),
-//               _buildInputField(
-//                   controller.fullnameController, "Name", "Enter your name"),
-//               const SizedBox(height: 15),
-//               _buildInputField(
-//                   controller.emailController, "Email", "Enter your email"),
-//               const SizedBox(height: 15),
-//               _buildInputField(controller.passwordController, "Password",
-//                   "Enter your password"),
-//               const SizedBox(height: 40),
-//               Center(
-//                 child: Column(
-//                   children: [
-//                     _buildRegisterButton(),
-//                     const SizedBox(height: 30),
-//                     GestureDetector(
-//                       onTap: controller.goToLogin,
-//                       child: const Text(
-//                         "Already have an account? Log In",
-//                         style: TextStyle(
-//                           color: Colors.pinkAccent,
-//                           fontWeight: FontWeight.bold,
-//                           decoration: TextDecoration.underline,
-//                         ),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildInputField(
-//       TextEditingController controller, String label, String hint) {
-//     return TextField(
-//       controller: controller,
-//       decoration: InputDecoration(
-//         labelText: label,
-//         hintText: hint,
-//         filled: true,
-//         fillColor: Colors.white,
-//         enabledBorder: OutlineInputBorder(
-//           borderRadius: BorderRadius.circular(20),
-//           borderSide: const BorderSide(color: Colors.grey, width: 2),
-//         ),
-//         focusedBorder: const OutlineInputBorder(
-//           borderRadius: BorderRadius.zero,
-//           borderSide: BorderSide(color: Colors.black, width: 1.9),
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildRegisterButton() {
-//     return GestureDetector(
-//       child: Container(
-//         height: 50,
-//         width: 160,
-//         decoration: BoxDecoration(
-//           color: Colors.black,
-//           borderRadius: BorderRadius.circular(800),
-//         ),
-//         child: const Center(
-//           child: Text(
-//             "SIGN UP",
-//             style: TextStyle(
-//               color: Colors.white,
-//               fontSize: 18,
-//               fontWeight: FontWeight.bold,
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
+import 'package:ecommerce_urban/app/constants/app_fontsizes.dart';
+import 'package:ecommerce_urban/app/constants/app_spacing.dart';
+import 'package:ecommerce_urban/app/constants/app_widget.dart';
 import 'package:ecommerce_urban/modules/auth/register/register_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -108,7 +8,7 @@ import 'package:get/get.dart';
 class RegisterScreen extends StatelessWidget {
   RegisterScreen({super.key});
 
-  late final RegisterController controller = Get.find<RegisterController>();
+  final RegisterController controller = Get.find<RegisterController>();
 
   @override
   Widget build(BuildContext context) {
@@ -118,107 +18,218 @@ class RegisterScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_rounded,
+            color: colorScheme.onBackground,
+          ),
+          onPressed: () => Get.back(),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 50),
+              SizedBox(height: AppSpacing.marginXXL),
 
-              // --- Title ---
+              // Title
               Text(
-                "Create\nYour Account",
+                "Create Your\nAccount",
                 style: theme.textTheme.headlineMedium?.copyWith(
-                  fontSize: 30,
+                  fontSize: AppFontSize.displaySmall,
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onBackground,
+                  letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: AppSpacing.paddingM),
               Text(
-                "Sign up to get started",
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onBackground.withOpacity(0.7),
+                "Sign up to get started with shopping",
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onBackground.withOpacity(0.6),
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: AppSpacing.paddingM),
 
-              // --- Input Fields ---
-              _buildInputField(context, controller.fullNameController,
-                  "Fullname", "Enter Fullname", Icons.person),
-              const SizedBox(height: 15),
-              _buildInputField(context, controller.emailController, "Email",
-                  "Enter your email", Icons.email),
-              const SizedBox(height: 15),
-              _buildInputField(context, controller.phoneController, "Email",
-                  "Enter your Phone Number", Icons.phone),
-              const SizedBox(height: 15),
-              _buildInputField(context, controller.passwordController,
-                  "Password", "Enter your password", Icons.lock,
-                  obscure: true),
+              // Full Name field
+              _buildInputField(
+                context,
+                controller: controller.fullNameController,
+                label: "Full Name",
+                hint: "Enter your full name",
+                fontSize: AppFontSize.headlineLarge,
+                icon: Icons.person_outline,
+              ),
+              SizedBox(height: AppSpacing.paddingM),
 
-              const SizedBox(height: 15),
-              _buildInputField(context, controller.confirmPasswordController,
-                  "confirm Password", "comfirm your password", Icons.lock,
-                  obscure: true),
+              // Email field
+              _buildInputField(
+                context,
+                controller: controller.emailController,
+                fontSize: AppFontSize.headlineLarge,
+                label: "Email Address",
+                hint: "Enter your email",
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              SizedBox(height: AppSpacing.paddingM),
 
-              const SizedBox(height: 15),
-
-              // --- Sign Up Button ---
+              // Phone field
+              _buildInputField(
+                context,
+                controller: controller.phoneController,
+                fontSize: AppFontSize.headlineLarge,
+                label: "Phone Number",
+                hint: "Enter your phone number",
+                icon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+              ),
+              SizedBox(height: AppSpacing.paddingM),
+              // Password field
               Obx(
-                () => Center(
+                () => _buildInputField(
+                  context,
+                  controller: controller.passwordController,
+                  label: "Password",
+                  hint: "Create a password",
+                  fontSize: AppFontSize.headlineLarge,
+                  icon: Icons.lock_outline,
+                  obscure: controller.obscurePassword.value,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      controller.obscurePassword.value
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: colorScheme.onBackground.withOpacity(0.5),
+                    ),
+                    onPressed: controller.togglePasswordVisibility,
+                  ),
+                ),
+              ),
+
+              SizedBox(height: AppSpacing.paddingM),
+              // Confirm Password field
+              Obx(
+                () => _buildInputField(
+                  context,
+                  controller: controller.confirmPasswordController,
+                  label: "Confirm Password",
+                  hint: "Re-enter your password",
+                  fontSize: AppFontSize.headlineLarge,
+                  icon: Icons.lock_outline,
+                  obscure: controller.obscureConfirmPassword.value,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      controller.obscureConfirmPassword.value
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: colorScheme.onBackground.withOpacity(0.5),
+                    ),
+                    onPressed: controller.toggleConfirmPasswordVisibility,
+                  ),
+                ),
+              ),
+              SizedBox(height: AppSpacing.paddingM),
+              // Sign Up button
+              Obx(
+                () => SizedBox(
+                  width: double.infinity,
+                  height: 56,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                      backgroundColor: colorScheme.primary,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 50),
+                      elevation: 0,
+                      shadowColor: colorScheme.primary.withOpacity(0.3),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    onPressed: controller.isLoading.value
-                        ? null
-                        : () {
-                            controller.register();
-                          },
+                    onPressed:
+                        controller.isLoading.value ? null : controller.register,
                     child: controller.isLoading.value
                         ? const SizedBox(
                             height: 24,
                             width: 24,
                             child: CircularProgressIndicator(
                               color: Colors.white,
-                              strokeWidth: 2,
+                              strokeWidth: 2.5,
                             ),
                           )
-                        : const Text(
-                            "SIGN UP",
-                            style: TextStyle(
-                              fontSize: 18,
+                        : Text(
+                            "Create Account",
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
                               fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: AppSpacing.paddingM),
 
-              // --- Login Link ---
-              Center(
-                child: GestureDetector(
-                  onTap: controller.goToLogin,
-                  child: Text(
-                    "Already have an account? Log In",
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.pinkAccent,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
+              // Divider with OR
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: colorScheme.onBackground.withOpacity(0.2),
+                      thickness: 1,
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      "OR",
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onBackground.withOpacity(0.5),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: colorScheme.onBackground.withOpacity(0.2),
+                      thickness: 1,
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(
+                height: AppSpacing.marginL,
+              ),
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Already have an account? ",
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onBackground.withOpacity(0.7),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: controller.goToLogin,
+                      child: Text(
+                        "Log In",
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 50),
+
+              SizedBox(height: AppSpacing.paddingM),
             ],
           ),
         ),
@@ -227,50 +238,152 @@ class RegisterScreen extends StatelessWidget {
   }
 
   Widget _buildInputField(
-    BuildContext context,
-    TextEditingController controller,
-    String label,
-    String hint,
-    IconData icon, {
+    BuildContext context, {
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    required double fontSize,
     bool obscure = false,
+    Widget? suffixIcon,
+    TextInputType? keyboardType,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    return TextFormField(
-      controller: controller,
-      obscureText: obscure,
-      style:
-          theme.textTheme.bodyLarge?.copyWith(color: colorScheme.onBackground),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        labelStyle: theme.textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onBackground.withOpacity(0.8),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onBackground,
+            fontSize: AppFontSize.labelLarge,
+          ),
         ),
-        hintStyle: theme.textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onBackground.withOpacity(0.5),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withOpacity(0.2)
+                    : Colors.grey.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: controller,
+            obscureText: obscure,
+            keyboardType: keyboardType,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onBackground,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onBackground.withOpacity(0.4),
+              ),
+              prefixIcon: Icon(
+                icon,
+                color: colorScheme.onBackground.withOpacity(0.5),
+                size: AppWidgetSize.iconM,
+              ),
+              suffixIcon: suffixIcon,
+              filled: true,
+              fillColor: isDark ? colorScheme.surface : Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: colorScheme.outline.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: colorScheme.primary,
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 16,
+                horizontal: 16,
+              ),
+            ),
+          ),
         ),
-        prefixIcon: Icon(icon,
-            color: colorScheme.onBackground.withOpacity(isDark ? 0.8 : 0.6)),
-        filled: true,
-        fillColor: isDark ? Colors.white12 : Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: isDark ? colorScheme.surface : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: colorScheme.outline.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 24,
+                  color: colorScheme.onBackground,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onBackground,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(
-              color: colorScheme.outline.withOpacity(0.5), width: 1.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: colorScheme.primary, width: 2),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       ),
     );
   }

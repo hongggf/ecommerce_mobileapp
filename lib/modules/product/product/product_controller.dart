@@ -1,123 +1,89 @@
-// lib/modules/product/product_list/product_controller.dart
-
-import 'package:ecommerce_urban/app/model/product_model.dart';
-import 'package:ecommerce_urban/app/repositories/product_repository.dart';
 import 'package:get/get.dart';
 
+class Product {
+  final String id;
+  final String name;
+  final String image;
+  final double price;
+  final double rating;
+  final String category;
+
+  Product({
+    required this.id,
+    required this.name,
+    required this.image,
+    required this.price,
+    required this.rating,
+    required this.category,
+  });
+}
+
 class ProductController extends GetxController {
-  final ProductRepository _productRepo = ProductRepository();
-
-  final isLoading = false.obs;
-  final products = <ProductModel>[].obs;
-  final filteredProducts = <ProductModel>[].obs;
-
-  final selectedSort = 'Latest'.obs;
-  final selectedFilter = 'None'.obs;
-
-  final currentPage = 1.obs;
-  final lastPage = 1.obs;
-  final total = 0.obs;
-
-  int? categoryId;
-  String? categoryName;
+  final RxBool isLoading = false.obs;
+  final RxList<Product> products = <Product>[].obs;
+  final RxList<Product> filteredProducts = <Product>[].obs;
+  final RxString categoryName = 'Products'.obs;
+  final RxString selectedSort = 'Latest'.obs;
+  final RxInt currentPage = 1.obs;
+  final RxInt lastPage = 3.obs;
 
   @override
   void onInit() {
     super.onInit();
-
-    final args = Get.arguments;
-    if (args != null) {
-      categoryId = args['categoryId'];
-      categoryName = args['categoryName'];
-    }
-
-    print('🎯 ProductController initialized');
-    print('📂 Category ID: $categoryId');
-    print('📝 Category Name: $categoryName');
-
     loadProducts();
   }
 
-  Future<void> loadProducts({bool refresh = false}) async {
-    if (refresh) {
-      currentPage.value = 1;
-      products.clear();
-    }
-
+  void loadProducts({bool refresh = false}) {
     isLoading.value = true;
-
-    try {
-      final result = await _productRepo.getProducts(
-        page: currentPage.value,
-        perPage: 15,
-        categoryId: categoryId,
-      );
-
-      final List<ProductModel> newProducts = result['data'];
+    Future.delayed(const Duration(milliseconds: 600), () {
+      final mockProducts = [
+        Product(id: '1', name: 'Nike Running Shoes', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300', price: 129.99, rating: 4.5, category: 'Shoes'),
+        Product(id: '2', name: 'Adidas Sports Shoe', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300', price: 139.99, rating: 4.3, category: 'Shoes'),
+        Product(id: '3', name: 'Puma Casual', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300', price: 99.99, rating: 4.2, category: 'Shoes'),
+        Product(id: '4', name: 'New Balance', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300', price: 119.99, rating: 4.6, category: 'Shoes'),
+        Product(id: '5', name: 'Converse Classic', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300', price: 79.99, rating: 4.4, category: 'Shoes'),
+        Product(id: '6', name: 'Air Jordan', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300', price: 189.99, rating: 4.8, category: 'Shoes'),
+      ];
 
       if (refresh) {
-        products.value = newProducts;
-      } else {
-        products.addAll(newProducts);
+        currentPage.value = 1;
       }
 
-      lastPage.value = result['last_page'];
-      total.value = result['total'];
-
-      _applyFiltersAndSort();
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load products: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } finally {
+      products.assignAll(mockProducts);
+      filteredProducts.assignAll(mockProducts);
       isLoading.value = false;
-    }
+    });
   }
 
-  Future<void> loadMore() async {
-    if (currentPage.value < lastPage.value && !isLoading.value) {
-      currentPage.value++;
-      await loadProducts();
+  void loadMore() {
+    if (currentPage.value < lastPage.value) {
+      isLoading.value = true;
+      Future.delayed(const Duration(milliseconds: 500), () {
+        currentPage.value++;
+        isLoading.value = false;
+      });
     }
-  }
-
-  void _applyFiltersAndSort() {
-    var tempList = List<ProductModel>.from(products);
-
-    // Filter
-    if (selectedFilter.value == '<50') {
-      tempList = tempList.where((p) => p.lowestPrice < 50).toList();
-    } else if (selectedFilter.value == 'Nike') {
-      tempList =
-          tempList.where((p) => p.name.toLowerCase().contains('nike')).toList();
-    }
-
-    // Sort
-    if (selectedSort.value == 'LowToHigh') {
-      tempList.sort((a, b) => a.lowestPrice.compareTo(b.lowestPrice));
-    } else if (selectedSort.value == 'HighToLow') {
-      tempList.sort((a, b) => b.lowestPrice.compareTo(a.lowestPrice));
-    }
-
-    filteredProducts.value = tempList;
   }
 
   void applySort(String sortType) {
     selectedSort.value = sortType;
-    _applyFiltersAndSort();
+    final sorted = List<Product>.from(filteredProducts);
+
+    switch (sortType) {
+      case 'LowToHigh':
+        sorted.sort((a, b) => a.price.compareTo(b.price));
+        break;
+      case 'HighToLow':
+        sorted.sort((a, b) => b.price.compareTo(a.price));
+        break;
+      default:
+        break;
+    }
+
+    filteredProducts.assignAll(sorted);
   }
 
-  void applyFilter(String filterType) {
-    selectedFilter.value = filterType;
-    _applyFiltersAndSort();
-  }
-
-  void goToProductDetail(ProductModel product) {
-    Get.toNamed('/product_detail', arguments: {
-      'productId': product.id,
-      'product': product,
-    });
+  void goToProductDetail(Product product) {
+    Get.toNamed('/product_detail', arguments: product);
   }
 }

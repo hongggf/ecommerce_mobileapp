@@ -1,407 +1,299 @@
-import 'package:ecommerce_urban/modules/admin_users.dart/model/role_model.dart';
-import 'package:ecommerce_urban/modules/admin_users.dart/model/user_model.dart';
-import 'package:ecommerce_urban/modules/admin_users.dart/services/user_and_role_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ecommerce_urban/modules/admin_users.dart/model/user_model.dart';
+import 'package:ecommerce_urban/modules/admin_users.dart/model/role_model.dart';
 
 class AdminUsersController extends GetxController {
-  final UserService _userService = UserService();
-  
-  // Expose service for use in UI
-  UserService get userService => _userService;
+  // ================= USERS STATE =================
+  var allUsers = <UserModel>[].obs;
+  var filteredUsers = <UserModel>[].obs;
+  var isLoadingUsers = false.obs;
+  var userStatusFilter = 'All'.obs;
 
-  // User state
-  final RxList<UserModel> allUsers = <UserModel>[].obs;
-  final RxList<UserModel> filteredUsers = <UserModel>[].obs;
-  final RxBool isLoadingUsers = false.obs;
-  final RxString userSearchQuery = ''.obs;
-  final RxString userStatusFilter = 'All'.obs;
+  // Editing fields for bottom sheet
+  var editingUserName = ''.obs;
+  var editingUserEmail = ''.obs;
+  var editingUserPhone = ''.obs;
+  var editingUserStatus = 'Active'.obs;
 
-  // Role state
-  final RxList<RoleModel> allRoles = <RoleModel>[].obs;
-  final RxBool isLoadingRoles = false.obs;
+  // ================= ROLES STATE =================
+  var allRoles = <RoleModel>[].obs;
+  var isLoadingRoles = false.obs;
 
-  // User detail state
-  final Rx<UserModel?> selectedUser = Rx<UserModel?>(null);
-  final RxList<RoleModel> userRoles = <RoleModel>[].obs;
-  final RxList<RoleModel> availableRoles = <RoleModel>[].obs;
-  final RxBool isLoadingUserRoles = false.obs;
+  // Editing fields for role
+  var editingRoleName = ''.obs;
+  var editingRoleDesc = ''.obs;
 
-  // Form state
-  final RxString editingUserName = ''.obs;
-  final RxString editingUserEmail = ''.obs;
-  final RxString editingUserPhone = ''.obs;
-  final RxString editingUserStatus = 'Active'.obs;
+  // ================= USER STATS =================
+  int get activeUsers =>
+      allUsers.where((u) => u.status.toLowerCase() == 'active').length;
 
-  final RxString editingRoleName = ''.obs;
-  final RxString editingRoleDesc = ''.obs;
+  int get inactiveUsers =>
+      allUsers.where((u) => u.status.toLowerCase() == 'inactive').length;
+
+  int get pendingUsers =>
+      allUsers.where((u) => u.status.toLowerCase() == 'pending').length;
+
+  // ==================== USER METHODS ====================
+  void loadUsers() async {
+    isLoadingUsers.value = true;
+    try {
+      // TODO: Replace with API call
+      await Future.delayed(const Duration(seconds: 1));
+      // Example mock data
+      allUsers.value = [
+        UserModel(
+          id: '1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          status: 'active',
+          createdAt: DateTime.now(),
+          roles: ['Admin'],
+        ),
+        UserModel(
+          id: '2',
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          status: 'inactive',
+          createdAt: DateTime.now(),
+          roles: ['Manager'],
+        ),
+      ];
+      filteredUsers.value = allUsers;
+    } finally {
+      isLoadingUsers.value = false;
+    }
+  }
+
+  void searchUsers(String keyword) {
+    if (keyword.isEmpty) {
+      filteredUsers.value = allUsers;
+    } else {
+      filteredUsers.value = allUsers
+          .where((u) =>
+              u.name.toLowerCase().contains(keyword.toLowerCase()) ||
+              u.email.toLowerCase().contains(keyword.toLowerCase()))
+          .toList();
+    }
+  }
+
+  void filterUsersByStatus(String status) {
+    userStatusFilter.value = status;
+    if (status == 'All') {
+      filteredUsers.value = allUsers;
+    } else {
+      filteredUsers.value =
+          allUsers.where((u) => u.status.toLowerCase() == status.toLowerCase()).toList();
+    }
+  }
+
+  void createUser(Map<String, dynamic> data) async {
+    isLoadingUsers.value = true;
+    try {
+      // TODO: Replace with API call to create user
+      await Future.delayed(const Duration(seconds: 1));
+      allUsers.add(UserModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: data['full_name'],
+        email: data['email'],
+        phone: data['phone'],
+        status: data['status'],
+        createdAt: DateTime.now(),
+        roles: [],
+      ));
+      filteredUsers.value = allUsers;
+      Get.snackbar('Success', 'User created successfully',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoadingUsers.value = false;
+    }
+  }
+
+  void updateUser(String userId, Map<String, dynamic> data) async {
+    isLoadingUsers.value = true;
+    try {
+      // TODO: Replace with API call
+      await Future.delayed(const Duration(milliseconds: 500));
+      final index = allUsers.indexWhere((u) => u.id == userId);
+      if (index != -1) {
+        final old = allUsers[index];
+        allUsers[index] = UserModel(
+          id: old.id,
+          name: data['name'] ?? old.name,
+          email: data['email'] ?? old.email,
+          phone: data['phone'] ?? old.phone,
+          status: data['status'] ?? old.status,
+          createdAt: old.createdAt,
+          updatedAt: DateTime.now(),
+          roles: old.roles,
+        );
+      }
+      filteredUsers.value = allUsers;
+      Get.snackbar('Success', 'User updated successfully',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoadingUsers.value = false;
+    }
+  }
+
+  void updateUserStatus(String userId, String status) {
+    final index = allUsers.indexWhere((u) => u.id == userId);
+    if (index != -1) {
+      final old = allUsers[index];
+      allUsers[index] = UserModel(
+        id: old.id,
+        name: old.name,
+        email: old.email,
+        phone: old.phone,
+        status: status,
+        createdAt: old.createdAt,
+        updatedAt: DateTime.now(),
+        roles: old.roles,
+      );
+      filteredUsers.value = allUsers;
+    }
+  }
+
+  void deleteUser(String userId) {
+    allUsers.removeWhere((u) => u.id == userId);
+    filteredUsers.value = allUsers;
+    Get.snackbar('Deleted', 'User deleted', snackPosition: SnackPosition.BOTTOM);
+  }
+
+  // ==================== ROLE METHODS ====================
+  void loadRoles() async {
+    isLoadingRoles.value = true;
+    try {
+      // TODO: Replace with API call
+      await Future.delayed(const Duration(seconds: 1));
+      allRoles.value = [
+        RoleModel(
+          id: '1',
+          name: 'Admin',
+          description: 'Administrator with full access',
+          createdAt: DateTime.now(),
+        ),
+        RoleModel(
+          id: '2',
+          name: 'Manager',
+          description: 'Manager with limited access',
+          createdAt: DateTime.now(),
+        ),
+      ];
+    } finally {
+      isLoadingRoles.value = false;
+    }
+  }
+
+  void updateRole(String roleId, Map<String, dynamic> data) async {
+    isLoadingRoles.value = true;
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      final index = allRoles.indexWhere((r) => r.id == roleId);
+      if (index != -1) {
+        final old = allRoles[index];
+        allRoles[index] = RoleModel(
+          id: old.id,
+          name: data['name'] ?? old.name,
+          description: data['description'] ?? old.description,
+          createdAt: old.createdAt,
+          updatedAt: DateTime.now(),
+        );
+      }
+    } finally {
+      isLoadingRoles.value = false;
+    }
+  }
+
+  void deleteRole(String roleId) {
+    allRoles.removeWhere((r) => r.id == roleId);
+    Get.snackbar('Deleted', 'Role deleted', snackPosition: SnackPosition.BOTTOM);
+  }
+
+  void assignRoleToUser(String userId, String roleId) {
+    final userIndex = allUsers.indexWhere((u) => u.id == userId);
+    final role = allRoles.firstWhere((r) => r.id == roleId, orElse: () => RoleModel(id: '', name: '', createdAt: DateTime.now()));
+    if (userIndex != -1 && role.id.isNotEmpty) {
+      final oldUser = allUsers[userIndex];
+      final updatedRoles = [...?oldUser.roles];
+      if (!updatedRoles.contains(role.name)) {
+        updatedRoles.add(role.name);
+        allUsers[userIndex] = UserModel(
+          id: oldUser.id,
+          name: oldUser.name,
+          email: oldUser.email,
+          phone: oldUser.phone,
+          status: oldUser.status,
+          createdAt: oldUser.createdAt,
+          updatedAt: DateTime.now(),
+          roles: updatedRoles,
+        );
+      }
+      filteredUsers.value = allUsers;
+    }
+  }/// Public method for widgets to remove role directly by name
+  void removeRoleFromUserDirect(UserModel user, String roleName) {
+    final role = allRoles.firstWhere(
+      (r) => r.name == roleName,
+      orElse: () => RoleModel(
+        id: '',
+        name: roleName,
+        description: null,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    );
+
+    if (role.id.isEmpty) {
+      Get.snackbar('Error', 'Role not found',
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: const Color(0xFFFF0000));
+      return;
+    }
+
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Remove Role'),
+        content: Text('Remove "$roleName" from ${user.name}?'),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              removeRoleFromUser(user.id, role.id);
+              Get.back();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void removeRoleFromUser(String userId, String roleId) {
+    final userIndex = allUsers.indexWhere((u) => u.id == userId);
+    final role = allRoles.firstWhere((r) => r.id == roleId, orElse: () => RoleModel(id: '', name: '', createdAt: DateTime.now()));
+    if (userIndex != -1 && role.id.isNotEmpty) {
+      final oldUser = allUsers[userIndex];
+      final updatedRoles = [...?oldUser.roles];
+      updatedRoles.remove(role.name);
+      allUsers[userIndex] = UserModel(
+        id: oldUser.id,
+        name: oldUser.name,
+        email: oldUser.email,
+        phone: oldUser.phone,
+        status: oldUser.status,
+        createdAt: oldUser.createdAt,
+        updatedAt: DateTime.now(),
+        roles: updatedRoles,
+      );
+      filteredUsers.value = allUsers;
+    }
+  }
 
   @override
   void onInit() {
     super.onInit();
     loadUsers();
     loadRoles();
-  }
-
-  // ==================== USER MANAGEMENT ====================
-
-  Future<void> loadUsers() async {
-  try {
-    isLoadingUsers.value = true;
-    print('🔄 Loading users with roles...');
-    
-    // Use the new method that fetches roles
-    final users = await _userService.fetchUsersWithRoles();
-    
-    // DEBUG: Print all users and their roles
-    for (var user in users) {
-      print('👤 User: ${user.name} (${user.email})');
-      print('   📋 Roles: ${user.roles}');
-      print('   Count: ${user.roles?.length ?? 0}');
-    }
-    
-    allUsers.assignAll(users);
-    applyUserFilters();
-    print('✅ Users loaded successfully with roles');
-  } catch (e) {
-    print('❌ Error loading users: $e');
-    Get.snackbar('Error', 'Failed to load users: $e',
-        snackPosition: SnackPosition.BOTTOM);
-  } finally {
-    isLoadingUsers.value = false;
-  }
-}
-
-  Future<void> createUser(Map<String, dynamic> userData) async {
-    try {
-      isLoadingUsers.value = true;
-      final newUser = await _userService.createUser(userData);
-      if (newUser != null) {
-        allUsers.insert(0, newUser);
-        applyUserFilters();
-        Get.snackbar('Success', 'User created successfully',
-            snackPosition: SnackPosition.BOTTOM);
-        print('✅ User created');
-      }
-    } catch (e) {
-      print('❌ Error creating user: $e');
-      Get.snackbar('Error', 'Failed to create user: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingUsers.value = false;
-    }
-  }
-
-  Future<void> updateUser(String userId, Map<String, dynamic> userData) async {
-    try {
-      isLoadingUsers.value = true;
-      final success = await _userService.updateUser(userId, userData);
-      if (success) {
-        // Update local user in list
-        final index = allUsers.indexWhere((u) => u.id == userId);
-        if (index != -1) {
-          final updatedUser = UserModel(
-            id: allUsers[index].id,
-            name: userData['name'] ?? userData['name'] ?? allUsers[index].name,
-            email: userData['email'] ?? allUsers[index].email,
-            phone: userData['phone'] ?? allUsers[index].phone,
-            avatar: allUsers[index].avatar,
-            status: userData['status'] ?? allUsers[index].status,
-            createdAt: allUsers[index].createdAt,
-            updatedAt: DateTime.now(),
-            roles: allUsers[index].roles,
-          );
-          allUsers[index] = updatedUser;
-          allUsers.refresh();
-          applyUserFilters();
-        }
-        Get.snackbar('Success', 'User updated successfully',
-            snackPosition: SnackPosition.BOTTOM);
-        print('✅ User updated');
-      }
-    } catch (e) {
-      print('❌ Error updating user: $e');
-      Get.snackbar('Error', 'Failed to update user: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingUsers.value = false;
-    }
-  }
-
-  Future<void> updateUserStatus(String userId, String newStatus) async {
-    try {
-      isLoadingUsers.value = true;
-      final success =
-          await _userService.updateUser(userId, {'status': newStatus.toLowerCase()});
-      if (success) {
-        final index = allUsers.indexWhere((u) => u.id == userId);
-        if (index != -1) {
-          final updatedUser = UserModel(
-            id: allUsers[index].id,
-            name: allUsers[index].name,
-            email: allUsers[index].email,
-            phone: allUsers[index].phone,
-            avatar: allUsers[index].avatar,
-            status: newStatus.toLowerCase(),
-            createdAt: allUsers[index].createdAt,
-            updatedAt: DateTime.now(),
-            roles: allUsers[index].roles,
-          );
-          allUsers[index] = updatedUser;
-          allUsers.refresh();
-          applyUserFilters();
-        }
-        Get.snackbar('Success', 'User status updated to $newStatus',
-            snackPosition: SnackPosition.BOTTOM);
-        print('✅ User status updated');
-      }
-    } catch (e) {
-      print('❌ Error updating status: $e');
-      Get.snackbar('Error', 'Failed to update status: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingUsers.value = false;
-    }
-  }
-
-  Future<void> deleteUser(String userId) async {
-    try {
-      isLoadingUsers.value = true;
-      final success = await _userService.deleteUser(userId);
-      if (success) {
-        allUsers.removeWhere((u) => u.id == userId);
-        applyUserFilters();
-        Get.snackbar('Success', 'User deleted successfully',
-            snackPosition: SnackPosition.BOTTOM);
-        print('✅ User deleted');
-      }
-    } catch (e) {
-      print('❌ Error deleting user: $e');
-      Get.snackbar('Error', 'Failed to delete user: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingUsers.value = false;
-    }
-  }
-
-  void searchUsers(String query) {
-    userSearchQuery.value = query.toLowerCase();
-    applyUserFilters();
-  }
-
-  void filterUsersByStatus(String status) {
-    userStatusFilter.value = status;
-    applyUserFilters();
-  }
-
-  void applyUserFilters() {
-    var filtered = allUsers.toList();
-
-    if (userStatusFilter.value != 'All') {
-      final filterStatus = userStatusFilter.value.toLowerCase();
-      filtered = filtered
-          .where((u) => u.status.toLowerCase() == filterStatus)
-          .toList();
-    }
-
-    if (userSearchQuery.value.isNotEmpty) {
-      filtered = filtered.where((u) {
-        return u.name.toLowerCase().contains(userSearchQuery.value) ||
-            u.email.toLowerCase().contains(userSearchQuery.value);
-      }).toList();
-    }
-
-    filteredUsers.assignAll(filtered);
-  }
-
-  int get totalUsers => allUsers.length;
-  int get activeUsers => allUsers.where((u) => u.status.toLowerCase() == 'active').length;
-  int get inactiveUsers => allUsers.where((u) => u.status.toLowerCase() == 'inactive').length;
-  int get pendingUsers => allUsers.where((u) => u.status.toLowerCase() == 'pending' || u.status.toLowerCase() == 'pending').length;
-
-  // ==================== ROLE MANAGEMENT ====================
-
-  Future<void> loadRoles() async {
-    try {
-      isLoadingRoles.value = true;
-      final roles = await _userService.fetchRoles();
-      allRoles.assignAll(roles);
-      availableRoles.assignAll(roles);
-      print('✅ Roles loaded successfully');
-    } catch (e) {
-      print('❌ Error loading roles: $e');
-      Get.snackbar('Error', 'Failed to load roles: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingRoles.value = false;
-    }
-  }
-
-  Future<void> createRole(Map<String, dynamic> roleData) async {
-    try {
-      isLoadingRoles.value = true;
-      final newRole = await _userService.createRole(roleData);
-      if (newRole != null) {
-        allRoles.insert(0, newRole);
-        availableRoles.insert(0, newRole);
-        Get.snackbar('Success', 'Role created successfully',
-            snackPosition: SnackPosition.BOTTOM);
-        print('✅ Role created');
-      }
-    } catch (e) {
-      print('❌ Error creating role: $e');
-      Get.snackbar('Error', 'Failed to create role: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingRoles.value = false;
-    }
-  }
-
-  Future<void> updateRole(String roleId, Map<String, dynamic> roleData) async {
-    try {
-      isLoadingRoles.value = true;
-      final success = await _userService.updateRole(roleId, roleData);
-      if (success) {
-        final index = allRoles.indexWhere((r) => r.id == roleId);
-        if (index != -1) {
-          final updatedRole = RoleModel(
-            id: allRoles[index].id,
-            name: roleData['name'] ?? allRoles[index].name,
-            description: roleData['description'] ?? allRoles[index].description,
-            createdAt: allRoles[index].createdAt,
-            updatedAt: DateTime.now(),
-          );
-          allRoles[index] = updatedRole;
-          allRoles.refresh();
-          availableRoles.refresh();
-        }
-        Get.snackbar('Success', 'Role updated successfully',
-            snackPosition: SnackPosition.BOTTOM);
-        print('✅ Role updated');
-      }
-    } catch (e) {
-      print('❌ Error updating role: $e');
-      Get.snackbar('Error', 'Failed to update role: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingRoles.value = false;
-    }
-  }
-
-  Future<void> deleteRole(String roleId) async {
-    try {
-      isLoadingRoles.value = true;
-      final success = await _userService.deleteRole(roleId);
-      if (success) {
-        allRoles.removeWhere((r) => r.id == roleId);
-        availableRoles.removeWhere((r) => r.id == roleId);
-        Get.snackbar('Success', 'Role deleted successfully',
-            snackPosition: SnackPosition.BOTTOM);
-        print('✅ Role deleted');
-      }
-    } catch (e) {
-      print('❌ Error deleting role: $e');
-      Get.snackbar('Error', 'Failed to delete role: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingRoles.value = false;
-    }
-  }
-
-  // ==================== USER ROLE MANAGEMENT ====================
-
-  Future<void> loadUserRoles(String userId) async {
-    try {
-      isLoadingUserRoles.value = true;
-      final roles = await _userService.listUserRoles(userId);
-      userRoles.assignAll(roles);
-      print('✅ User roles loaded');
-    } catch (e) {
-      print('❌ Error loading user roles: $e');
-    } finally {
-      isLoadingUserRoles.value = false;
-    }
-  }
-
- Future<void> assignRoleToUser(String userId, String roleId) async {
-  try {
-    isLoadingUserRoles.value = true;
-    final success = await _userService.assignRole(userId, roleId);
-    if (success) {
-      print('✅ Role assigned, reloading user data...');
-      // Reload ALL users to ensure assignment tab shows updated data
-      await loadUsers();
-      
-      Get.snackbar(
-        'Success',
-        'Role assigned successfully',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-      
-      // Close dialog only if it's still open
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (Get.isDialogOpen ?? false) {
-          Get.back();
-        }
-      });
-      
-      print('✅ Role assigned and users reloaded');
-    }
-  } catch (e) {
-    print('❌ Error assigning role: $e');
-    Get.snackbar(
-      'Error',
-      'Failed to assign role: $e',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
-  } finally {
-    isLoadingUserRoles.value = false;
-  }
-}
-
-Future<void> removeRoleFromUser(String userId, String roleId) async {
-  try {
-    isLoadingUserRoles.value = true;
-    final success = await _userService.removeRole(userId, roleId);
-    if (success) {
-      print('✅ Role removed, reloading user data...');
-      // Reload ALL users to ensure assignment tab shows updated data
-      await loadUsers();
-      
-      Get.snackbar(
-        'Success',
-        'Role removed successfully',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-      
-      print('✅ Role removed and users reloaded');
-    }
-  } catch (e) {
-    print('❌ Error removing role: $e');
-    Get.snackbar(
-      'Error',
-      'Failed to remove role: $e',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
-  } finally {
-    isLoadingUserRoles.value = false;
-  }
-}
-
-  @override
-  void onClose() {
-    super.onClose();
   }
 }

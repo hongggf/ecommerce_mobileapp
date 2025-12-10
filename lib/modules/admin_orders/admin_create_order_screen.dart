@@ -13,26 +13,21 @@ class CreateOrderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create New Order'),
+        title: const Text("Create New Order"),
         centerTitle: true,
-        elevation: 0,
       ),
       body: Form(
         key: controller.formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _buildCartSection(),
+            _section("Cart Information", _cartSection()),
+            _section("Shipping Address", _shippingSection()),
+            _section("Billing Address", _billingSection()),
+            _section("Pricing Details", _pricingSection()),
+            _section("Additional Notes", _notesSection()),
             const SizedBox(height: 20),
-            _buildShippingAddressSection(),
-            const SizedBox(height: 20),
-            _buildBillingAddressSection(),
-            const SizedBox(height: 20),
-            _buildPricingSection(),
-            const SizedBox(height: 20),
-            _buildNotesSection(),
-            const SizedBox(height: 30),
-            _buildSubmitButton(),
+            _submitButton(),
             const SizedBox(height: 20),
           ],
         ),
@@ -40,436 +35,274 @@ class CreateOrderScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCartSection() {
+  // ----------------------------------------
+  // SECTION WRAPPER
+  // ----------------------------------------
+  Widget _section(String title, Widget child) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Cart Information',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: controller.cartIdController,
-              decoration: const InputDecoration(
-                labelText: 'Cart ID *',
-                hintText: 'Enter cart ID',
-                prefixIcon: Icon(Icons.shopping_cart),
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Cart ID is required';
-                }
-                return null;
-              },
-            ),
+            child,
           ],
         ),
       ),
     );
   }
 
-  Widget _buildShippingAddressSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Shipping Address',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: controller.shipNameController,
-              decoration: const InputDecoration(
-                labelText: 'Recipient Name *',
-                prefixIcon: Icon(Icons.person),
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Name is required';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: controller.shipLine1Controller,
-              decoration: const InputDecoration(
-                labelText: 'Address Line 1 *',
-                prefixIcon: Icon(Icons.home),
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Address is required';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: controller.shipLine2Controller,
-              decoration: const InputDecoration(
-                labelText: 'Address Line 2',
-                prefixIcon: Icon(Icons.home_outlined),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: controller.shipCityController,
-                    decoration: const InputDecoration(
-                      labelText: 'City *',
-                      prefixIcon: Icon(Icons.location_city),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'City is required';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: controller.shipStateController,
-                    decoration: const InputDecoration(
-                      labelText: 'State',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: controller.shipPostalController,
-                    decoration: const InputDecoration(
-                      labelText: 'Postal Code',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: controller.shipCountryController,
-                    decoration: const InputDecoration(
-                      labelText: 'Country Code *',
-                      prefixIcon: Icon(Icons.flag),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+  // ----------------------------------------
+  // CART
+  // ----------------------------------------
+  Widget _cartSection() {
+    return TextFormField(
+      controller: controller.cartId,
+      decoration: const InputDecoration(
+        labelText: "Cart ID *",
+        prefixIcon: Icon(Icons.shopping_cart),
+        border: OutlineInputBorder(),
       ),
+      validator: (v) => v!.isEmpty ? "Cart ID required" : null,
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
     );
   }
 
-  Widget _buildBillingAddressSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Billing Address',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Obx(() => Row(
-                      children: [
-                        Checkbox(
-                          value: controller.sameAsShipping.value,
-                          onChanged: (value) {
-                            controller.sameAsShipping.value = value ?? false;
-                            if (controller.sameAsShipping.value) {
-                              controller.copyShippingToBilling();
-                            }
-                          },
-                        ),
-                        const Text('Same as shipping'),
-                      ],
-                    )),
-              ],
-            ),
-            Obx(() {
-              if (controller.sameAsShipping.value) {
-                return const SizedBox.shrink();
-              }
+  // ----------------------------------------
+  // SHIPPING
+  // ----------------------------------------
+  Widget _shippingSection() {
+    return Column(
+      children: [
+        _input(controller.shipName, "Recipient Name *", Icons.person,
+            required: true),
+        const SizedBox(height: 12),
+        _input(controller.shipLine1, "Address Line 1 *", Icons.home,
+            required: true),
+        const SizedBox(height: 12),
+        _input(controller.shipLine2, "Address Line 2", Icons.home_outlined),
+        const SizedBox(height: 12),
 
-              return Column(
+        /// CITY / STATE
+        Row(
+          children: [
+            Expanded(
+              child: _input(controller.shipCity, "City *",
+                  Icons.location_city_outlined,
+                  required: true),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _input(controller.shipState, "State", Icons.map_outlined),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        /// POSTAL / COUNTRY
+        Row(
+          children: [
+            Expanded(
+              child: _input(controller.shipPostal, "Postal Code",
+                  Icons.local_post_office_outlined),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _input(controller.shipCountry, "Country Code *",
+                  Icons.flag_circle,
+                  required: true),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ----------------------------------------
+  // BILLING
+  // ----------------------------------------
+  Widget _billingSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // checkbox row no Obx wrapping children
+        Row(
+          children: [
+            Obx(() => Checkbox(
+                  value: controller.sameAsShipping.value,
+                  onChanged: (v) {
+                    controller.sameAsShipping.value = v ?? false;
+                    if (v == true) controller.copyToBilling();
+                  },
+                )),
+            const Text("Same as shipping"),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        Obx(() {
+          if (controller.sameAsShipping.value) {
+            return const SizedBox.shrink();
+          }
+
+          return Column(
+            children: [
+              _input(controller.billName, "Recipient Name *", Icons.person,
+                  required: true),
+              const SizedBox(height: 12),
+              _input(controller.billLine1, "Address Line 1 *", Icons.home,
+                  required: true),
+              const SizedBox(height: 12),
+              _input(controller.billLine2, "Address Line 2",
+                  Icons.home_outlined),
+              const SizedBox(height: 12),
+
+              /// City / State
+              Row(
                 children: [
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: controller.billNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Recipient Name *',
-                      prefixIcon: Icon(Icons.person),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (!controller.sameAsShipping.value &&
-                          (value == null || value.isEmpty)) {
-                        return 'Name is required';
-                      }
-                      return null;
-                    },
+                  Expanded(
+                    child: _input(controller.billCity, "City *",
+                        Icons.location_city_outlined,
+                        required: true),
                   ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: controller.billLine1Controller,
-                    decoration: const InputDecoration(
-                      labelText: 'Address Line 1 *',
-                      prefixIcon: Icon(Icons.home),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (!controller.sameAsShipping.value &&
-                          (value == null || value.isEmpty)) {
-                        return 'Address is required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: controller.billLine2Controller,
-                    decoration: const InputDecoration(
-                      labelText: 'Address Line 2',
-                      prefixIcon: Icon(Icons.home_outlined),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: controller.billCityController,
-                          decoration: const InputDecoration(
-                            labelText: 'City *',
-                            prefixIcon: Icon(Icons.location_city),
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (value) {
-                            if (!controller.sameAsShipping.value &&
-                                (value == null || value.isEmpty)) {
-                              return 'City is required';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextFormField(
-                          controller: controller.billStateController,
-                          decoration: const InputDecoration(
-                            labelText: 'State',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: controller.billPostalController,
-                          decoration: const InputDecoration(
-                            labelText: 'Postal Code',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextFormField(
-                          controller: controller.billCountryController,
-                          decoration: const InputDecoration(
-                            labelText: 'Country Code *',
-                            prefixIcon: Icon(Icons.flag),
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (value) {
-                            if (!controller.sameAsShipping.value &&
-                                (value == null || value.isEmpty)) {
-                              return 'Required';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child:
+                        _input(controller.billState, "State", Icons.map_sharp),
                   ),
                 ],
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPricingSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Pricing Details',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: controller.discountController,
-                    decoration: const InputDecoration(
-                      labelText: 'Discount',
-                      prefixText: '\$ ',
-                      prefixIcon: Icon(Icons.discount),
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d*\.?\d{0,2}')),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: controller.taxController,
-                    decoration: const InputDecoration(
-                      labelText: 'Tax',
-                      prefixText: '\$ ',
-                      prefixIcon: Icon(Icons.receipt),
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d*\.?\d{0,2}')),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: controller.shippingController,
-              decoration: const InputDecoration(
-                labelText: 'Shipping Cost',
-                prefixText: '\$ ',
-                prefixIcon: Icon(Icons.local_shipping),
-                border: OutlineInputBorder(),
               ),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-              ],
-            ),
-          ],
-        ),
-      ),
+              const SizedBox(height: 12),
+
+              /// Postal / Country
+              Row(
+                children: [
+                  Expanded(
+                    child: _input(controller.billPostal, "Postal Code",
+                        Icons.local_post_office_outlined),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _input(controller.billCountry, "Country Code *",
+                        Icons.flag_circle,
+                        required: true),
+                  ),
+                ],
+              )
+            ],
+          );
+        }),
+      ],
     );
   }
 
-  Widget _buildNotesSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  // ----------------------------------------
+  // PRICING
+  // ----------------------------------------
+  Widget _pricingSection() {
+    return Column(
+      children: [
+        Row(
           children: [
-            const Text(
-              'Additional Notes',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: controller.notesController,
-              decoration: const InputDecoration(
-                hintText: 'Enter any special instructions...',
-                border: OutlineInputBorder(),
+            Expanded(
+              child: _moneyField(
+                controller.discount,
+                "Discount",
+                Icons.discount_outlined,
               ),
-              maxLines: 3,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child:
+                  _moneyField(controller.tax, "Tax", Icons.receipt_long_outlined),
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        _moneyField(controller.shippingCost, "Shipping Cost",
+            Icons.local_shipping_outlined),
+      ],
+    );
+  }
+
+  // ----------------------------------------
+  // NOTES
+  // ----------------------------------------
+  Widget _notesSection() {
+    return TextFormField(
+      controller: controller.notes,
+      maxLines: 3,
+      decoration: const InputDecoration(
+        hintText: "Enter any special instructions...",
+        border: OutlineInputBorder(),
       ),
     );
   }
 
-  Widget _buildSubmitButton() {
-    return Obx(() => ElevatedButton(
-          onPressed: controller.isSubmitting.value ? null : controller.submitOrder,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          child: controller.isSubmitting.value
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text(
-                  'Create Order',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-        ));
+  // ----------------------------------------
+  // SUBMIT BUTTON
+  // ----------------------------------------
+  Widget _submitButton() {
+    return Obx(
+      () => FilledButton(
+        onPressed:
+            controller.isSubmitting.value ? null : () => controller.submit(),
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+        ),
+        child: controller.isSubmitting.value
+            ? const CircularProgressIndicator(strokeWidth: 2)
+            : const Text(
+                "Create Order",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+      ),
+    );
+  }
+
+  // ----------------------------------------
+  // INPUT FIELD BUILDER
+  // ----------------------------------------
+  Widget _input(TextEditingController c, String label, IconData icon,
+      {bool required = false}) {
+    return TextFormField(
+      controller: c,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: const OutlineInputBorder(),
+      ),
+      validator: required
+          ? (v) => v!.isEmpty ? "Required field" : null
+          : null,
+    );
+  }
+
+  // ----------------------------------------
+  // MONEY FIELD
+  // ----------------------------------------
+  Widget _moneyField(TextEditingController c, String label, IconData icon) {
+    return TextFormField(
+      controller: c,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixText: "\$ ",
+        prefixIcon: Icon(icon),
+        border: const OutlineInputBorder(),
+      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))
+      ],
+    );
   }
 }

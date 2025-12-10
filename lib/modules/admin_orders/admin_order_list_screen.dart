@@ -1,85 +1,88 @@
+
 import 'package:ecommerce_urban/modules/admin_orders/admin_create_order_screen.dart';
-import 'package:ecommerce_urban/modules/admin_orders/admin_order_detail_screen.dart';
 import 'package:ecommerce_urban/modules/admin_orders/admin_orders_controller.dart';
-import 'package:ecommerce_urban/modules/admin_orders/model/order_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-
 class AdminOrderListScreen extends StatelessWidget {
   AdminOrderListScreen({super.key});
 
-  // Get the controller instance
-  final controller = Get.find<AdminOrdersController>();
+  final controller = Get.put(AdminOrdersController());
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Orders Management'),
+        title: Text('Orders Management',
+          style: TextStyle(fontWeight: FontWeight.w600)),
         centerTitle: true,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () => _showFilterBottomSheet(context),
+            icon: Icon(Icons.filter_list),
+            onPressed: () => _showFilterBottomSheet(context, theme, isDark),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Get.to(() => CreateOrderScreen()),
-        icon: const Icon(Icons.add),
-        label: const Text('New Order'),
+        onPressed: () => Get.to(() =>CreateOrderScreen()),
+        icon: Icon(Icons.add),
+        label: Text('New Order'),
+        elevation: 4,
       ),
       body: Column(
         children: [
-          _buildSearchBar(),
-          _buildStatusChips(),
-          Expanded(child: _buildOrdersList()),
+          _buildSearchBar(theme, isDark),
+          _buildStatusChips(theme, isDark),
+          Expanded(child: _buildOrdersList(theme, isDark)),
         ],
       ),
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(ThemeData theme, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: TextField(
         onChanged: controller.searchOrders,
         decoration: InputDecoration(
           hintText: 'Search by order number or customer...',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: Icon(Icons.search),
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: isDark ? Colors.grey[850] : Colors.grey[100],
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
     );
   }
 
-  Widget _buildStatusChips() {
+  Widget _buildStatusChips(ThemeData theme, bool isDark) {
     final statuses = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
     
     return SizedBox(
       height: 60,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         itemCount: statuses.length,
         itemBuilder: (context, index) {
           final status = statuses[index];
-          return _buildStatusChip(_getStatusLabel(status), status);
+          return _buildStatusChip(_getStatusLabel(status), status, theme, isDark);
         },
       ),
     );
   }
 
-  Widget _buildStatusChip(String label, String status) {
+  Widget _buildStatusChip(String label, String status, ThemeData theme, bool isDark) {
     return Obx(() {
       final isSelected = controller.selectedStatus.value == status;
       final count = status == 'all'
@@ -87,17 +90,17 @@ class AdminOrderListScreen extends StatelessWidget {
           : controller.getOrderCountByStatus(status);
 
       return Padding(
-        padding: const EdgeInsets.only(right: 8),
+        padding: EdgeInsets.only(right: 8),
         child: FilterChip(
           label: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(label),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white : Colors.grey[300],
+                  color: isSelected ? Colors.white : (isDark ? Colors.grey[700] : Colors.grey[300]),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -105,7 +108,7 @@ class AdminOrderListScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.blue[700] : Colors.black87,
+                    color: isSelected ? theme.primaryColor : (isDark ? Colors.white : Colors.black87),
                   ),
                 ),
               ),
@@ -115,49 +118,52 @@ class AdminOrderListScreen extends StatelessWidget {
           onSelected: (selected) {
             controller.filterByStatus(selected ? status : 'all');
           },
-          backgroundColor: Colors.grey[200],
-          selectedColor: Colors.blue[100],
-          checkmarkColor: Colors.blue[700],
+          backgroundColor: isDark ? Colors.grey[850] : Colors.grey[200],
+          selectedColor: theme.primaryColor.withOpacity(0.15),
+          checkmarkColor: theme.primaryColor,
           labelStyle: TextStyle(
-            color: isSelected ? Colors.blue[700] : Colors.black87,
+            color: isSelected ? theme.primaryColor : (isDark ? Colors.white : Colors.black87),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       );
     });
   }
 
-  Widget _buildOrdersList() {
+  Widget _buildOrdersList(ThemeData theme, bool isDark) {
     return Obx(() {
       if (controller.isLoading.value && controller.orders.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
+        return Center(child: CircularProgressIndicator());
       }
 
       if (controller.filteredOrders.isEmpty) {
-        return _buildEmptyState();
+        return _buildEmptyState(theme);
       }
 
       return RefreshIndicator(
         onRefresh: controller.loadOrders,
         child: ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           itemCount: controller.filteredOrders.length,
           itemBuilder: (context, index) {
             final order = controller.filteredOrders[index];
-            return _buildOrderCard(order);
+            return _buildOrderCard(order, theme, isDark);
           },
         ),
       );
     });
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeData theme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             'No orders found',
             style: TextStyle(
@@ -166,35 +172,34 @@ class AdminOrderListScreen extends StatelessWidget {
               color: Colors.grey[600],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             'Try adjusting your filters or create a new order',
             style: TextStyle(color: Colors.grey[500]),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildOrderCard(OrderModel order) {
+  Widget _buildOrderCard(OrderModel order, ThemeData theme, bool isDark) {
     final statusConfig = _getStatusConfig(order.status);
     
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
+      margin: EdgeInsets.only(bottom: 16),
+      elevation: isDark ? 2 : 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
         onTap: () async {
-          // Navigate and refresh on return
-          await Get.to(() => OrderDetailScreen(orderId: order.id!));
-          // Refresh the list when coming back
-          controller.loadOrders();
+          // Navigate to detail screen
+          Get.snackbar('Info', 'Order detail screen would open here');
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -207,12 +212,12 @@ class AdminOrderListScreen extends StatelessWidget {
                       children: [
                         Text(
                           order.orderNumber,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           order.shippingAddressSnapshot.recipientName,
                           style: TextStyle(
@@ -223,35 +228,71 @@ class AdminOrderListScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  _buildStatusBadge(order.status, statusConfig),
-                ],
-              ),
-              const Divider(height: 24),
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  Text(
-                    DateFormat('MMM dd, yyyy • hh:mm a').format(order.createdAt),
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: statusConfig['color'].withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: statusConfig['color'].withOpacity(0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(statusConfig['icon'],
+                          size: 14,
+                          color: statusConfig['color']),
+                        SizedBox(width: 4),
+                        Text(
+                          statusConfig['label'],
+                          style: TextStyle(
+                            color: statusConfig['color'],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              Divider(height: 24),
               Row(
                 children: [
-                  Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
+                  Icon(Icons.calendar_today,
+                    size: 16,
+                    color: Colors.grey[600]),
+                  SizedBox(width: 8),
+                  Text(
+                    DateFormat('MMM dd, yyyy • hh:mm a').format(order.createdAt),
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.location_on,
+                    size: 16,
+                    color: Colors.grey[600]),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '${order.shippingAddressSnapshot.city}, ${order.shippingAddressSnapshot.countryCode}',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 13,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Text(
                     '\$${order.grandTotalDouble.toStringAsFixed(2)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                       color: Colors.green,
@@ -260,26 +301,26 @@ class AdminOrderListScreen extends StatelessWidget {
                 ],
               ),
               if (order.status != 'delivered' && order.status != 'cancelled') ...[
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => _showStatusUpdateDialog(order),
-                        icon: const Icon(Icons.edit, size: 18),
-                        label: const Text('Update Status'),
+                        onPressed: () => _showStatusUpdateDialog(order, theme),
+                        icon: Icon(Icons.edit, size: 18),
+                        label: Text('Update Status'),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     IconButton(
-                      onPressed: () => _confirmDeleteOrder(order),
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () => _confirmDeleteOrder(order, theme),
+                      icon: Icon(Icons.delete_outline, color: Colors.red),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -297,51 +338,28 @@ class AdminOrderListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(String status, Map<String, dynamic> config) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: config['color'].withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: config['color'].withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(config['icon'], size: 14, color: config['color']),
-          const SizedBox(width: 4),
-          Text(
-            config['label'],
-            style: TextStyle(
-              color: config['color'],
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showFilterBottomSheet(BuildContext context) {
+  void _showFilterBottomSheet(BuildContext context, ThemeData theme, bool isDark) {
     final statuses = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
     
     Get.bottomSheet(
       Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        padding: EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey[850] : Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Filter by Status',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -351,7 +369,7 @@ class AdminOrderListScreen extends StatelessWidget {
                   return ChoiceChip(
                     label: Text(_getStatusLabel(status)),
                     selected: isSelected,
-                    selectedColor: Colors.blue[100],
+                    selectedColor: theme.primaryColor.withOpacity(0.15),
                     onSelected: (selected) {
                       controller.filterByStatus(selected ? status : 'all');
                     },
@@ -359,12 +377,18 @@ class AdminOrderListScreen extends StatelessWidget {
                 });
               }).toList(),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Get.back(),
-                child: const Text('Apply Filter'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text('Apply Filter'),
               ),
             ),
           ],
@@ -373,12 +397,15 @@ class AdminOrderListScreen extends StatelessWidget {
     );
   }
 
-  void _showStatusUpdateDialog(OrderModel order) {
+  void _showStatusUpdateDialog(OrderModel order, ThemeData theme) {
     final statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
     
     Get.dialog(
       AlertDialog(
-        title: const Text('Update Order Status'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text('Update Order Status'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: statuses.map((status) {
@@ -387,7 +414,7 @@ class AdminOrderListScreen extends StatelessWidget {
               leading: Icon(config['icon'], color: config['color']),
               title: Text(config['label']),
               trailing: order.status == status
-                  ? const Icon(Icons.check, color: Colors.green)
+                  ? Icon(Icons.check, color: Colors.green)
                   : null,
               onTap: () {
                 Get.back();
@@ -400,23 +427,29 @@ class AdminOrderListScreen extends StatelessWidget {
     );
   }
 
-  void _confirmDeleteOrder(OrderModel order) {
+  void _confirmDeleteOrder(OrderModel order, ThemeData theme) {
     Get.dialog(
       AlertDialog(
-        title: const Text('Delete Order'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text('Delete Order'),
         content: Text('Are you sure you want to delete order ${order.orderNumber}?'),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
               Get.back();
               controller.deleteOrder(order.id!);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Delete'),
           ),
         ],
       ),
