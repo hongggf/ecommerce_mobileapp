@@ -7,8 +7,6 @@ import 'package:ecommerce_urban/modules/admin_users.dart/widget/users_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
-
 class AdminUsersView extends GetView<AdminUsersController> {
   const AdminUsersView({Key? key}) : super(key: key);
 

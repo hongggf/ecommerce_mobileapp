@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../admin_users_controller.dart';
 import '../model/user_model.dart';
+import 'users_cards_widget.dart';
 
 class AssignmentTab extends StatelessWidget {
   const AssignmentTab({super.key});
@@ -24,24 +25,17 @@ class AssignmentTab extends StatelessWidget {
         );
       }
 
-    RefreshIndicator(
-  onRefresh: () => controller.loadUsers(),
-  child: Obx(() {
-    if (controller.allUsers.isEmpty) {
-      return ListView(
-        children: [Center(child: Text('No users'))],
+      return RefreshIndicator(
+        onRefresh: () => controller.loadUsers(),
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: controller.allUsers.length,
+          itemBuilder: (context, index) {
+            final user = controller.allUsers[index];
+            return _buildUserAssignmentCard(controller, user);
+          },
+        ),
       );
-    }
-    return ListView.builder(
-      itemCount: controller.allUsers.length,
-      itemBuilder: (context, index) {
-        final user = controller.allUsers[index];
-        return UserCardWidget(user: user, controller: controller);
-      },
-    );
-  }),
-)
-;
     });
   }
 
@@ -61,8 +55,10 @@ class AssignmentTab extends StatelessWidget {
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: Colors.purple,
-                  child: Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -101,8 +97,10 @@ class AssignmentTab extends StatelessWidget {
                   color: Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text('No roles assigned',
-                    style: TextStyle(color: Colors.orange[700], fontSize: 13, fontWeight: FontWeight.w500)),
+                child: Text(
+                  'No roles assigned',
+                  style: TextStyle(color: Colors.orange[700], fontSize: 13, fontWeight: FontWeight.w500),
+                ),
               ),
 
             const SizedBox(height: 12),
@@ -125,4 +123,4 @@ class AssignmentTab extends StatelessWidget {
       ),
     );
   }
-}
+} 

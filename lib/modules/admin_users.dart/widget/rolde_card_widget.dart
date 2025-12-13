@@ -28,10 +28,12 @@ class RoleCardWidget extends StatelessWidget {
                 children: [
                   Text(role.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   if (role.description != null)
-                    Text(role.description!,
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
+                    Text(
+                      role.description!,
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                 ],
               ),
             ),

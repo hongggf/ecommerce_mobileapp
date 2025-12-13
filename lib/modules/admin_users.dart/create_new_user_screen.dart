@@ -3,23 +3,37 @@ import 'package:ecommerce_urban/modules/admin_users.dart/admin_users_controller.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class CreateUserScreen extends StatelessWidget {
+class CreateUserScreen extends StatefulWidget {
   const CreateUserScreen({Key? key}) : super(key: key);
+
+  @override
+  State<CreateUserScreen> createState() => _CreateUserScreenState();
+}
+
+class _CreateUserScreenState extends State<CreateUserScreen> {
+  final fullNameController = TextEditingController();
+  final emailController = TextEditingController();
+  final phoneController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    fullNameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<AdminUsersController>();
-
-    final fullNameController = TextEditingController();
-    final emailController = TextEditingController();
-    final phoneController = TextEditingController();
-    final passwordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-
     final RxString selectedStatus = 'active'.obs;
     final RxBool showPassword = false.obs;
     final RxBool showConfirmPassword = false.obs;
-    final formKey = GlobalKey<FormState>();
 
     return Scaffold(
       appBar: AppBar(
@@ -28,9 +42,7 @@ class CreateUserScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Get.back();
-          },
+          onPressed: () => Get.back(),
         ),
       ),
       body: SingleChildScrollView(
@@ -129,9 +141,8 @@ class CreateUserScreen extends StatelessWidget {
                     prefixIcon: const Icon(Icons.lock, color: Colors.purple),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        showPassword.value
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                        showPassword.value ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.purple,
                       ),
                       onPressed: () => showPassword.value = !showPassword.value,
                     ),
@@ -163,13 +174,10 @@ class CreateUserScreen extends StatelessWidget {
                     prefixIcon: const Icon(Icons.lock, color: Colors.purple),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        showConfirmPassword.value
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                        showConfirmPassword.value ? Icons.visibility : Icons.visibility_off,
                         color: Colors.purple,
                       ),
-                      onPressed: () => showConfirmPassword.value =
-                          !showConfirmPassword.value,
+                      onPressed: () => showConfirmPassword.value = !showConfirmPassword.value,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -204,8 +212,7 @@ class CreateUserScreen extends StatelessWidget {
                   value: selectedStatus.value,
                   decoration: InputDecoration(
                     labelText: 'User Status',
-                    prefixIcon:
-                        const Icon(Icons.check_circle, color: Colors.purple),
+                    prefixIcon: const Icon(Icons.check_circle, color: Colors.purple),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -214,8 +221,7 @@ class CreateUserScreen extends StatelessWidget {
                   items: ['active', 'inactive']
                       .map((status) => DropdownMenuItem(
                             value: status,
-                            child: Text(
-                                status == 'active' ? 'Active' : 'Inactive'),
+                            child: Text(status == 'active' ? 'Active' : 'Inactive'),
                           ))
                       .toList(),
                   onChanged: (value) {
@@ -234,24 +240,17 @@ class CreateUserScreen extends StatelessWidget {
                   return ElevatedButton(
                     onPressed: controller.isLoadingUsers.value
                         ? null
-                        : () {
+                        : () async {
                             if (formKey.currentState!.validate()) {
-                              controller.createUser({
+                              await controller.createUser({
                                 'full_name': fullNameController.text,
                                 'email': emailController.text,
                                 'phone': phoneController.text,
                                 'password': passwordController.text,
                                 'status': selectedStatus.value,
                               });
-
-                              Future.delayed(const Duration(seconds: 2), () {
-                                fullNameController.dispose();
-                                emailController.dispose();
-                                phoneController.dispose();
-                                passwordController.dispose();
-                                confirmPasswordController.dispose();
-                                Get.back();
-                              });
+                              
+                              Get.back();
                             }
                           },
                     style: ElevatedButton.styleFrom(
@@ -267,8 +266,7 @@ class CreateUserScreen extends StatelessWidget {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : const Text(

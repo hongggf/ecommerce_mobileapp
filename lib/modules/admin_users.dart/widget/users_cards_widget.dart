@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../admin_users_controller.dart';
 import '../model/user_model.dart';
-import '../admin_users_view.dart';
 
 class UserCardWidget extends StatelessWidget {
   final UserModel user;
@@ -28,7 +27,7 @@ class UserCardWidget extends StatelessWidget {
                   radius: 24,
                   backgroundColor: Colors.purple,
                   child: Text(
-                    user.name.isNotEmpty ? user.name[0].toUpperCase() : '.',
+                    user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ),

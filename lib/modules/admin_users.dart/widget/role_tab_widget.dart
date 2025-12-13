@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../admin_users_controller.dart';
 
-
 class RolesTab extends StatelessWidget {
   const RolesTab({super.key});
 

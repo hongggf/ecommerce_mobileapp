@@ -1,4 +1,5 @@
 import 'package:ecommerce_urban/modules/admin_orders/admin_create_order_screen.dart';
+import 'package:ecommerce_urban/modules/admin_users.dart/create_new_user_screen.dart';
 import 'package:ecommerce_urban/modules/dashboard/admin/admin_controller.dart';
 import 'package:ecommerce_urban/modules/dashboard/admin/widgets/admin_kpi_card_widget.dart';
 import 'package:flutter/material.dart';
@@ -299,7 +300,7 @@ class AdminScreen extends StatelessWidget {
           iconBgColor: theme.primaryColor,
           title: 'Add New User',
           subtitle: 'Register a new user account',
-          onTap: () => Get.snackbar('Info', 'Add user screen'),
+          onTap: () => Get.to(CreateUserScreen()),
           theme: theme,
           isDark: isDark,
         ),
