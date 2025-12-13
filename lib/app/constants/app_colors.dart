@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class AppColors {
 
-  static const primary = Color(0xFFFF6C0C);
-  static const secondary = Color(0xFFFFE08F);
-  static const accent = Color(0xFF8E7DFF);
+  static const primary = Color(0xFF313647);
+  static const secondary = Color(0xFF435663);
+  static const accent = Color(0xFFA3B087);
 
-  static const success = Color(0xFF2ECC71);
-  static const warning = Color(0xFFF1C40F);
-  static const error = Color(0xFFE74C3C);
+  static const success = Color(0xFF31694E);
+  static const warning = Color(0xFFFCB53B);
+  static const error = Color(0xFFA72703);
 
   // Light Theme Colors
   static const lightBackground = Color(0xFFFFFFFF);

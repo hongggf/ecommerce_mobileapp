@@ -22,7 +22,6 @@ final ThemeData lightTheme = ThemeData(
     backgroundColor: AppColors.primary,
     foregroundColor: Colors.white,
   ),
-  
   textTheme: AppTextTheme.lightTextTheme,
   cardColor: AppColors.lightSurface,
   floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -32,18 +31,52 @@ final ThemeData lightTheme = ThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: AppColors.secondary,
       foregroundColor: Colors.white,
+      minimumSize: const Size(double.infinity, 50),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
+      ),
+      textStyle: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
       ),
     ),
   ),
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.lightBackground,
     selectedItemColor: AppColors.primary,
-    unselectedItemColor: Colors.grey,
+    unselectedItemColor: AppColors.lightTextSecondary,
     elevation: 8.0,
     type: BottomNavigationBarType.fixed,
     showSelectedLabels: true,
     showUnselectedLabels: true,
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: AppColors.lightSurface,
+    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+    hintStyle: const TextStyle(color: AppColors.lightTextSecondary),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.error),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.error, width: 2),
+    ),
+    prefixIconColor: AppColors.primary, // icon color
+    suffixIconColor: AppColors.primary,
   ),
 );
