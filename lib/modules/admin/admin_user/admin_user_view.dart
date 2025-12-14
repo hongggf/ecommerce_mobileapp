@@ -113,24 +113,10 @@ class AdminUserView extends StatelessWidget {
                 controller.prepareForm(user: user);
                 AdminUserForm.show(controller: controller);
               },
-              onDelete: () => _confirmDelete(user.id!),
+              onDelete: () => controller.deleteUser(user.id!.toInt()),
             );
           },
         );
-      },
-    );
-  }
-
-  void _confirmDelete(int id) {
-    Get.defaultDialog(
-      title: "Confirm Delete",
-      middleText: "Are you sure to delete this user?",
-      textConfirm: "Yes",
-      textCancel: "No",
-      confirmTextColor: Colors.white,
-      onConfirm: () {
-        Get.back();
-        controller.deleteUser(id);
       },
     );
   }

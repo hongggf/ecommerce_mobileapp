@@ -151,15 +151,26 @@ class AdminUserController extends GetxController {
 
   /// Delete user
   Future<void> deleteUser(int id) async {
-    try {
-      isLoading.value = true;
-      await _userService.deleteUser(id);
-      users.removeWhere((user) => user.id == id);
-      ToastWidget.show(message: "User deleted successfully");
-    } catch (e) {
-      ToastWidget.show(type: "error", message: "Failed to delete user");
-    } finally {
-      isLoading.value = false;
-    }
+    // Show confirmation dialog first
+    Get.defaultDialog(
+      title: "Confirm Delete",
+      middleText: "Are you sure you want to delete this user?",
+      textConfirm: "Yes",
+      textCancel: "No",
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        Get.back(); // Close the dialog
+        try {
+          isLoading.value = true;
+          await _userService.deleteUser(id);
+          users.removeWhere((user) => user.id == id);
+          ToastWidget.show(message: "User deleted successfully");
+        } catch (e) {
+          ToastWidget.show(type: "error", message: "Failed to delete user");
+        } finally {
+          isLoading.value = false;
+        }
+      },
+    );
   }
 }
