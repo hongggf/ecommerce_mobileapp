@@ -1,5 +1,8 @@
+import 'package:ecommerce_urban/modules/admin/admin_category/admin_category_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/admin_dashboard_view.dart';
+import 'package:ecommerce_urban/modules/admin/admin_inventory/admin_inventory_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_main/admin_main_controller.dart';
+import 'package:ecommerce_urban/modules/admin/admin_user_detail/admin_user_detail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -9,9 +12,9 @@ class AdminMainView extends StatelessWidget {
 
   final List<Widget> pages = [
     AdminDashboardView(),
-    Text(""),
-    Text(""),
-    Text("")
+    AdminCategoryView(),
+    AdminInventoryView(),
+    AdminUserDetailView(),
   ];
 
   @override
