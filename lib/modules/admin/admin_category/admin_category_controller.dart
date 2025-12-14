@@ -24,7 +24,7 @@ class AdminCategoryController extends GetxController {
     fetchCategories();
   }
 
-  void fetchCategories({String? search, String? sort}) async {
+  Future<void> fetchCategories({String? search, String? sort}) async {
     try {
       isLoading.value = true;
       final result = await _service.getCategories(search: search, sort: sort);
@@ -49,32 +49,43 @@ class AdminCategoryController extends GetxController {
   }
 
   void submitCategoryForm() async {
-    final name = nameController.text.trim();
-    final slug = slugController.text.trim();
-
-    if (name.isEmpty || slug.isEmpty) {
-      ToastWidget.show(type:"error", message: "Please fill all fields");
-      return;
+    if (editingCategoryId.value == null) {
+      await _createCategory();
+    } else {
+      await _updateCategory();
     }
+  }
 
+  Future<void> _createCategory() async {
     try {
-      if (editingCategoryId.value == null) {
-        final newCategory = await _service.createCategory(name: name, slug: slug);
-        categories.insert(0, newCategory);
-        ToastWidget.show(message: "Success Created Category");
-      } else {
-        final updatedCategory = await _service.updateCategory(
-          id: editingCategoryId.value!,
-          name: name,
-          slug: slug,
-        );
-        int index = categories.indexWhere((c) => c.id == updatedCategory.id);
-        if (index != -1) categories[index] = updatedCategory;
-        ToastWidget.show(message: "Success Updated Category");
-      }
-      Get.back();
+      isLoading.value = true;
+      await _service.createCategory(
+          name: nameController.text.trim(),
+          slug: slugController.text.trim()
+      );
+      ToastWidget.show(message: "Success Created Category");
+      await fetchCategories();
     } catch (e) {
-      ToastWidget.show(type: "error", message: e.toString());
+      ToastWidget.show(type: "error", message: "Failed to create category!");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> _updateCategory() async {
+    try {
+      isLoading.value = true;
+      await _service.updateCategory(
+        id: editingCategoryId.value!,
+        name: nameController.text,
+        slug: slugController.text,
+      );
+      ToastWidget.show(message: "Success Updated Category");
+      await fetchCategories();
+    } catch (e) {
+      ToastWidget.show(type: "error", message: "Failed to update category");
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -93,7 +104,8 @@ class AdminCategoryController extends GetxController {
           categories.removeWhere((c) => c.id == id);
           ToastWidget.show(message: "Success delete category");
         } catch (e) {
-          ToastWidget.show(type: "error", message: "Failed to delete category");
+          // ToastWidget.show(type: "error", message: "Failed to delete category");
+          ToastWidget.show(type: "error", message: e.toString());
         } finally {
           isLoading.value = false;
         }

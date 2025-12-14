@@ -21,28 +21,26 @@ class CategoryService {
   }
 
   /// CREATE
-  Future<CategoryData> createCategory({required String name, required String slug}) async {
+  Future<CategorySingleResponse> createCategory({required String name, required String slug}) async {
     try {
       final response = await _dio.post(AppConstant.categories, data: {
         "name": name,
         "slug": slug,
       });
-
-      return CategoryModel.fromJson(response.data).data!.first;
+      return CategorySingleResponse.fromJson(response.data);
     } catch (e) {
       throw Exception("Failed to create category");
     }
   }
 
   /// UPDATE
-  Future<CategoryData> updateCategory({required int id, required String name, required String slug}) async {
+  Future<CategorySingleResponse> updateCategory({required int id, required String name, required String slug}) async {
     try {
       final response = await _dio.put(AppConstant.categoryById(id), data: {
         "name": name,
         "slug": slug,
       });
-
-      return CategoryModel.fromJson(response.data).data!.first;
+      return CategorySingleResponse.fromJson(response.data);
     } catch (e) {
       throw Exception("Failed to update category");
     }

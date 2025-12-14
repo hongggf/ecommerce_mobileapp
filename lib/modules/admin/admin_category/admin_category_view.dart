@@ -1,5 +1,4 @@
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
-import 'package:ecommerce_urban/app/widgets/category_list_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_category/admin_category_controller.dart';
 import 'package:ecommerce_urban/modules/admin/admin_category/widget/admin_category_form.dart';
 import 'package:ecommerce_urban/modules/admin/admin_category/widget/category_item_widget.dart';
@@ -112,81 +111,4 @@ class AdminCategoryView extends StatelessWidget {
       }),
     );
   }
-
-  // void _showCategoryForm() {
-  //   showModalBottomSheet(
-  //     context: Get.context!,
-  //     isScrollControlled: true,
-  //     shape: const RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-  //     ),
-  //     builder: (_) => Padding(
-  //       padding: EdgeInsets.only(
-  //         bottom: MediaQuery.of(Get.context!).viewInsets.bottom,
-  //         top: 16,
-  //         left: 16,
-  //         right: 16,
-  //       ),
-  //       child: SingleChildScrollView(
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             // Top handle
-  //             Container(
-  //               width: 40,
-  //               height: 4,
-  //               margin: const EdgeInsets.only(bottom: 16),
-  //               decoration: BoxDecoration(
-  //                 color: Colors.grey[300],
-  //                 borderRadius: BorderRadius.circular(2),
-  //               ),
-  //             ),
-  //
-  //             // Title
-  //             Text(
-  //               controller.editingCategoryId.value == null
-  //                   ? "Create Category"
-  //                   : "Edit Category",
-  //               style: Theme.of(Get.context!).textTheme.titleMedium
-  //                   ?.copyWith(fontWeight: FontWeight.bold),
-  //             ),
-  //             const SizedBox(height: 16),
-  //
-  //             // Name
-  //             TextField(
-  //               controller: controller.nameController,
-  //               decoration: const InputDecoration(
-  //                 labelText: "Name",
-  //                 border: OutlineInputBorder(),
-  //               ),
-  //             ),
-  //             const SizedBox(height: 12),
-  //
-  //             // Slug
-  //             TextField(
-  //               controller: controller.slugController,
-  //               decoration: const InputDecoration(
-  //                 labelText: "Slug",
-  //                 border: OutlineInputBorder(),
-  //               ),
-  //             ),
-  //             const SizedBox(height: 20),
-  //
-  //             // Submit Button
-  //             SizedBox(
-  //               width: double.infinity,
-  //               child: ElevatedButton(
-  //                 onPressed: controller.submitCategoryForm,
-  //                 child: Text(controller.editingCategoryId.value == null
-  //                     ? "Create"
-  //                     : "Update"),
-  //               ),
-  //             ),
-  //             const SizedBox(height: 16),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 }

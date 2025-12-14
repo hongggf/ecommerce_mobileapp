@@ -1,3 +1,19 @@
+/// Update & Create
+class CategorySingleResponse {
+  bool? success;
+  String? message;
+  CategoryData? data;
+
+  CategorySingleResponse.fromJson(Map<String, dynamic> json) {
+    success = json['success'];
+    message = json['message'];
+    data = json['data'] != null
+        ? CategoryData.fromJson(json['data'])
+        : null;
+  }
+}
+
+/// Get all as list
 class CategoryModel {
   bool? success;
   String? message;
