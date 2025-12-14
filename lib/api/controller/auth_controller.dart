@@ -3,6 +3,7 @@ import 'package:ecommerce_urban/api/service/auth_service.dart';
 import 'package:ecommerce_urban/app/services/storage_services.dart';
 import 'package:ecommerce_urban/app/widgets/toast_widget.dart';
 import 'package:ecommerce_urban/route/app_routes.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AuthController extends GetxController {
@@ -82,13 +83,27 @@ class AuthController extends GetxController {
 
   /// LOGOUT
   Future<void> logout() async {
-    try {
-      await _authService.logout();
-    } catch (_) {}
+    Get.defaultDialog(
+      title: "Confirm Logout",
+      middleText: "Are you sure you want to logout?",
+      textConfirm: "Yes",
+      textCancel: "No",
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        Get.back(); // Close dialog
 
-    StorageService.clearAll();
-    currentUser.value = null;
+        try {
+          await _authService.logout();
+        } catch (_) {}
 
-    Get.offAllNamed(AppRoutes.login);
+        StorageService.clearAll();
+        currentUser.value = null;
+
+        ToastWidget.show(message: "Logout Success");
+        Get.offAllNamed(AppRoutes.login);
+      },
+      onCancel: () => Get.back(),
+    );
   }
+
 }

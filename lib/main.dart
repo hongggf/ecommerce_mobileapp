@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
         return ToastificationWrapper(
           child: GetMaterialApp(
             debugShowCheckedModeBanner: false,
-            initialRoute: AppRoutes.register,
+            initialRoute: AppRoutes.splash,
             getPages: AppPages.pages,
             theme: Get.find<ThemeController>().theme,
             darkTheme: AppTheme.darkTheme,

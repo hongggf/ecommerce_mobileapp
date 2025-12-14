@@ -1,10 +1,15 @@
+import 'package:ecommerce_urban/api/controller/auth_controller.dart';
+import 'package:ecommerce_urban/app/services/storage_services.dart';
+import 'package:ecommerce_urban/route/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce_urban/app/constants/app_colors.dart';
+import 'package:get/get.dart';
 
 class AdminDrawerWidget extends StatelessWidget {
   final Function(String route)? onTapItem;
+  AdminDrawerWidget({super.key, this.onTapItem});
 
-  const AdminDrawerWidget({super.key, this.onTapItem});
+  final AuthController authController = Get.put(AuthController());
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +49,9 @@ class AdminDrawerWidget extends StatelessWidget {
               context,
               icon: Icons.logout,
               title: "Logout",
-              onTap: () => onTapItem?.call("/logout"),
+              onTap: () {
+                authController.logout();
+              }
             ),
           ],
         ),
