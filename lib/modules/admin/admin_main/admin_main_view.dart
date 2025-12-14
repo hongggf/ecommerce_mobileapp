@@ -1,3 +1,4 @@
+import 'package:ecommerce_urban/modules/admin/admin_dashboard/admin_dashboard_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_main/admin_main_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,7 +8,7 @@ class AdminMainView extends StatelessWidget {
   final AdminMainController controller = Get.put(AdminMainController());
 
   final List<Widget> pages = [
-    Text(""),
+    AdminDashboardView(),
     Text(""),
     Text(""),
     Text("")
