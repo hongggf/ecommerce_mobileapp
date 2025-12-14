@@ -1,89 +1,35 @@
-// import 'package:shared_preferences/shared_preferences.dart';
-
-// class StorageService {
-//   static const _keyUsername = 'username';
-
-//   Future<void> saveUsername(String username) async {
-//     final prefs = await SharedPreferences.getInstance();
-//     await prefs.setString(_keyUsername, username);
-//   }
-
-//   Future<String?> getUsername() async {
-//     final prefs = await SharedPreferences.getInstance();
-//     return prefs.getString(_keyUsername);
-//   }
-
-//   Future<void> clear() async {
-//     final prefs = await SharedPreferences.getInstance();
-//     await prefs.clear();
-//   }
-// }
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'package:get_storage/get_storage.dart';
 
 class StorageService {
-  static const String _tokenKey = 'auth_token';
-  static const String _userDataKey = 'user_data';
+  static final _box = GetStorage();
 
-  // Token management
-  Future<void> saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, token);
+  static const _tokenKey = 'token';
+  static const _roleKey = 'role';
+
+  // TOKEN
+  static void saveToken(String token) {
+    _box.write(_tokenKey, token);
   }
 
-  Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
+  static String? get token => _box.read(_tokenKey);
+
+  static void clearToken() {
+    _box.remove(_tokenKey);
   }
 
-  // User data management
-  Future<void> saveUserData(Map<String, dynamic> userData) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userDataKey, jsonEncode(userData));
+  // ROLE
+  static void saveRole(String role) {
+    _box.write(_roleKey, role);
   }
 
-  Future<Map<String, dynamic>?> getUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString(_userDataKey);
-    if (data != null) {
-      return jsonDecode(data);
-    }
-    return null;
+  static String? get role => _box.read(_roleKey);
+
+  static void clearRole() {
+    _box.remove(_roleKey);
   }
 
-  Future<void> saveRole(String role) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_role', role);
+  // CLEAR ALL
+  static void clearAll() {
+    _box.erase();
   }
-
-  Future<String?> getRole() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('user_role');
-  }
-
-// ===========================
-  // CLEAR ONLY AUTH DATA
-  // (token, user info, role)
-  // ===========================
-  Future<void> clearAuthData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_userDataKey);
-    await prefs.remove('user_role');
-  }
-
-  // ===========================
-  // CLEAR ALL DATA
-  // Only use if you want to wipe everything
-  // ===========================
-  Future<void> clearAll() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-  }
-  // // Clear all
-  // Future<void> clear() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.remove(_tokenKey);
-  //   await prefs.remove(_userDataKey);
-  // }
 }

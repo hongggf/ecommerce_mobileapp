@@ -5,11 +5,13 @@ import 'package:ecommerce_urban/route/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:toastification/toastification.dart';
 import 'app/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
 
   Get.put(ThemeController(), permanent: true);
   Get.put(RatioController());
@@ -33,7 +35,7 @@ class MyApp extends StatelessWidget {
         return ToastificationWrapper(
           child: GetMaterialApp(
             debugShowCheckedModeBanner: false,
-            initialRoute: AppRoutes.adminMain,
+            initialRoute: AppRoutes.register,
             getPages: AppPages.pages,
             theme: Get.find<ThemeController>().theme,
             darkTheme: AppTheme.darkTheme,

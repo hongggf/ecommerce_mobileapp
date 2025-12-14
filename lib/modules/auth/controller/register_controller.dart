@@ -1,8 +1,10 @@
+import 'package:ecommerce_urban/api/controller/auth_controller.dart';
 import 'package:ecommerce_urban/app/widgets/toast_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class RegisterController extends GetxController {
+  final AuthController authController = Get.put(AuthController());
   final formKey = GlobalKey<FormState>();
 
   // Controllers for text fields
@@ -35,8 +37,13 @@ class RegisterController extends GetxController {
         return;
       }
 
-      ToastWidget.show(
-        message: "Register Successful",
+      authController.register(
+          name: nameController.text,
+          email: emailController.text,
+          password: passwordController.text,
+          confirmPassword: confirmPasswordController.text,
+          phone: phoneController.text,
+          role: "customer"
       );
 
       // Clear fields
