@@ -58,30 +58,37 @@ class AdminUserView extends StatelessWidget {
   Widget _buildFilterAndSort() {
     return Row(
       children: [
-        Obx(
-              () => DropdownButton<String>(
+        /// Filter by Role
+        Obx(() => DropdownButton<String>(
             hint: const Text("Filter by Role"),
-            value: controller.filterRole.value.isEmpty ? null : controller.filterRole.value,
-            items: ["customer", "admin"]
-                .map((role) => DropdownMenuItem(value: role, child: Text(role)))
-                .toList(),
+            value: controller.filterRole.value.isEmpty ? "all" : controller.filterRole.value,
+            items: ["all", "customer", "admin"].map((role) => DropdownMenuItem(
+              value: role,
+              child: Text(role == "all" ? "All" : role.capitalizeFirst!),
+            )).toList(),
             onChanged: (value) {
-              if (value != null) controller.setFilterRole(value);
+              if (value != null) {
+                controller.setFilterRole(value == "all" ? "" : value);
+              }
             },
           ),
         ),
         const SizedBox(width: 16),
-        Obx(
-              () => DropdownButton<String>(
+
+        /// Sort
+        Obx(() => DropdownButton<String>(
             hint: const Text("Sort"),
-            value: controller.sortBy.value.isEmpty ? null : controller.sortBy.value,
+            value: controller.sortBy.value.isEmpty ? "all" : controller.sortBy.value,
             items: [
+              DropdownMenuItem(value: "all", child: Text("All")),
               DropdownMenuItem(value: "name_asc", child: Text("Name A-Z")),
               DropdownMenuItem(value: "name_desc", child: Text("Name Z-A")),
               DropdownMenuItem(value: "role", child: Text("Role")),
             ],
             onChanged: (value) {
-              if (value != null) controller.setSort(value);
+              if (value != null) {
+                controller.setSort(value == "all" ? "" : value);
+              }
             },
           ),
         ),
@@ -90,8 +97,7 @@ class AdminUserView extends StatelessWidget {
   }
 
   Widget _buildUserList() {
-    return Obx(
-          () {
+    return Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
