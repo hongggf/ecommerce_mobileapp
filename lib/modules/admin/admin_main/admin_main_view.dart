@@ -18,8 +18,7 @@ class AdminMainView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Obx(() => pages[controller.currentIndex.value]),
-      bottomNavigationBar: Obx(
-            () => BottomNavigationBar(
+      bottomNavigationBar: Obx(() => BottomNavigationBar(
           currentIndex: controller.currentIndex.value,
           onTap: controller.changeIndex,
           type: BottomNavigationBarType.fixed,
@@ -33,12 +32,12 @@ class AdminMainView extends StatelessWidget {
               label: 'Category',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart),
-              label: 'Cart',
+              icon: Icon(Icons.people),
+              label: 'User',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
+              icon: Icon(Icons.settings),
+              label: 'Setting',
             ),
           ],
         ),

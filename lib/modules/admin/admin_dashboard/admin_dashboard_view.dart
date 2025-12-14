@@ -1,9 +1,12 @@
 import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
+import 'package:ecommerce_urban/app/constants/app_widget.dart';
+import 'package:ecommerce_urban/app/widgets/icon_widget.dart';
 import 'package:ecommerce_urban/app/widgets/item_widget.dart';
 import 'package:ecommerce_urban/app/widgets/profile_widget.dart';
 import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/admin_dashboard_controller.dart';
+import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/metric_card_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/summary_chart_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,14 +27,7 @@ class AdminDashboardView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ProfileTileWidget(
-              title: "Admin User",
-              subtitle: "admin@system.com",
-              avatarPath: "https://i.pravatar.cc/300",
-              trailing: const Icon(Icons.chevron_right, color: Colors.white),
-              onTap: () => print("Tapped"),
-            ),
-            // _buildHeader(context),
+            _buildProfile(),
             SizedBox(height: AppSpacing.paddingSM),
             _buildOverviewMetrics(context),
             SizedBox(height: AppSpacing.paddingSM),
@@ -50,6 +46,24 @@ class AdminDashboardView extends StatelessWidget {
     );
   }
 
+  /// Profile
+  Widget _buildProfile(){
+    return ProfileTileWidget(
+      title: "Admin User",
+      subtitle: "admin@system.com",
+      avatarPath: "https://i.pravatar.cc/300",
+      trailing: IconWidget(
+        size: AppWidgetSize.iconS,
+        icon: Icons.search,
+        iconColor: Colors.white,
+        onTap: (){
+          print("On icon Tap");
+        },
+      ),
+      onTap: () => print("Tapped"),
+    );
+  }
+
   /// Overview Metrics Cards
   Widget _buildOverviewMetrics(BuildContext context) {
     return Container(
@@ -65,30 +79,22 @@ class AdminDashboardView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: AppSpacing.paddingSM,
         children: [
-          Text(
-            'Dashboard Overview',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
-          ),
+          TitleWidget(title: 'Dashboard Overview'),
           Row(
             spacing: AppSpacing.paddingSM,
             children: [
               Expanded(
-                  child: _buildMetricCard(
-                      title: 'Total Orders',
-                      value: controller.totalOrders.value.toString(),
-                      color: AppColors.accent,
-                      obsValue: controller.totalOrders
-                  ),
+                child: MetricCardWidget(
+                  title: 'Total Orders',
+                  value: controller.totalOrders.value.toString(),
+                  color: Colors.blue,
+                ),
               ),
               Expanded(
-                child: _buildMetricCard(
-                    title: 'Total Sales',
-                    value: '\$${controller.totalSales.value.toStringAsFixed(2)}',
-                    color: AppColors.secondary,
-                    obsValue: controller.totalSales
+                child: MetricCardWidget(
+                  title: 'Total Sales',
+                  value: '\$${controller.totalSales.value.toStringAsFixed(2)}',
+                  color: Colors.blueGrey,
                 ),
               ),
             ],
@@ -97,19 +103,17 @@ class AdminDashboardView extends StatelessWidget {
             spacing: AppSpacing.paddingSM,
             children: [
               Expanded(
-                child: _buildMetricCard(
-                    title: 'Total Customers',
-                    value: controller.totalCustomers.value.toString(),
-                    color: AppColors.success,
-                    obsValue: controller.totalCustomers
+                child: MetricCardWidget(
+                  title: 'Total Customers',
+                  value: controller.totalCustomers.value.toString(),
+                  color: Colors.orange,
                 ),
               ),
               Expanded(
-                child: _buildMetricCard(
-                    title: 'Total Products',
-                    value: controller.totalProducts.value.toString(),
-                    color: AppColors.primary,
-                    obsValue: controller.totalProducts
+                child: MetricCardWidget(
+                  title: 'Total Products',
+                  value: controller.totalProducts.value.toString(),
+                  color: Colors.green,
                 ),
               ),
             ],
@@ -121,22 +125,19 @@ class AdminDashboardView extends StatelessWidget {
 
   /// Single Metric Card
   Widget _buildMetricCard({required String title, required String value, required Color color, required Rx obsValue,}) {
-    return Obx(
-          () => Container(
+    return Obx(() => Container(
         width: 160,
         height: 100,
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppSpacing.paddingSM),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(title,
-                style: TextStyle(
-                    color: color, fontWeight: FontWeight.bold, fontSize: 14)),
-            const SizedBox(height: 8),
+            Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
             Text(
               obsValue.value.toString(),
               style: TextStyle(
