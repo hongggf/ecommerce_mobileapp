@@ -24,20 +24,20 @@ class AdminMainView extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+              icon: Icon(Icons.dashboard),
+              label: 'Dashboard',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.category),
               label: 'Category',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.people),
-              label: 'User',
+              icon: Icon(Icons.production_quantity_limits_sharp),
+              label: 'Inventory',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: 'Setting',
+              icon: Icon(Icons.people),
+              label: 'User',
             ),
           ],
         ),

@@ -6,6 +6,7 @@ import 'package:ecommerce_urban/app/widgets/item_widget.dart';
 import 'package:ecommerce_urban/app/widgets/profile_widget.dart';
 import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/admin_dashboard_controller.dart';
+import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/admin_drawer_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/metric_card_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/summary_chart_widget.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,13 @@ class AdminDashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: AdminDrawerWidget(
+        onTapItem: (route) {
+          Navigator.pop(context); // close drawer
+          // Navigate to route
+          print("Navigate to: $route");
+        },
+      ),
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
       ),
