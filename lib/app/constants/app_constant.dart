@@ -16,4 +16,8 @@ class AppConstant {
 
   // Dashboard
   static const String dashboard = "/api/dashboard"; // GET
+
+  // User Profile (ME)
+  static const String me = "/api/me"; // GET
+  static const String meUpdate = "/api/me/update"; // POST (multipart)
 }

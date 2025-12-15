@@ -8,6 +8,7 @@ import 'package:ecommerce_urban/modules/admin/admin_dashboard/admin_dashboard_co
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/admin_drawer_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/metric_card_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/summary_chart_widget.dart';
+import 'package:ecommerce_urban/route/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -68,14 +69,14 @@ class AdminDashboardView extends StatelessWidget {
           subtitle: "",
           avatarPath: "https://i.pravatar.cc/300",
           trailing: IconWidget(
-            size: AppWidgetSize.iconS,
-            icon: Icons.shopping_cart,
+            size: AppWidgetSize.iconXS,
+            icon: Icons.arrow_forward_ios_rounded,
             iconColor: Colors.white,
             onTap: () {
-              print("On icon Tap");
+              Get.toNamed(AppRoutes.adminProfile);
             },
           ),
-          onTap: () => print("Tapped"),
+          onTap: () => Get.toNamed(AppRoutes.adminProfile),
         );
       }
 
@@ -84,14 +85,14 @@ class AdminDashboardView extends StatelessWidget {
         subtitle: user.email,
         avatarPath: user.avatar,
         trailing: IconWidget(
-          size: AppWidgetSize.iconS,
-          icon: Icons.shopping_cart,
+          size: AppWidgetSize.iconXS,
+          icon: Icons.arrow_forward_ios_rounded,
           iconColor: Colors.white,
           onTap: () {
-            print("On icon Tap");
+            Get.toNamed(AppRoutes.adminProfile);
           },
         ),
-        onTap: () => print("Tapped"),
+        onTap: () => Get.toNamed(AppRoutes.adminProfile),
       );
     });
   }
