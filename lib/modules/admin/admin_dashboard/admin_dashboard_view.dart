@@ -1,13 +1,11 @@
 import 'package:ecommerce_urban/api/controller/auth_controller.dart';
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
 import 'package:ecommerce_urban/app/constants/app_widget.dart';
-import 'package:ecommerce_urban/app/widgets/confirm_dialog_widget.dart';
 import 'package:ecommerce_urban/app/widgets/icon_widget.dart';
 import 'package:ecommerce_urban/app/widgets/item_widget.dart';
 import 'package:ecommerce_urban/app/widgets/profile_widget.dart';
 import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/admin_dashboard_controller.dart';
-import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/admin_drawer_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/metric_card_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/widget/summary_chart_widget.dart';
 import 'package:ecommerce_urban/route/app_routes.dart';
@@ -23,11 +21,6 @@ class AdminDashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AdminDrawerWidget(
-        onTapItem: (route) {
-          Navigator.pop(context);
-        },
-      ),
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
         actions: [
