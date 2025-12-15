@@ -1,5 +1,7 @@
+import 'package:ecommerce_urban/api/controller/auth_controller.dart';
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
 import 'package:ecommerce_urban/app/constants/app_widget.dart';
+import 'package:ecommerce_urban/app/widgets/confirm_dialog_widget.dart';
 import 'package:ecommerce_urban/app/widgets/icon_widget.dart';
 import 'package:ecommerce_urban/app/widgets/item_widget.dart';
 import 'package:ecommerce_urban/app/widgets/profile_widget.dart';
@@ -16,6 +18,7 @@ class AdminDashboardView extends StatelessWidget {
   AdminDashboardView({super.key});
 
   final AdminDashboardController controller = Get.put(AdminDashboardController());
+  final AuthController authController = Get.put(AuthController());
 
   @override
   Widget build(BuildContext context) {
@@ -70,11 +73,9 @@ class AdminDashboardView extends StatelessWidget {
           avatarPath: "https://i.pravatar.cc/300",
           trailing: IconWidget(
             size: AppWidgetSize.iconXS,
-            icon: Icons.arrow_forward_ios_rounded,
+            icon: Icons.login,
             iconColor: Colors.white,
-            onTap: () {
-              Get.toNamed(AppRoutes.adminProfile);
-            },
+            onTap: () => authController.logout(),
           ),
           onTap: () => Get.toNamed(AppRoutes.adminProfile),
         );
@@ -86,11 +87,9 @@ class AdminDashboardView extends StatelessWidget {
         avatarPath: user.avatar,
         trailing: IconWidget(
           size: AppWidgetSize.iconXS,
-          icon: Icons.arrow_forward_ios_rounded,
+          icon: Icons.login,
           iconColor: Colors.white,
-          onTap: () {
-            Get.toNamed(AppRoutes.adminProfile);
-          },
+          onTap: () => authController.logout(),
         ),
         onTap: () => Get.toNamed(AppRoutes.adminProfile),
       );

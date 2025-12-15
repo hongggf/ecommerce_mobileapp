@@ -1,6 +1,7 @@
 import 'package:ecommerce_urban/api/model/auth_model.dart';
 import 'package:ecommerce_urban/api/service/auth_service.dart';
 import 'package:ecommerce_urban/app/services/storage_services.dart';
+import 'package:ecommerce_urban/app/widgets/confirm_dialog_widget.dart';
 import 'package:ecommerce_urban/app/widgets/toast_widget.dart';
 import 'package:ecommerce_urban/route/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -83,26 +84,29 @@ class AuthController extends GetxController {
 
   /// LOGOUT
   Future<void> logout() async {
-    Get.defaultDialog(
-      title: "Confirm Logout",
-      middleText: "Are you sure you want to logout?",
-      textConfirm: "Yes",
-      textCancel: "No",
-      confirmTextColor: Colors.white,
-      onConfirm: () async {
-        Get.back(); // Close dialog
+    Get.dialog(
+      ConfirmDialogWidget(
+        title: "Confirm Logout",
+        subtitle: "Are you sure you want to logout?",
+        icon: Icons.logout,
+        iconColor: Colors.red,
+        confirmText: "Logout",
+        cancelText: "Cancel",
+        onConfirm: () async {
+          Get.back(); // Close dialog
 
-        try {
-          await _authService.logout();
-        } catch (_) {}
+          try {
+            await _authService.logout();
+          } catch (_) {}
 
-        StorageService.clearAll();
-        currentUser.value = null;
+          StorageService.clearAll();
+          currentUser.value = null;
 
-        ToastWidget.show(message: "Logout Success");
-        Get.offAllNamed(AppRoutes.login);
-      },
-      onCancel: () => Get.back(),
+          ToastWidget.show(message: "Logout Success");
+          Get.offAllNamed(AppRoutes.login);
+        },
+        onCancel: () => Get.back(),
+      ),
     );
   }
 
