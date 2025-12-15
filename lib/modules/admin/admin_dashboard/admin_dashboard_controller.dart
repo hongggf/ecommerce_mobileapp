@@ -1,42 +1,68 @@
+import 'package:ecommerce_urban/app/widgets/toast_widget.dart';
 import 'package:get/get.dart';
+import 'package:ecommerce_urban/api/model/dashboard_model.dart';
+import 'package:ecommerce_urban/api/service/dashboard_service.dart';
 
 class AdminDashboardController extends GetxController {
+  final DashboardService _service = DashboardService();
 
-  // Overview Metrics
-  var totalOrders = 120.obs;
-  var totalSales = 15000.0.obs;
-  var totalCustomers = 80.obs;
-  var totalProducts = 50.obs;
+  var isLoading = true.obs;
 
-  // Recent Orders (example)
-  var recentOrders = <Map<String, String>>[
-    {'id': '#001', 'status': 'Pending'},
-    {'id': '#002', 'status': 'Shipped'},
-    {'id': '#003', 'status': 'Delivered'},
-  ].obs;
+  // Dashboard Data
+  var totals = Totals(
+    totalOrders: 0,
+    totalSales: 0,
+    totalCustomers: 0,
+    totalProducts: 0,
+  ).obs;
 
-  // Low stock products
-  var lowStockProducts = <String>['Product A', 'Product B'].obs;
+  var totalOrders = 0.obs;
+  var totalSales = 0.obs;
+  var totalCustomers = 0.obs;
+  var totalProducts = 0.obs;
 
-  // New users
-  var newUsers = <String>['John Doe', 'Jane Smith'].obs;
-
-  // Summary chart data (example: weekly sales)
-  final salesSummary = <double>[1200, 1800, 1500, 2200, 2000, 2500, 3000].obs;
-  List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  var salesSummary = <int>[].obs; // weekly sales summary
+  var days = <String>[].obs;      // weekly days
+  var lowStockProducts = <Product>[].obs; // Fixed type
+  var topNewUsers = <User>[].obs;         // Fixed type
+  var currentUser = Rxn<User>(); // current_user
 
   @override
   void onInit() {
     super.onInit();
-    fetchDashboardData();
+    fetchDashboard();
   }
 
-  // Simulate fetching data
-  void fetchDashboardData() async {
-    await Future.delayed(const Duration(seconds: 1));
-    totalOrders.value = 150;
-    totalSales.value = 17500.0;
-    totalCustomers.value = 95;
-    totalProducts.value = 60;
+  void fetchDashboard() async {
+    try {
+      isLoading.value = true;
+
+      final dashboard = await _service.fetchDashboard();
+
+      /// Totals
+      totals.value = dashboard.totals;
+      totalProducts.value = dashboard.totals.totalProducts.toInt();
+      totalCustomers.value = dashboard.totals.totalCustomers.toInt();
+      totalSales.value = dashboard.totals.totalSales.toInt();
+      totalOrders.value = dashboard.totals.totalOrders.toInt();
+
+      /// Weekly Sales
+      salesSummary.value = dashboard.weeklySales.salesSummary;
+      days.value = dashboard.weeklySales.days;
+
+      /// Low stock products
+      lowStockProducts.value = dashboard.lowStockProducts;
+
+      /// Top new users
+      topNewUsers.value = dashboard.topNewUsers;
+
+      /// Current User
+      currentUser.value = dashboard.currentUser;
+
+    } catch (e) {
+      ToastWidget.show(message: "Failed to fetch dashboard data: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

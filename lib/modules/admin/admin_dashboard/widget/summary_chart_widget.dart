@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SummaryChartWidget extends StatelessWidget {
-  final RxList<double> values;
+  final RxList<int> values;
   final List<String> labels;
   final String title;
 
@@ -118,12 +118,11 @@ class SummaryChartWidget extends StatelessWidget {
 
   List<BarChartGroupData> _buildBarGroups() {
     return List.generate(
-      values.length,
-          (index) => BarChartGroupData(
+      values.length, (index) => BarChartGroupData(
         x: index,
         barRods: [
           BarChartRodData(
-            toY: values[index],
+            toY: (values[index] ?? 0).toDouble(),
             color: AppColors.primary,
             width: 18,
             borderRadius: BorderRadius.circular(6),

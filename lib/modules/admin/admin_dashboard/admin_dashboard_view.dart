@@ -1,4 +1,3 @@
-import 'package:ecommerce_urban/app/constants/app_colors.dart';
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
 import 'package:ecommerce_urban/app/constants/app_widget.dart';
 import 'package:ecommerce_urban/app/widgets/icon_widget.dart';
@@ -22,13 +21,17 @@ class AdminDashboardView extends StatelessWidget {
     return Scaffold(
       drawer: AdminDrawerWidget(
         onTapItem: (route) {
-          Navigator.pop(context); // close drawer
-          // Navigate to route
-          print("Navigate to: $route");
+          Navigator.pop(context);
         },
       ),
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: controller.fetchDashboard,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(AppSpacing.paddingSM),
@@ -55,21 +58,42 @@ class AdminDashboardView extends StatelessWidget {
   }
 
   /// Profile
-  Widget _buildProfile(){
-    return ProfileTileWidget(
-      title: "Admin User",
-      subtitle: "admin@system.com",
-      avatarPath: "https://i.pravatar.cc/300",
-      trailing: IconWidget(
-        size: AppWidgetSize.iconS,
-        icon: Icons.search,
-        iconColor: Colors.white,
-        onTap: (){
-          print("On icon Tap");
-        },
-      ),
-      onTap: () => print("Tapped"),
-    );
+  Widget _buildProfile() {
+    return Obx(() {
+      final user = controller.currentUser.value;
+      if (user == null) {
+        // Show a placeholder while loading
+        return ProfileTileWidget(
+          title: "Loading...",
+          subtitle: "",
+          avatarPath: "https://i.pravatar.cc/300",
+          trailing: IconWidget(
+            size: AppWidgetSize.iconS,
+            icon: Icons.shopping_cart,
+            iconColor: Colors.white,
+            onTap: () {
+              print("On icon Tap");
+            },
+          ),
+          onTap: () => print("Tapped"),
+        );
+      }
+
+      return ProfileTileWidget(
+        title: user.name,
+        subtitle: user.email,
+        avatarPath: user.avatar,
+        trailing: IconWidget(
+          size: AppWidgetSize.iconS,
+          icon: Icons.shopping_cart,
+          iconColor: Colors.white,
+          onTap: () {
+            print("On icon Tap");
+          },
+        ),
+        onTap: () => print("Tapped"),
+      );
+    });
   }
 
   /// Overview Metrics Cards
@@ -92,18 +116,18 @@ class AdminDashboardView extends StatelessWidget {
             spacing: AppSpacing.paddingSM,
             children: [
               Expanded(
-                child: MetricCardWidget(
+                child: Obx(()=>MetricCardWidget(
                   title: 'Total Orders',
-                  value: controller.totalOrders.value.toString(),
+                  value: controller.totalOrders.toString(),
                   color: Colors.blue,
-                ),
+                ))
               ),
               Expanded(
-                child: MetricCardWidget(
+                child: Obx(()=>MetricCardWidget(
                   title: 'Total Sales',
-                  value: '\$${controller.totalSales.value.toStringAsFixed(2)}',
+                  value: '\$${controller.totalSales.toStringAsFixed(2)}',
                   color: Colors.blueGrey,
-                ),
+                ))
               ),
             ],
           ),
@@ -111,18 +135,18 @@ class AdminDashboardView extends StatelessWidget {
             spacing: AppSpacing.paddingSM,
             children: [
               Expanded(
-                child: MetricCardWidget(
+                child: Obx(()=>MetricCardWidget(
                   title: 'Total Customers',
-                  value: controller.totalCustomers.value.toString(),
+                  value: controller.totalCustomers.toString(),
                   color: Colors.orange,
-                ),
+                ))
               ),
               Expanded(
-                child: MetricCardWidget(
+                child: Obx(()=>MetricCardWidget(
                   title: 'Total Products',
-                  value: controller.totalProducts.value.toString(),
+                  value: controller.totalProducts.toString(),
                   color: Colors.green,
-                ),
+                ))
               ),
             ],
           ),
@@ -131,107 +155,75 @@ class AdminDashboardView extends StatelessWidget {
     );
   }
 
-  /// Single Metric Card
-  Widget _buildMetricCard({required String title, required String value, required Color color, required Rx obsValue,}) {
-    return Obx(() => Container(
-        width: 160,
-        height: 100,
+  /// Low Stock Alerts
+  Widget _buildLowStockAlerts(BuildContext context) {
+    return Obx(() {
+      final products = controller.lowStockProducts;
+
+      return Container(
         padding: EdgeInsets.all(AppSpacing.paddingSM),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            width: 1,
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
-            Text(
-              obsValue.value.toString(),
-              style: TextStyle(
-                  color: AppColors.lightTextPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Low Stock Alerts
-  Widget _buildLowStockAlerts(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.paddingSM),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TitleWidget(title: "Low Stock Alerts"),
-          SizedBox(height: AppSpacing.paddingSM),
-          ItemWidget(
-            icon: Icons.warning,
-            iconBgColor: Colors.red.shade200,
-            title: "Product Name 1",
-            subtitle: "1 Stock",
-            onTapCard: (){
-
-            }
-          ),
-          ItemWidget(
+            TitleWidget(title: "Low Stock Alerts"),
+            SizedBox(height: AppSpacing.paddingSM),
+            if (products.isEmpty)
+              Text("No low stock products found"),
+            ...products.map((product) => ItemWidget(
               icon: Icons.warning,
               iconBgColor: Colors.red.shade200,
-              title: "Product Name 2",
-              subtitle: "1 Stock",
-              onTapCard: (){
-
-              }
-          ),
-        ],
-      ),
-    );
+              title: product.name,
+              subtitle: "${product.stockQuantity} Stock",
+              onTapCard: () {
+                print("Tapped product: ${product.name}");
+              },
+            )),
+          ],
+        ),
+      );
+    });
   }
 
   /// New Users
   Widget _buildNewUsers(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.paddingSM),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-          width: 1,
+    return Obx(() {
+      final users = controller.topNewUsers;
+
+      return Container(
+        padding: EdgeInsets.all(AppSpacing.paddingSM),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
         ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TitleWidget(title: "New Users"),
-          SizedBox(height: AppSpacing.paddingSM),
-          ItemWidget(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TitleWidget(title: "New Users"),
+            SizedBox(height: AppSpacing.paddingSM),
+            if (users.isEmpty)
+              Text("No new users found"),
+            ...users.map((user) => ItemWidget(
               icon: Icons.person_outline,
               iconBgColor: Colors.green.shade200,
-              title: "Username 1",
-              onTapCard: (){
-
-              }
-          ),
-          ItemWidget(
-              icon: Icons.person_outline,
-              iconBgColor: Colors.green.shade200,
-              title: "Username 2",
-              onTapCard: (){
-
-              }
-          ),
-        ],
-      ),
-    );
+              title: user.name,
+              subtitle: user.email,
+              onTapCard: () {
+                print("Tapped user: ${user.name}");
+              },
+            )),
+          ],
+        ),
+      );
+    });
   }
 }

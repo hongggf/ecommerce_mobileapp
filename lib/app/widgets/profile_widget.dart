@@ -63,6 +63,8 @@ class ProfileTileWidget extends StatelessWidget {
       return _fallbackIcon();
     }
 
+    print(avatarPath);
+
     // Check if it is network URL
     if (avatarPath!.startsWith('http://') || avatarPath!.startsWith('https://')) {
       return Image.network(

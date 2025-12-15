@@ -1,5 +1,4 @@
 class AppConstant {
-
   static const String baseUrl = "http://localhost:8085";
 
   // Auth
@@ -14,4 +13,7 @@ class AppConstant {
   // Product
   static const String products = "/api/products"; // GET, POST
   static String productById(int id) => "/api/products/$id"; // PUT, DELETE
+
+  // Dashboard
+  static const String dashboard = "/api/dashboard"; // GET
 }
