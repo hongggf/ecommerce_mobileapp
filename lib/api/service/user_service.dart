@@ -19,7 +19,6 @@ class UserService {
   }
 
   /// Create user
-  /// Create user
   Future<UserModel> createUser({
     required String name,
     required String email,
@@ -38,7 +37,6 @@ class UserService {
       "phone": phone,
       "role": role,
 
-      // 👇 Image file (optional)
       if (avatar != null)
         "avatar": await MultipartFile.fromFile(
           avatar.path,
@@ -59,7 +57,6 @@ class UserService {
     return UserModel.fromJson(response.data);
   }
 
-  /// Update user
   /// Update user
   Future<UserModel> updateUser({
     required int id,

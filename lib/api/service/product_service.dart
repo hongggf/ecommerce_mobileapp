@@ -48,7 +48,7 @@ class ProductService {
       'status': status,
       'stock_quantity': stockQuantity,
       'low_stock_alert': lowStockAlert,
-      'image': await MultipartFile.fromFile(image.path),
+      'image': await MultipartFile.fromFile(image.path, filename: image.path.split('/').last,),
     });
 
     await _dio.post(AppConstant.products, data: formData);

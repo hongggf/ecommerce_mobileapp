@@ -35,7 +35,7 @@ class AdminMainView extends StatelessWidget {
               label: 'Category',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.production_quantity_limits_sharp),
+              icon: Icon(Icons.shopping_cart_rounded),
               label: 'Inventory',
             ),
             BottomNavigationBarItem(

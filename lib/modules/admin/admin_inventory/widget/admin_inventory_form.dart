@@ -98,7 +98,6 @@ class AdminInventoryForm extends StatelessWidget {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       await controller.submitProductForm();
-                      Get.back();
                     }
                   },
                   child: Text(isEditing ? "Update Product" : "Create Product"),

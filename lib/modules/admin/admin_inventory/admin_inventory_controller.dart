@@ -46,8 +46,7 @@ class AdminInventoryController extends GetxController {
       );
       products.assignAll(result);
     } catch (e) {
-      ToastWidget.show(type: 'error', message: 'Failed to load products');
-      print(e);
+      ToastWidget.show(type: 'error', message: 'Failed to load products $e');
     } finally {
       isLoading.value = false;
     }
@@ -111,36 +110,32 @@ class AdminInventoryController extends GetxController {
   }
 
   Future<void> _createProduct() async {
-    if (selectedCategoryId.value == null) {
-      ToastWidget.show(type: 'error', message: 'Please select a category');
-      return;
-    }
-    if (imageFile == null) {
+    if (imageFile.value == null) {
       ToastWidget.show(type: 'error', message: 'Please select an image');
       return;
-    }
-
-    try {
-      isLoading.value = true;
-      await _service.createProduct(
-        name: nameController.text.trim(),
-        categoryId: selectedCategoryId.value!,
-        description: descController.text.trim(),
-        price: priceController.text.trim(),
-        comparePrice: comparePriceController.text.trim(),
-        image: imageFile.value!,
-        stockQuantity: int.tryParse(stockController.text) ?? 0,
-        lowStockAlert: int.tryParse(lowStockController.text) ?? 0,
-        status: 'active',
-      );
-      ToastWidget.show(message: 'Product created successfully');
-      fetchProducts();
-      prepareForm();
-    } catch (e) {
-      ToastWidget.show(type: 'error', message: 'Failed to create product');
-      print(e);
-    } finally {
-      isLoading.value = false;
+    } else{
+      try {
+        isLoading.value = true;
+        await _service.createProduct(
+          name: nameController.text.trim(),
+          categoryId: selectedCategoryId.value!,
+          description: descController.text.trim(),
+          price: priceController.text.trim(),
+          comparePrice: comparePriceController.text.trim(),
+          image: imageFile.value!,
+          stockQuantity: int.tryParse(stockController.text) ?? 0,
+          lowStockAlert: int.tryParse(lowStockController.text) ?? 0,
+          status: 'active',
+        );
+        ToastWidget.show(message: 'Product created successfully');
+        fetchProducts();
+        prepareForm();
+        Get.back();
+      } catch (e) {
+        ToastWidget.show(type: 'error', message: 'Failed to create product $e');
+      } finally {
+        isLoading.value = false;
+      }
     }
   }
 
@@ -164,8 +159,9 @@ class AdminInventoryController extends GetxController {
       ToastWidget.show(message: 'Product updated successfully');
       fetchProducts();
       prepareForm();
+      Get.back();
     } catch (e) {
-      ToastWidget.show(type: 'error', message: 'Failed to update product');
+      ToastWidget.show(type: 'error', message: 'Failed to update product $e');
     } finally {
       isLoading.value = false;
     }
@@ -187,8 +183,7 @@ class AdminInventoryController extends GetxController {
           products.removeWhere((p) => p.id == id);
           ToastWidget.show(message: 'Product deleted');
         } catch (e) {
-          ToastWidget.show(type: 'error', message: 'Failed to delete product');
-          print(e);
+          ToastWidget.show(type: 'error', message: 'Failed to delete product $e');
         } finally {
           isLoading.value = false;
         }
