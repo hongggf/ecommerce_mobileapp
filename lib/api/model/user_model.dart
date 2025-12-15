@@ -35,6 +35,7 @@ class UserData {
   String? email;
   String? phone;
   String? role;
+  String? avatar;
   int? createdBy;
   Creator? creator;
   String? createdAt;
@@ -46,6 +47,7 @@ class UserData {
     this.email,
     this.phone,
     this.role,
+    this.avatar,
     this.createdBy,
     this.creator,
     this.createdAt,
@@ -58,6 +60,7 @@ class UserData {
     email = json['email'];
     phone = json['phone'];
     role = json['role'];
+    avatar = json['avatar'];
     createdBy = json['created_by'];
     creator =
     json['creator'] != null ? Creator.fromJson(json['creator']) : null;
@@ -71,6 +74,7 @@ class UserData {
     'email': email,
     'phone': phone,
     'role': role,
+    'avatar': avatar,
     'created_by': createdBy,
     'creator': creator?.toJson(),
     'created_at': createdAt,

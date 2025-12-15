@@ -36,7 +36,7 @@ class AuthController extends GetxController {
       if (authModel.user!.role == 'admin') {
         Get.offAllNamed(AppRoutes.adminMain);
       } else {
-        Get.offAllNamed('/home');
+        Get.offAllNamed(AppRoutes.userMain);
       }
     } catch (e) {
       ToastWidget.show(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:ecommerce_urban/app/services/dio_service.dart';
 import '../model/user_model.dart';
@@ -17,6 +19,7 @@ class UserService {
   }
 
   /// Create user
+  /// Create user
   Future<UserModel> createUser({
     required String name,
     required String email,
@@ -24,19 +27,39 @@ class UserService {
     required String passwordConfirmation,
     required String phone,
     required String role,
+    File? avatar,
   }) async {
-    final response = await _dio.post('/api/users/', data: {
+
+    final formData = FormData.fromMap({
       "name": name,
       "email": email,
       "password": password,
       "password_confirmation": passwordConfirmation,
       "phone": phone,
       "role": role,
+
+      // 👇 Image file (optional)
+      if (avatar != null)
+        "avatar": await MultipartFile.fromFile(
+          avatar.path,
+          filename: avatar.path.split('/').last,
+        ),
     });
-    print(response.data);
+
+    final response = await _dio.post(
+      '/api/users',
+      data: formData,
+      options: Options(
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      ),
+    );
+
     return UserModel.fromJson(response.data);
   }
 
+  /// Update user
   /// Update user
   Future<UserModel> updateUser({
     required int id,
@@ -46,19 +69,36 @@ class UserService {
     String? passwordConfirmation,
     required String phone,
     required String role,
+    File? avatar,
   }) async {
-    final data = {
+
+    final formData = FormData.fromMap({
       "name": name,
       "email": email,
       "phone": phone,
       "role": role,
-    };
-    if (password != null && passwordConfirmation != null) {
-      data['password'] = password;
-      data['password_confirmation'] = passwordConfirmation;
-    }
 
-    final response = await _dio.put('/api/users/$id', data: data);
+      if (password != null && passwordConfirmation != null) ...{
+        "password": password,
+        "password_confirmation": passwordConfirmation,
+      },
+
+      if (avatar != null)
+        "avatar": await MultipartFile.fromFile(
+          avatar.path,
+        ),
+    });
+    final response = await _dio.post(
+      '/api/users/$id',
+      data: formData,
+      options: Options(
+        headers: {
+          "Content-Type": "multipart/form-data",
+          'X-HTTP-Method-Override': 'PUT'
+        },
+      ),
+    );
+
     return UserModel.fromJson(response.data);
   }
 

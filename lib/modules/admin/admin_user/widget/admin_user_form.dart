@@ -1,8 +1,10 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart'; // Add this dependency in pubspec.yaml
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
 import 'package:ecommerce_urban/app/widgets/title_widget.dart';
 import 'package:ecommerce_urban/modules/admin/admin_user/admin_user_controller.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class AdminUserForm extends StatelessWidget {
   final AdminUserController controller;
@@ -11,6 +13,7 @@ class AdminUserForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final isEditing = controller.editingUserId.value != null;
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
@@ -38,6 +41,56 @@ class AdminUserForm extends StatelessWidget {
 
               // Title
               TitleWidget(title: isEditing ? "Edit User" : "Create User"),
+              SizedBox(height: AppSpacing.paddingSM),
+
+              // **Image Picker Section**
+              Obx(() {
+                final hasNewImage = controller.avatar.value != null;
+                return Row(
+                  children: [
+                    // Show selected image
+                    if (hasNewImage)
+                      Stack(
+                        children: [
+                          Image.file(
+                            controller.avatar.value!,
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                          ),
+                          Positioned(
+                            right: 0,
+                            child: InkWell(
+                              onTap: () => controller.avatar.value = null,
+                              child: const CircleAvatar(
+                                radius: 10,
+                                child: Icon(Icons.close, size: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.person),
+                      ),
+                    const SizedBox(width: 8),
+                    // Pick image button
+                    InkWell(
+                      onTap: () => _pickImage(),
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.add),
+                      ),
+                    ),
+                  ],
+                );
+              }),
               SizedBox(height: AppSpacing.paddingSM),
 
               // Name
@@ -187,6 +240,15 @@ class AdminUserForm extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Image picker method
+  void _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      controller.avatar.value = File(pickedFile.path);
+    }
   }
 
   /// Call this method to show the bottom sheet

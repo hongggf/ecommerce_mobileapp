@@ -60,7 +60,7 @@ class AdminUserItemWidget extends StatelessWidget {
             ),
             SizedBox(height: AppSpacing.paddingM),
 
-            /// Avatar + Title/Subtile + Buttons
+            /// Avatar + Info + Buttons
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -77,10 +77,7 @@ class AdminUserItemWidget extends StatelessWidget {
                         ),
                       ),
                       if (subtitle != null)
-                        Text(
-                          subtitle!,
-                          style: textTheme.bodySmall,
-                        ),
+                        Text(subtitle!, style: textTheme.bodySmall),
                     ],
                   ),
                 ),
@@ -110,7 +107,7 @@ class AdminUserItemWidget extends StatelessWidget {
 
     return CircleAvatar(
       radius: avatarSize / 2,
-      backgroundColor: Colors.grey[300],
+      backgroundColor: _avatarBackgroundColor(),
       child: ClipOval(
         child: _buildAvatarImage(avatarSize),
       ),
@@ -118,19 +115,28 @@ class AdminUserItemWidget extends StatelessWidget {
   }
 
   Widget _buildAvatarImage(double size) {
-    if (avatarPath == null || avatarType == null) {
+    /// ✅ NEW: handle empty string or null
+    if (avatarPath == null || avatarPath!.isEmpty) {
+      return _fallbackAvatar(size);
+    }
+
+    /// ✅ NEW: auto-detect network image
+    if (avatarPath!.startsWith('http')) {
+      return Image.network(
+        avatarPath!,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _fallbackAvatar(size),
+      );
+    }
+
+    /// Existing behavior
+    if (avatarType == null) {
       return _fallbackAvatar(size);
     }
 
     switch (avatarType!) {
-      case AvatarType.network:
-        return Image.network(
-          avatarPath!,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _fallbackAvatar(size),
-        );
       case AvatarType.asset:
         return Image.asset(
           avatarPath!,
@@ -139,6 +145,7 @@ class AdminUserItemWidget extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => _fallbackAvatar(size),
         );
+
       case AvatarType.memory:
         if (memoryImage == null) return _fallbackAvatar(size);
         return Image.memory(
@@ -148,6 +155,7 @@ class AdminUserItemWidget extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => _fallbackAvatar(size),
         );
+
       case AvatarType.file:
         return Image.file(
           File(avatarPath!),
@@ -156,7 +164,24 @@ class AdminUserItemWidget extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => _fallbackAvatar(size),
         );
+
+      case AvatarType.network:
+        return Image.network(
+          avatarPath!,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _fallbackAvatar(size),
+        );
     }
+  }
+
+  /// ✅ NEW: Colored background for fallback avatar
+  Color _avatarBackgroundColor() {
+    if (avatarPath == null || avatarPath!.isEmpty) {
+      return Colors.blueGrey;
+    }
+    return Colors.grey[300]!;
   }
 
   Widget _fallbackAvatar(double size) {

@@ -115,6 +115,7 @@ class AdminUserView extends StatelessWidget {
               name: user.name.toString(),
               subtitle: user.email.toString(),
               role: user.role.toString(),
+              avatarPath: user.avatar.toString(),
               onEdit: (){
                 controller.prepareForm(user: user);
                 AdminUserForm.show(controller: controller);

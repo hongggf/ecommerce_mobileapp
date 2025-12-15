@@ -1,11 +1,12 @@
+import 'dart:io';
 import 'package:ecommerce_urban/api/model/user_model.dart';
 import 'package:ecommerce_urban/api/service/user_service.dart';
 import 'package:ecommerce_urban/app/widgets/toast_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AdminUserController extends GetxController {
-
   final UserService _userService = UserService();
 
   var users = <UserData>[].obs;
@@ -24,6 +25,9 @@ class AdminUserController extends GetxController {
   final passwordConfirmController = TextEditingController();
   var role = "customer".obs;
   var editingUserId = Rx<int?>(null);
+
+  // Image file for upload
+  var avatar = Rxn<File>();
 
   @override
   void onInit() {
@@ -84,6 +88,7 @@ class AdminUserController extends GetxController {
       passwordController.clear();
       passwordConfirmController.clear();
       editingUserId.value = user.id;
+      avatar.value = null; // clear previous image
     } else {
       nameController.clear();
       emailController.clear();
@@ -92,16 +97,24 @@ class AdminUserController extends GetxController {
       passwordConfirmController.clear();
       role.value = "customer";
       editingUserId.value = null;
+      avatar.value = null;
+    }
+  }
+
+  /// Pick image from gallery
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      avatar.value = File(pickedFile.path);
     }
   }
 
   /// Create or update user
   Future<void> submitUserForm() async {
     if (editingUserId.value == null) {
-      // Create
       await _createUser();
     } else {
-      // Update
       await _updateUser();
     }
   }
@@ -116,6 +129,7 @@ class AdminUserController extends GetxController {
         passwordConfirmation: passwordConfirmController.text,
         phone: phoneController.text,
         role: role.value,
+        avatar: avatar.value, // send file
       );
       ToastWidget.show(message: "User created successfully");
       await fetchUsers();
@@ -139,11 +153,12 @@ class AdminUserController extends GetxController {
         passwordConfirmation: passwordConfirmController.text.isNotEmpty
             ? passwordConfirmController.text
             : null,
+        avatar: avatar.value,
       );
       ToastWidget.show(message: "User updated successfully");
       await fetchUsers();
     } catch (e) {
-      ToastWidget.show(type: "error", message: "Failed to update user");
+      ToastWidget.show(type: "error", message: "Failed to update user $e");
     } finally {
       isLoading.value = false;
     }
@@ -151,7 +166,6 @@ class AdminUserController extends GetxController {
 
   /// Delete user
   Future<void> deleteUser(int id) async {
-    // Show confirmation dialog first
     Get.defaultDialog(
       title: "Confirm Delete",
       middleText: "Are you sure you want to delete this user?",
@@ -159,7 +173,7 @@ class AdminUserController extends GetxController {
       textCancel: "No",
       confirmTextColor: Colors.white,
       onConfirm: () async {
-        Get.back(); // Close the dialog
+        Get.back();
         try {
           isLoading.value = true;
           await _userService.deleteUser(id);
