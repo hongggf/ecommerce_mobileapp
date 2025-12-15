@@ -2,6 +2,7 @@ import 'package:ecommerce_urban/modules/admin/admin_category/admin_category_view
 import 'package:ecommerce_urban/modules/admin/admin_dashboard/admin_dashboard_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_inventory/admin_inventory_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_main/admin_main_controller.dart';
+import 'package:ecommerce_urban/modules/admin/admin_report/admin_report_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_user/admin_user_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,7 @@ class AdminMainView extends StatelessWidget {
     AdminCategoryView(),
     AdminInventoryView(),
     AdminUserView(),
+    AdminReportView()
   ];
 
   @override
@@ -41,6 +43,10 @@ class AdminMainView extends StatelessWidget {
             BottomNavigationBarItem(
               icon: Icon(Icons.people),
               label: 'User',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.analytics_outlined),
+              label: 'Report',
             ),
           ],
         ),

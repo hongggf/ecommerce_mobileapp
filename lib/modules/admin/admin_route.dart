@@ -4,6 +4,7 @@ import 'package:ecommerce_urban/modules/admin/admin_main/admin_main_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_order/admin_order_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_order_detail/admin_order_detail_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_profile/admin_profile_view.dart';
+import 'package:ecommerce_urban/modules/admin/admin_report/admin_report_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_user/admin_user_view.dart';
 import 'package:ecommerce_urban/modules/admin/admin_user_detail/admin_user_detail_view.dart';
 import 'package:ecommerce_urban/route/app_routes.dart';
@@ -45,6 +46,10 @@ class AdminRoute {
     GetPage(
       name: AppRoutes.adminUserDetail,
       page: () => AdminUserDetailView(),
+    ),
+    GetPage(
+      name: AppRoutes.adminReport,
+      page: () => AdminReportView(),
     ),
   ];
 

@@ -20,4 +20,13 @@ class AppConstant {
   // User Profile (ME)
   static const String me = "/api/me"; // GET
   static const String meUpdate = "/api/me/update"; // POST (multipart)
+
+  // Reports
+  static const String topSellingProducts = "/api/reports/products/top-selling";
+  static const String leastSellingProducts = "/api/reports/products/least-selling";
+  static const String productRevenue = "/api/reports/products/revenue";
+  static const String stockLevel = "/api/reports/products/stock";
+  static const String productDistribution = "/api/reports/products/distribution";
+  static String productSalesByPeriod(String period) => "/api/reports/products/sales?period=$period";
+
 }
