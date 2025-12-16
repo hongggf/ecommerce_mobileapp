@@ -9,6 +9,7 @@ class DashboardService {
   Future<DashboardModel> fetchDashboard() async {
     final response = await _dio.get(AppConstant.dashboard);
     if (response.statusCode == 200 && response.data['success'] == true) {
+      print(response.data);
       return DashboardModel.fromJson(response.data['data']);
     } else {
       throw Exception('Failed to load dashboard data');

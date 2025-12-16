@@ -39,7 +39,7 @@ class AdminDashboardController extends GetxController {
       isLoading.value = true;
 
       final dashboard = await _service.fetchDashboard();
-
+print(dashboard);
       /// Totals
       totals.value = dashboard.totals;
       totalProducts.value = dashboard.totals.totalProducts.toInt();
@@ -62,6 +62,7 @@ class AdminDashboardController extends GetxController {
 
     } catch (e) {
       ToastWidget.show(message: "Failed to fetch dashboard data: $e");
+      print(e);
     } finally {
       isLoading.value = false;
     }
