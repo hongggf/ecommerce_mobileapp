@@ -21,4 +21,5 @@ class AppRoutes {
   static const userSearch = '/userSearch';
   static const userProfile = '/userProfile';
   static const userCart = '/userCart';
+  static const userCheckout = '/userCheckout';
 }

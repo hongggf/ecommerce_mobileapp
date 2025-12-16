@@ -1,6 +1,7 @@
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
 import 'package:ecommerce_urban/modules/user/user_cart/user_cart_controller.dart';
 import 'package:ecommerce_urban/modules/user/user_cart/widget/cart_item_card_widget.dart';
+import 'package:ecommerce_urban/route/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -56,7 +57,7 @@ class UserCartView extends StatelessWidget {
             ),
             ElevatedButton(
                 onPressed: (){
-
+                  Get.toNamed(AppRoutes.userCheckout);
                 },
                 child: Text("Checkout")
             )
