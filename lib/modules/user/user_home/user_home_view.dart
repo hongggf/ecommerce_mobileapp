@@ -1,3 +1,4 @@
+import 'package:ecommerce_urban/api/controller/cart_controler.dart';
 import 'package:ecommerce_urban/app/constants/app_spacing.dart';
 import 'package:ecommerce_urban/app/widgets/product_card_widget.dart';
 import 'package:ecommerce_urban/modules/user/user_home/widget/banner_widget.dart';
@@ -113,7 +114,8 @@ class UserHomeView extends StatelessWidget {
               price: product.price.toString(),
               imageUrl: product.image.toString(),
               onAddToCartTap: (){
-
+                final controller = Get.put(CartController());
+                controller.addProductToCart(productId: product.id, quantity: 1);
               },
               onTap: (){
 

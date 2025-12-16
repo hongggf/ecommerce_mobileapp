@@ -1,3 +1,4 @@
+import 'package:ecommerce_urban/modules/user/user_cart/user_cart_view.dart';
 import 'package:ecommerce_urban/modules/user/user_home/user_home_view.dart';
 import 'package:ecommerce_urban/modules/user/user_main/user_main_controller.dart';
 import 'package:ecommerce_urban/modules/user/user_profile/user_profile_view.dart';
@@ -12,7 +13,7 @@ class UserMainView extends StatelessWidget {
   final List<Widget> pages = [
     UserHomeView(),
     UserSearchView(),
-    Text(""),
+    UserCartView(),
     UserProfileView(),
   ];
 

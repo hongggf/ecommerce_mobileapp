@@ -1,3 +1,4 @@
+import 'package:ecommerce_urban/modules/user/user_cart/user_cart_view.dart';
 import 'package:ecommerce_urban/modules/user/user_main/user_main_view.dart';
 import 'package:ecommerce_urban/modules/user/user_profile/user_profile_view.dart';
 import 'package:ecommerce_urban/modules/user/user_search/user_search_view.dart';
@@ -20,6 +21,10 @@ class UserRoute {
     GetPage(
       name: AppRoutes.userProfile,
       page: () => UserProfileView(),
+    ),
+    GetPage(
+      name: AppRoutes.userCart,
+      page: () => UserCartView()
     ),
   ];
 

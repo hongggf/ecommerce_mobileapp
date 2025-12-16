@@ -20,4 +20,5 @@ class AppRoutes {
   static const userMain = '/userMain';
   static const userSearch = '/userSearch';
   static const userProfile = '/userProfile';
+  static const userCart = '/userCart';
 }

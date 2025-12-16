@@ -30,4 +30,8 @@ class AppConstant {
   static const String productDistribution = "/api/reports/products/distribution";
   static String productSalesByPeriod(String period) => "/api/reports/products/sales?period=$period";
 
+  // Add inside AppConstant
+  static const String cartItems = "/api/cart-items";
+  static String cartItemById(int id) => "/api/cart-items/$id";
+
 }
