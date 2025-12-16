@@ -34,4 +34,8 @@ class AppConstant {
   static const String cartItems = "/api/cart-items";
   static String cartItemById(int id) => "/api/cart-items/$id";
 
+  // Address
+  static const String addresses = "/api/addresses";
+  static String addressById(int id) => "/api/addresses/$id";
+
 }

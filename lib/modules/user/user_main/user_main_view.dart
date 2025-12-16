@@ -1,3 +1,4 @@
+import 'package:ecommerce_urban/modules/user/user_address/user_address_view.dart';
 import 'package:ecommerce_urban/modules/user/user_cart/user_cart_view.dart';
 import 'package:ecommerce_urban/modules/user/user_home/user_home_view.dart';
 import 'package:ecommerce_urban/modules/user/user_main/user_main_controller.dart';
@@ -14,6 +15,7 @@ class UserMainView extends StatelessWidget {
     UserHomeView(),
     UserSearchView(),
     UserCartView(),
+    UserAddressView(),
     UserProfileView(),
   ];
 
@@ -37,6 +39,10 @@ class UserMainView extends StatelessWidget {
             BottomNavigationBarItem(
               icon: Icon(Icons.shopping_cart_rounded),
               label: 'Cart',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.map_outlined),
+              label: 'Address',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),

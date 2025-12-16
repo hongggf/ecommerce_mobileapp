@@ -1,3 +1,4 @@
+import 'package:ecommerce_urban/modules/user/user_address/user_address_view.dart';
 import 'package:ecommerce_urban/modules/user/user_cart/user_cart_view.dart';
 import 'package:ecommerce_urban/modules/user/user_checkout/user_checkout_view.dart';
 import 'package:ecommerce_urban/modules/user/user_main/user_main_view.dart';
@@ -30,6 +31,10 @@ class UserRoute {
     GetPage(
         name: AppRoutes.userCheckout,
         page: () => UserCheckoutView()
+    ),
+    GetPage(
+        name: AppRoutes.userAddress,
+        page: () => UserAddressView()
     ),
   ];
 
