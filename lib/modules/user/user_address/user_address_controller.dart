@@ -9,6 +9,7 @@ class UserAddressController extends GetxController {
   final AddressService _service = AddressService();
 
   var addresses = <AddressModel>[].obs;
+  var defaultAddress = Rxn<AddressModel>();
   var isLoading = false.obs;
 
   // Form controllers
@@ -33,7 +34,7 @@ class UserAddressController extends GetxController {
       isLoading.value = true;
       addresses.value = await _service.getAddresses();
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      ToastWidget.show(type: 'error', message: e.toString());
     } finally {
       isLoading.value = false;
     }
@@ -67,9 +68,9 @@ class UserAddressController extends GetxController {
     try {
       final newAddress = await _service.createAddress(address);
       addresses.add(newAddress);
-      Get.snackbar('Success', 'Address added successfully');
+      ToastWidget.show(message: 'Address added successfully');
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      ToastWidget.show(type: 'error', message: e.toString());
     }
   }
 
@@ -79,9 +80,9 @@ class UserAddressController extends GetxController {
       final updated = await _service.updateAddress(id, address);
       final index = addresses.indexWhere((a) => a.id == id);
       if (index != -1) addresses[index] = updated;
-      Get.snackbar('Success', 'Address updated successfully');
+      ToastWidget.show(message: 'Address updated successfully');
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      ToastWidget.show(type: 'error', message: e.toString());
     }
   }
 
@@ -107,5 +108,18 @@ class UserAddressController extends GetxController {
         onCancel: () => Get.back(),
       ),
     );
+  }
+
+  // ------------------ Fetch Default Address ------------------
+  Future<void> fetchDefaultAddress() async {
+    try {
+      isLoading.value = true;
+      final address = await _service.getDefaultAddress();
+      defaultAddress.value = address;
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

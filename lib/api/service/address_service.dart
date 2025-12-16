@@ -29,4 +29,16 @@ class AddressService {
   Future<void> deleteAddress(int id) async {
     await _dio.delete(AppConstant.addressById(id));
   }
+
+  Future<AddressModel?> getDefaultAddress() async {
+    try {
+      final response = await _dio.get(AppConstant.defaultAddress);
+      if (response.data['success'] == true && response.data['data'] != null) {
+        return AddressModel.fromJson(response.data['data']);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to fetch default address: $e');
+    }
+  }
 }

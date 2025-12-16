@@ -37,5 +37,6 @@ class AppConstant {
   // Address
   static const String addresses = "/api/addresses";
   static String addressById(int id) => "/api/addresses/$id";
+  static const String defaultAddress = "/api/addresses/default"; // NEW
 
 }
