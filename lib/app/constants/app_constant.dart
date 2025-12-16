@@ -13,6 +13,7 @@ class AppConstant {
   // Product
   static const String products = "/api/products"; // GET, POST
   static String productById(int id) => "/api/products/$id"; // PUT, DELETE
+  static const String availableProducts = "/api/products/available"; // Available Products
 
   // Dashboard
   static const String dashboard = "/api/dashboard"; // GET

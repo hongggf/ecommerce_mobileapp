@@ -4,6 +4,7 @@ import 'package:ecommerce_urban/api/model/dashboard_model.dart';
 import 'package:ecommerce_urban/api/service/dashboard_service.dart';
 
 class AdminDashboardController extends GetxController {
+
   final DashboardService _service = DashboardService();
 
   var isLoading = true.obs;

@@ -18,4 +18,5 @@ class AppRoutes {
 
   /// User
   static const userMain = '/userMain';
+  static const userSearch = '/userSearch';
 }

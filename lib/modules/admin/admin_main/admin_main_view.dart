@@ -16,7 +16,7 @@ class AdminMainView extends StatelessWidget {
     AdminCategoryView(),
     AdminInventoryView(),
     AdminUserView(),
-    AdminReportView()
+    // AdminReportView()
   ];
 
   @override
@@ -44,10 +44,10 @@ class AdminMainView extends StatelessWidget {
               icon: Icon(Icons.people),
               label: 'User',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.analytics_outlined),
-              label: 'Report',
-            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.analytics_outlined),
+            //   label: 'Report',
+            // ),
           ],
         ),
       ),

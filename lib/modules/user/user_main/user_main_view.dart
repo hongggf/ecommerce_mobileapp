@@ -1,4 +1,6 @@
+import 'package:ecommerce_urban/modules/user/user_home/user_home_view.dart';
 import 'package:ecommerce_urban/modules/user/user_main/user_main_controller.dart';
+import 'package:ecommerce_urban/modules/user/user_search/user_search_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -7,8 +9,8 @@ class UserMainView extends StatelessWidget {
   final UserMainController controller = Get.put(UserMainController());
 
   final List<Widget> pages = [
-    Text(""),
-    Text(""),
+    UserHomeView(),
+    UserSearchView(),
     Text(""),
     Text(""),
   ];
@@ -23,20 +25,20 @@ class UserMainView extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard),
-              label: 'Dashboard',
+              icon: Icon(Icons.home_max),
+              label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.category),
-              label: 'Category',
+              icon: Icon(Icons.search),
+              label: 'Search',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.production_quantity_limits_sharp),
-              label: 'Inventory',
+              icon: Icon(Icons.shopping_cart_rounded),
+              label: 'Cart',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.people),
-              label: 'User',
+              icon: Icon(Icons.person),
+              label: 'Profile',
             ),
           ],
         ),
